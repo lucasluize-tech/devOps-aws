@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Post – Lucas Luize</title>
+  <meta name="description" content="DevOps blog post." />
+  <meta http-equiv="x-ua-compatible" content="IE=edge" />
+  <style>
+    :root {
+      --bg: #0b1220;
+      --panel: #11192b;
+      --text: #e9eef8;
+      --muted: #a9b4c7;
+      --brand: #66d9e8;
+      --border: #233049;
+      --link: #7dd3fc;
+      --code: #0f172a;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; background: var(--bg); color: var(--text); font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, sans-serif; line-height: 1.55; }
+    a { color: var(--link); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    .wrap { max-width: 800px; margin: 0 auto; padding: 20px; }
+    header { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 14px 0 6px; }
+    .brand { display: flex; align-items: center; gap: 12px; }
+    .logo {
+      width: 40px; height: 40px; border-radius: 10px;
+      background: linear-gradient(135deg, var(--brand), #3b82f6);
+      display: grid; place-items: center; color: #0b1220; font-weight: 800; letter-spacing: .5px;
+      box-shadow: 0 6px 24px rgba(125,211,252,.22);
+    }
+    nav { display: flex; gap: 14px; flex-wrap: wrap; }
+    nav a { color: var(--muted); font-weight: 600; padding: 6px 10px; border-radius: 6px; }
+    nav a:hover { background: #0f1a2e; color: var(--text); }
+
+    .post-header { margin-bottom: 20px; }
+    .post-title { margin: 0 0 10px; font-size: 2rem; }
+    .post-meta { color: var(--muted); margin: 0 0 10px; }
+    .badges { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
+    .badge { background: #0f1a2e; border: 1px solid var(--border); color: var(--muted); padding: 6px 10px; border-radius: 999px; font-size: .9rem; }
+    .reading-time { color: var(--muted); font-size: 0.9rem; }
+    .share { margin-top: 20px; display: flex; gap: 10px; }
+    .share a { padding: 8px 12px; background: var(--panel); border: 1px solid var(--border); border-radius: 6px; color: var(--text); }
+    .share a:hover { background: #142440; }
+    .post-content { line-height: 1.7; }
+    .post-content img { max-width: 100%; border-radius: 8px; }
+    .post-content code { background: var(--code); color: #c7d2fe; border: 1px solid #0b1220; border-radius: 4px; padding: 2px 4px; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+    .post-content pre { background: var(--code); border: 1px solid #0b1220; border-radius: 8px; padding: 10px; overflow: auto; }
+    .post-content pre code { background: none; padding: 0; }
+    footer { margin: 36px 0 20px; padding: 16px; text-align: center; color: var(--muted); border-top: 1px solid var(--border); }
+    @media (max-width: 900px) { .wrap { padding: 10px; } .post-title { font-size: 1.5rem; } }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="https://unpkg.com/js-yaml@4.1.0/dist/js-yaml.min.js"></script>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <a href="/" class="brand">
+        <div class="logo">D9</div>
+        <div>
+          <div style="font-weight:800;">Cloud DevOps</div>
+          <div class="muted" style="font-size:0.95rem;">Back to Portfolio</div>
+        </div>
+      </a>
+    </header>
+
+    <article id="post-article">
+      <div class="post-header">
+        <h1 class="post-title">Loading...</h1>
+        <p class="post-meta">Loading...</p>
+        <div class="badges"></div>
+        <div class="reading-time"></div>
+        <div class="share">
+          <a href="#" id="share-twitter">Tweet</a>
+          <a href="#" id="share-linkedin">Share on LinkedIn</a>
+        </div>
+      </div>
+      <div class="post-content"></div>
+    </article>
+
+    <footer>
+      © <span id="y"></span> Cloud DevOps Portfolio
+    </footer>
+  </div>
+  <script>
+    document.getElementById('y').textContent = new Date().getFullYear();
+    document.addEventListener('DOMContentLoaded', () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const slug = urlParams.get('slug');
+      if (!slug) {
+        document.querySelector('.post-title').textContent = 'Post not found';
+        document.querySelector('.post-meta').textContent = 'Invalid slug';
+        return;
+      }
+      fetch(`/posts/${slug}.md`)
+        .then(res => res.text())
+        .then(md => {
+          const parts = md.split(/^---$/m);
+          let data = {};
+          let content = md;
+          if (parts.length >= 3) {
+            const front = parts[1].trim();
+            content = parts.slice(2).join('---').trim();
+            try {
+              data = jsyaml.load(front);
+            } catch (e) {
+              console.error('Error parsing front-matter:', e);
+            }
+          }
+          document.title = data.title + ' – Lucas Luize';
+          document.querySelector('.post-title').textContent = data.title;
+          document.querySelector('.post-meta').textContent = `By ${data.author} on ${new Date(data.date).toLocaleDateString()}`;
+          const badges = document.querySelector('.badges');
+          if (data.tags && data.tags.length) {
+            data.tags.forEach(tag => {
+              const span = document.createElement('span');
+              span.className = 'badge';
+              span.textContent = tag;
+              badges.appendChild(span);
+            });
+          }
+          const wordCount = content.split(/\s+/).length;
+          const readingTime = Math.ceil(wordCount / 200);
+          document.querySelector('.reading-time').textContent = `${readingTime} min read`;
+          const html = marked.parse(content);
+          document.querySelector('.post-content').innerHTML = html;
+          // Share buttons
+          const title = encodeURIComponent(data.title);
+          const url = encodeURIComponent(window.location.href);
+          document.getElementById('share-twitter').href = `https://twitter.com/intent/tweet?text=${title}&url=${url}`;
+          document.getElementById('share-linkedin').href = `https://www.linkedin.com/sharing/share-offsite/?url=${url}`;
+        })
+        .catch(err => {
+          console.error('Error loading post:', err);
+          document.querySelector('.post-title').textContent = 'Error loading post';
+          document.querySelector('.post-meta').textContent = 'Please try again later';
+        });
+    });
+  </script>
+</body>
+</html>

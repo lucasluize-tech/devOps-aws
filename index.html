@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Cloud DevOps Portfolio – Lucas Luize</title>
+  <meta name="description" content="Cloud DevOps portfolio: infrastructure, automation, and reliability projects." />
+  <meta http-equiv="x-ua-compatible" content="IE=edge" />
+  <style>
+    :root {
+      --bg: #0b1220;
+      --panel: #11192b;
+      --text: #e9eef8;
+      --muted: #a9b4c7;
+      --brand: #66d9e8;
+      --border: #233049;
+      --link: #7dd3fc;
+      --code: #0f172a;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; background: var(--bg); color: var(--text); font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, sans-serif; line-height: 1.55; }
+    a { color: var(--link); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    .wrap { max-width: 1100px; margin: 0 auto; padding: 20px; }
+    header { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 14px 0 6px; }
+    .brand { display: flex; align-items: center; gap: 12px; }
+    .logo {
+      width: 40px; height: 40px; border-radius: 10px;
+      background: linear-gradient(135deg, var(--brand), #3b82f6);
+      display: grid; place-items: center; color: #0b1220; font-weight: 800; letter-spacing: .5px;
+      box-shadow: 0 6px 24px rgba(125,211,252,.22);
+    }
+    nav { display: flex; gap: 14px; flex-wrap: wrap; }
+    nav a { color: var(--muted); font-weight: 600; padding: 6px 10px; border-radius: 6px; }
+    nav a:hover { background: #0f1a2e; color: var(--text); }
+
+    .hero {
+      margin-top: 12px; padding: 28px;
+      background: radial-gradient(1200px 600px at 20% -10%, #1b2a44, transparent 60%),
+                  linear-gradient(180deg, #0c1423, #0b1220);
+      border: 1px solid var(--border); border-radius: 14px;
+      display: grid; grid-template-columns: 1.2fr .8fr; gap: 24px;
+    }
+    .hero h1 { margin: 0 0 10px; font-size: 2rem; line-height: 1.2; }
+    .hero p.lead { color: var(--muted); margin: 0 0 14px; }
+    .cta { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 10px; }
+    .btn { display: inline-block; padding: 10px 14px; border-radius: 8px; font-weight: 700; border: 1px solid var(--border); background: #122038; color: var(--text); }
+    .btn.primary { background: var(--brand); color: #0b1220; border-color: transparent; }
+    .btn.primary:hover { filter: brightness(1.05); }
+    .btn:hover { background: #142440; }
+    .hero .panel { background: #0f1a2e; border: 1px solid var(--border); border-radius: 12px; padding: 16px; }
+    .badges { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+    .badge { background: #0f1a2e; border: 1px solid var(--border); color: var(--muted); padding: 6px 10px; border-radius: 999px; font-size: .9rem; }
+
+    section { margin-top: 28px; }
+    h2 { font-size: 1.4rem; margin: 0 0 10px; }
+    .grid { display: grid; gap: 16px; grid-template-columns: repeat(3, 1fr); }
+    .card { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 16px; }
+    .card h3 { margin: 0 0 8px; font-size: 1.05rem; }
+    .card p { margin: 0 0 8px; color: var(--muted); }
+    .list { margin: 0; padding-left: 18px; color: var(--muted); }
+    .code { background: var(--code); color: #c7d2fe; border: 1px solid #0b1220; border-radius: 8px; padding: 10px; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: .9rem; overflow: auto; }
+
+    .timeline { display: grid; gap: 12px; }
+    .tl { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px; }
+    .tl strong { color: #e6f4ff; }
+    .muted { color: var(--muted); }
+    footer { margin: 36px 0 20px; padding: 16px; text-align: center; color: var(--muted); border-top: 1px solid var(--border); }
+    @media (max-width: 900px) { .hero { grid-template-columns: 1fr; } .grid { grid-template-columns: 1fr; } header { flex-direction: column; align-items: flex-start; } }
+   </style>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="https://unpkg.com/js-yaml@4.1.0/dist/js-yaml.min.js"></script>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="brand">
+        <div class="logo">D9</div>
+        <div>
+          <div style="font-weight:800;">Cloud DevOps – Portfolio</div>
+          <div class="muted" style="font-size:0.95rem;">Infra • Automation • Reliability</div>
+        </div>
+      </div>
+       <nav>
+         <a href="#about">About</a>
+         <a href="#skills">Skills</a>
+         <a href="#projects">Projects</a>
+         <a href="#posts">Posts</a>
+         <a href="#roadmap">Roadmap</a>
+         <a href="#contact">Contact</a>
+       </nav>
+    </header>
+
+    <section class="hero" id="top">
+      <div>
+        <h1>Building reliable, automated cloud platforms</h1>
+        <p class="lead">Cloud DevOps Engineer focused on AWS, Terraform, Kubernetes, and CI/CD. I design, automate, and observe cloud infrastructure so teams ship faster with confidence.</p>
+        <div class="badges">
+          <span class="badge">AWS</span>
+          <span class="badge">Terraform</span>
+          <span class="badge">Docker</span>
+          <span class="badge">Kubernetes</span>
+          <span class="badge">GitHub Actions</span>
+          <span class="badge">Observability</span>
+        </div>
+        <div class="cta">
+          <a class="btn primary" href="#projects">View Projects</a>
+          <a class="btn" href="#contact">Get in Touch</a>
+        </div>
+      </div>
+      <aside class="panel" aria-label="Live Status">
+        <div style="font-weight:700; margin-bottom:8px;">Live Status</div>
+        <div class="code" aria-live="polite">
+<pre># Served via: CloudFront (HTTPS) → OAC → S3 (private)
+# Next: Security headers, friendly 404, CI/CD
+</pre>
+        </div>
+        <div class="muted" style="font-size:0.9rem;">Tip: add a Response Headers Policy in CloudFront for HSTS, CSP, etc.</div>
+      </aside>
+    </section>
+
+    <section id="about">
+      <h2>About</h2>
+      <p class="muted">I build modern DevOps stacks: infrastructure-as-code, container orchestration, secure delivery pipelines, and production-grade observability. This site tracks projects and lessons learned.</p>
+    </section>
+
+    <section id="skills">
+      <h2>Core Skills</h2>
+      <div class="grid">
+        <div class="card">
+          <h3>Cloud & Networking</h3>
+          <ul class="list">
+            <li>AWS: IAM, VPC, EC2, ALB/NLB, S3, RDS, EKS</li>
+            <li>DNS, TLS, NAT, CIDR, routing</li>
+            <li>Multi-account guardrails</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>IaC & Automation</h3>
+          <ul class="list">
+            <li>Terraform modules, remote state</li>
+            <li>GitHub Actions CI/CD</li>
+            <li>Policy-as-code (Checkov/OPA)</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>Containers & Reliability</h3>
+          <ul class="list">
+            <li>Docker, ECR, EKS</li>
+            <li>Blue/green & canary deploys</li>
+            <li>Prometheus/Grafana, CloudWatch</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section id="projects">
+      <h2>Featured Projects</h2>
+      <div class="grid">
+        <div class="card">
+          <h3>HA Web App on AWS</h3>
+          <p>VPC across 2 AZs with ALB, Auto Scaling, and RDS. Deployed via Terraform and monitored with CloudWatch alarms.</p>
+          <div class="muted">Keywords: Terraform, ALB, ASG, RDS, CloudWatch</div>
+        </div>
+        <div class="card">
+          <h3>EKS + GitOps</h3>
+          <p>Production-ready EKS cluster with ArgoCD, ALB controller, external-dns, cert-manager, and autoscaling.</p>
+          <div class="muted">Keywords: EKS, ArgoCD, Helm, GitOps</div>
+        </div>
+        <div class="card">
+          <h3>Serverless Pipeline</h3>
+          <p>Event-driven ingestion (EventBridge → SQS → Lambda) with IaC and observability dashboards.</p>
+          <div class="muted">Keywords: Lambda, SQS, IaC, Observability</div>
+        </div>
+      </div>
+     </section>
+
+     <section id="posts">
+       <h2>Posts</h2>
+       <div id="posts-controls">
+         <input type="text" id="search-input" placeholder="Search posts..." style="padding: 8px; border: 1px solid var(--border); border-radius: 6px; background: var(--panel); color: var(--text); width: 100%; max-width: 300px; margin-bottom: 10px;">
+         <div id="tag-filters" style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px;"></div>
+       </div>
+       <div id="posts-list"></div>
+     </section>
+
+     <section id="roadmap">
+      <h2>Roadmap</h2>
+      <div class="timeline">
+        <div class="tl"><strong>Phase 1:</strong> Linux, VPC, Terraform, Docker, CI basics. Ship HA Web App.</div>
+        <div class="tl"><strong>Phase 2:</strong> EKS, Helm, GitOps, security scanning. Ship EKS platform.</div>
+        <div class="tl"><strong>Phase 3:</strong> SRE, DR, cost optimization. Region failover drill.</div>
+        <div class="tl"><strong>Phase 4:</strong> Architect breadth. Capstone SaaS.</div>
+      </div>
+    </section>
+
+    <section id="contact">
+      <h2>Contact</h2>
+      <p class="muted">Interested in collaborating or hiring? Reach out:</p>
+      <ul class="list">
+        <li>Email: lucasluize@gmail.com</li>
+        <li>GitHub: github.com/lucasluize-tech</li>
+        <li>LinkedIn: linkedin.com/in/lucasluize</li>
+      </ul>
+    </section>
+
+    <footer>
+      © <span id="y"></span> Cloud DevOps Portfolio · Served via CloudFront (HTTPS) + OAC + S3
+    </footer>
+  </div>
+   <script>document.getElementById('y').textContent = new Date().getFullYear();</script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const postsContainer = document.getElementById('posts-list');
+      const searchInput = document.getElementById('search-input');
+      const tagFilters = document.getElementById('tag-filters');
+      let allPosts = [];
+      let currentFilter = 'all';
+      postsContainer.innerHTML = 'Loading posts...';
+      fetch('/posts/index.json')
+        .then(res => res.json())
+        .then(posts => {
+          if (posts.length === 0) {
+            postsContainer.innerHTML = 'No posts yet.';
+            return;
+          }
+          const promises = posts.map(post =>
+            fetch(`/posts/${post.slug}.md`)
+              .then(res => res.text())
+              .then(md => {
+                const parts = md.split(/^---$/m);
+                let data = {};
+                let content = md;
+                if (parts.length >= 3) {
+                  const front = parts[1].trim();
+                  content = parts.slice(2).join('---').trim();
+                  try {
+                    data = jsyaml.load(front);
+                  } catch (e) {
+                    console.error('Error parsing front-matter:', e);
+                  }
+                }
+                return { data, content };
+              })
+          );
+          Promise.all(promises)
+            .then(postData => {
+              postData.sort((a, b) => new Date(b.data.date) - new Date(a.data.date));
+              allPosts = postData;
+              // Collect unique tags
+              const allTags = new Set();
+              allPosts.forEach(({ data }) => {
+                if (data.tags) data.tags.forEach(tag => allTags.add(tag));
+              });
+              // Create filter buttons
+              const allButton = document.createElement('button');
+              allButton.className = 'badge';
+              allButton.textContent = 'All';
+              allButton.style.cursor = 'pointer';
+              allButton.onclick = () => filterPosts('all');
+              tagFilters.appendChild(allButton);
+              Array.from(allTags).sort().forEach(tag => {
+                const button = document.createElement('button');
+                button.className = 'badge';
+                button.textContent = tag;
+                button.style.cursor = 'pointer';
+                button.onclick = () => filterPosts(tag);
+                tagFilters.appendChild(button);
+              });
+              renderPosts(allPosts);
+            })
+            .catch(err => {
+              console.error('Error loading posts:', err);
+              postsContainer.innerHTML = 'Error loading posts.';
+            });
+        })
+        .catch(err => {
+          console.error('Error loading posts index:', err);
+          postsContainer.innerHTML = 'Error loading posts index.';
+        });
+
+      function filterPosts(filter) {
+        currentFilter = filter;
+        const filtered = allPosts.filter(({ data }) => {
+          if (filter === 'all') return true;
+          return data.tags && data.tags.includes(filter);
+        });
+        renderPosts(filtered);
+      }
+
+      function renderPosts(posts) {
+        postsContainer.innerHTML = '';
+        const searchTerm = searchInput.value.toLowerCase();
+        posts.forEach(({ data, content }) => {
+          const title = data.title.toLowerCase();
+          const excerpt = data.excerpt.toLowerCase();
+          const tags = data.tags ? data.tags.join(' ').toLowerCase() : '';
+          if (searchTerm && !title.includes(searchTerm) && !excerpt.includes(searchTerm) && !tags.includes(searchTerm)) {
+            return;
+          }
+          const postDiv = document.createElement('div');
+          postDiv.className = 'card';
+          postDiv.style.cursor = 'pointer';
+          postDiv.onclick = () => window.location.href = `/post.html?slug=${data.slug}`;
+          postDiv.innerHTML = `
+            <h3>${data.title}</h3>
+            <p class="muted">${data.excerpt}</p>
+            <p class="muted">By ${data.author} on ${new Date(data.date).toLocaleDateString()}</p>
+          `;
+          postsContainer.appendChild(postDiv);
+        });
+        if (postsContainer.children.length === 0) {
+          postsContainer.innerHTML = 'No posts match your search.';
+        }
+      }
+
+      searchInput.addEventListener('input', () => renderPosts(allPosts.filter(({ data }) => {
+        if (currentFilter === 'all') return true;
+        return data.tags && data.tags.includes(currentFilter);
+      })));
+    });
+  </script>
+</body>
+</html>
