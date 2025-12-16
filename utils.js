@@ -5,6 +5,7 @@ if (typeof module !== 'undefined' && module.exports) {
   matter = require('gray-matter');
 } else {
   // Assumes gray-matter is loaded via CDN in browser
+  matter = window.grayMatter;
 }
 
 // Parses markdown with front-matter
