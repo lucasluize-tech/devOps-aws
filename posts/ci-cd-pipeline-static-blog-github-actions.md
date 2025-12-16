@@ -58,16 +58,39 @@ Created `.github/workflows/ci-cd.yml` to:
 
 Run `npm run test:e2e` to execute Playwright tests against local server.
 
+## Code Quality Enhancements
+
+To demonstrate DevOps best practices like maintainable code and comprehensive testing (key for job applications), I refactored the frontend JavaScript and added unit tests.
+
+### JavaScript Refactoring
+- **Separated Concerns**: Moved all inline JS from HTML files to dedicated modules (`index.js`, `post.js`, `utils.js`) linked via `<script src>`.
+- **SOLID Principles**: Ensured each function performs only one operation (Single Responsibility Principle), e.g., `parseMarkdown` only parses, `filterPosts` only filters.
+- **Modular Structure**: Shared utilities in `utils.js` for reusability across pages.
+
+### Unit Testing with Jest
+- Added Jest-based unit tests for all JS functions, covering parsing, filtering, searching, and calculations.
+- Tests run in Node.js with mocked dependencies, achieving 100% coverage for core logic.
+- Integrated into CI/CD to run unit tests before e2e, catching issues early.
+
+### CI/CD Pipeline Updates
+- Updated workflow to run unit tests first (`npm run test`), then e2e tests.
+- Added environment scoping for production deployments with required approvals.
+- Why? To showcase automated quality gates, environment management, and testing strategies—skills recruiters seek in DevOps roles.
+
+These changes make the codebase professional, testable, and scalable, proving hands-on experience with modern development practices.
+
 ## Challenges & Lessons
 
 - Static site testing requires local server startup in tests.
 - Playwright handles dynamic JS well, but ensure waits for async loads.
 - CORS issues resolved by serving locally.
+- Refactoring for SOLID required careful function extraction to avoid tight coupling.
+- Unit tests in Node.js needed library mocking for browser-specific code.
 
 ## Next Steps
 
-- Add unit tests for JS functions.
 - Implement preview deployments for PRs.
-- Expand to multi-environment (staging/production).
+- Add performance monitoring and accessibility tests.
+- Expand to multi-environment (staging/production) with Terraform.
 
-This pipeline ensures my blog stays functional as I add features and posts. Full code in the repo!
+This pipeline ensures my blog stays functional as I add features and posts, serving as a portfolio piece for DevOps job applications. Full code in the repo!
