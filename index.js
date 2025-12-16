@@ -92,29 +92,39 @@ function updatePaginationControls(totalPages, container) {
 
   if (totalPages <= 1) return;
 
+  // Arrows container
+  const arrowsDiv = document.createElement('div');
+  arrowsDiv.className = 'pagination-arrows';
+
   // Previous arrow
   const prevBtn = document.createElement('button');
   prevBtn.textContent = '←';
   prevBtn.disabled = currentPage === 0;
   prevBtn.onclick = () => changePage(currentPage - 1);
-  paginationDiv.appendChild(prevBtn);
-
-  // Dots
-  for (let i = 0; i < totalPages; i++) {
-    const dot = document.createElement('button');
-    dot.textContent = '●';
-    dot.className = i === currentPage ? 'active' : '';
-    dot.onclick = () => changePage(i);
-    paginationDiv.appendChild(dot);
-  }
+  arrowsDiv.appendChild(prevBtn);
 
   // Next arrow
   const nextBtn = document.createElement('button');
   nextBtn.textContent = '→';
   nextBtn.disabled = currentPage === totalPages - 1;
   nextBtn.onclick = () => changePage(currentPage + 1);
-  paginationDiv.appendChild(nextBtn);
+  arrowsDiv.appendChild(nextBtn);
 
+  paginationDiv.appendChild(arrowsDiv);
+
+  // Dots container
+  const dotsDiv = document.createElement('div');
+  dotsDiv.className = 'pagination-dots';
+
+  // Dots
+  for (let i = 0; i < totalPages; i++) {
+    const dot = document.createElement('span');
+    dot.textContent = '●';
+    dot.className = 'dot' + (i === currentPage ? ' active' : '');
+    dotsDiv.appendChild(dot);
+  }
+
+  paginationDiv.appendChild(dotsDiv);
   container.appendChild(paginationDiv);
 }
 

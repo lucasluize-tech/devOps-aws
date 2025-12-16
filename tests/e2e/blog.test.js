@@ -48,16 +48,20 @@ test.describe('Blog Tests', () => {
     await page.waitForSelector('#pagination-controls');
     const controls = page.locator('#pagination-controls');
     await expect(controls).toBeVisible();
-    const dots = page.locator('#pagination-controls button').filter({ hasText: '●' });
+    const dots = page.locator('.dot');
     await expect(dots).toHaveCount(2); // 5 posts / 4 = 2 pages
+    const activeDot = page.locator('.dot.active');
+    await expect(activeDot).toHaveCount(1);
   });
 
   test('Pagination arrows work', async ({ page }) => {
     await page.goto('http://localhost:8000');
-    const nextBtn = page.locator('#pagination-controls button').filter({ hasText: '→' });
+    const nextBtn = page.locator('.pagination-arrows button').filter({ hasText: '→' });
     await nextBtn.click();
     const cards = page.locator('#posts-list .card');
     await expect(cards).toHaveCount(1); // Page 2 has 1 post
+    const activeDot = page.locator('.dot.active').nth(1);
+    await expect(activeDot).toBeVisible(); // Second dot active
   });
 
   test('Search functionality works', async ({ page }) => {
