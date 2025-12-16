@@ -7,7 +7,9 @@ async function loadPosts() {
   const promises = posts.map(async (post) => {
     const res = await fetch(`/posts/${post.slug}.md`);
     const md = await res.text();
-    return parseMarkdown(md);
+    const parsed = parseMarkdown(md);
+    if (!parsed.data.slug) console.error('Slug undefined for post:', post.slug, 'data:', parsed.data);
+    return parsed;
   });
   const postData = await Promise.all(promises);
   return postData.sort((a, b) => new Date(b.data.date) - new Date(a.data.date));

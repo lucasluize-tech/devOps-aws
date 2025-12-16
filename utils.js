@@ -9,16 +9,19 @@ if (typeof module !== 'undefined' && module.exports) {
 
 // Parses markdown with front-matter
 function parseMarkdown(md) {
-  const parts = md.split(/^---$/m);
+  const lines = md.split('\n');
   let data = {};
   let content = md;
-  if (parts.length >= 3) {
-    const front = parts[1].trim();
-    content = parts.slice(2).join('---').trim();
-    try {
-      data = jsyaml.load(front);
-    } catch (e) {
-      console.error('Error parsing front-matter:', e);
+  if (lines[0] === '---') {
+    const endIndex = lines.indexOf('---', 1);
+    if (endIndex > 0) {
+      const front = lines.slice(1, endIndex).join('\n');
+      content = lines.slice(endIndex + 1).join('\n').trim();
+      try {
+        data = jsyaml.load(front);
+      } catch (e) {
+        console.error('Error parsing front-matter:', e);
+      }
     }
   }
   return { data, content };
