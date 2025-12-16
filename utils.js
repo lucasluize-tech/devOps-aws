@@ -24,7 +24,15 @@ function parseMarkdown(md) {
             const [key, ...valueParts] = line.split(':');
             if (key && valueParts.length) {
               let value = valueParts.join(':').trim();
-              if (value.startsWith('"') && value.endsWith('"')) value = value.slice(1, -1);
+              if (value.startsWith('"') && value.endsWith('"')) {
+                value = value.slice(1, -1);
+              } else if (value.startsWith('[') && value.endsWith(']')) {
+                try {
+                  value = JSON.parse(value);
+                } catch (e) {
+                  // Keep as string if not valid JSON
+                }
+              }
               data[key.trim()] = value;
             }
           });
