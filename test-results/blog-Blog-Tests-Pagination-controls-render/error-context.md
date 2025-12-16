@@ -1,0 +1,110 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e2]:
+  - banner [ref=e3]:
+    - generic [ref=e4]:
+      - generic [ref=e5]: D9
+      - generic [ref=e6]:
+        - generic [ref=e7]: Cloud DevOps – Portfolio
+        - generic [ref=e8]: Infra • Automation • Reliability
+    - navigation [ref=e9]:
+      - link "About" [ref=e10] [cursor=pointer]:
+        - /url: "#about"
+      - link "Skills" [ref=e11] [cursor=pointer]:
+        - /url: "#skills"
+      - link "Projects" [ref=e12] [cursor=pointer]:
+        - /url: "#projects"
+      - link "Posts" [ref=e13] [cursor=pointer]:
+        - /url: "#posts"
+      - link "Roadmap" [ref=e14] [cursor=pointer]:
+        - /url: "#roadmap"
+      - link "Contact" [ref=e15] [cursor=pointer]:
+        - /url: "#contact"
+  - generic [ref=e16]:
+    - generic [ref=e17]:
+      - heading "Building reliable, automated cloud platforms" [level=1] [ref=e18]
+      - paragraph [ref=e19]: Cloud DevOps Engineer focused on AWS, Terraform, Kubernetes, and CI/CD. I design, automate, and observe cloud infrastructure so teams ship faster with confidence.
+      - generic [ref=e20]:
+        - generic [ref=e21]: AWS
+        - generic [ref=e22]: Terraform
+        - generic [ref=e23]: Docker
+        - generic [ref=e24]: Kubernetes
+        - generic [ref=e25]: GitHub Actions
+        - generic [ref=e26]: Observability
+      - generic [ref=e27]:
+        - link "View Projects" [ref=e28] [cursor=pointer]:
+          - /url: "#projects"
+        - link "Get in Touch" [ref=e29] [cursor=pointer]:
+          - /url: "#contact"
+    - complementary "Live Status" [ref=e30]:
+      - generic [ref=e31]: Live Status
+      - generic [ref=e33]: "# Served via: CloudFront (HTTPS) → OAC → S3 (private) # Next: Security headers, friendly 404, CI/CD"
+      - generic [ref=e34]: "Tip: add a Response Headers Policy in CloudFront for HSTS, CSP, etc."
+  - generic [ref=e35]:
+    - heading "About" [level=2] [ref=e36]
+    - paragraph [ref=e37]: "I build modern DevOps stacks: infrastructure-as-code, container orchestration, secure delivery pipelines, and production-grade observability. This site tracks projects and lessons learned."
+  - generic [ref=e38]:
+    - heading "Core Skills" [level=2] [ref=e39]
+    - generic [ref=e40]:
+      - generic [ref=e41]:
+        - heading "Cloud & Networking" [level=3] [ref=e42]
+        - list [ref=e43]:
+          - listitem [ref=e44]: "AWS: IAM, VPC, EC2, ALB/NLB, S3, RDS, EKS"
+          - listitem [ref=e45]: DNS, TLS, NAT, CIDR, routing
+          - listitem [ref=e46]: Multi-account guardrails
+      - generic [ref=e47]:
+        - heading "IaC & Automation" [level=3] [ref=e48]
+        - list [ref=e49]:
+          - listitem [ref=e50]: Terraform modules, remote state
+          - listitem [ref=e51]: GitHub Actions CI/CD
+          - listitem [ref=e52]: Policy-as-code (Checkov/OPA)
+      - generic [ref=e53]:
+        - heading "Containers & Reliability" [level=3] [ref=e54]
+        - list [ref=e55]:
+          - listitem [ref=e56]: Docker, ECR, EKS
+          - listitem [ref=e57]: Blue/green & canary deploys
+          - listitem [ref=e58]: Prometheus/Grafana, CloudWatch
+  - generic [ref=e59]:
+    - heading "Featured Projects" [level=2] [ref=e60]
+    - generic [ref=e61]:
+      - generic [ref=e62]:
+        - heading "HA Web App on AWS" [level=3] [ref=e63]
+        - paragraph [ref=e64]: VPC across 2 AZs with ALB, Auto Scaling, and RDS. Deployed via Terraform and monitored with CloudWatch alarms.
+        - generic [ref=e65]: "Keywords: Terraform, ALB, ASG, RDS, CloudWatch"
+      - generic [ref=e66]:
+        - heading "EKS + GitOps" [level=3] [ref=e67]
+        - paragraph [ref=e68]: Production-ready EKS cluster with ArgoCD, ALB controller, external-dns, cert-manager, and autoscaling.
+        - generic [ref=e69]: "Keywords: EKS, ArgoCD, Helm, GitOps"
+      - generic [ref=e70]:
+        - heading "Serverless Pipeline" [level=3] [ref=e71]
+        - paragraph [ref=e72]: Event-driven ingestion (EventBridge → SQS → Lambda) with IaC and observability dashboards.
+        - generic [ref=e73]: "Keywords: Lambda, SQS, IaC, Observability"
+  - generic [ref=e74]:
+    - heading "Posts" [level=2] [ref=e75]
+    - textbox "Search posts..." [ref=e77]
+    - generic [ref=e78]: Loading posts...
+  - generic [ref=e79]:
+    - heading "Roadmap" [level=2] [ref=e80]
+    - generic [ref=e81]:
+      - generic [ref=e82]:
+        - strong [ref=e83]: "Phase 1:"
+        - text: Linux, VPC, Terraform, Docker, CI basics. Ship HA Web App.
+      - generic [ref=e84]:
+        - strong [ref=e85]: "Phase 2:"
+        - text: EKS, Helm, GitOps, security scanning. Ship EKS platform.
+      - generic [ref=e86]:
+        - strong [ref=e87]: "Phase 3:"
+        - text: SRE, DR, cost optimization. Region failover drill.
+      - generic [ref=e88]:
+        - strong [ref=e89]: "Phase 4:"
+        - text: Architect breadth. Capstone SaaS.
+  - generic [ref=e90]:
+    - heading "Contact" [level=2] [ref=e91]
+    - paragraph [ref=e92]: "Interested in collaborating or hiring? Reach out:"
+    - list [ref=e93]:
+      - listitem [ref=e94]: "Email: lucasluize@gmail.com"
+      - listitem [ref=e95]: "GitHub: github.com/lucasluize-tech"
+      - listitem [ref=e96]: "LinkedIn: linkedin.com/in/lucasluize"
+  - contentinfo [ref=e97]: © 2025 Cloud DevOps Portfolio · Served via CloudFront (HTTPS) + OAC + S3
+```

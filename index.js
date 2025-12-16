@@ -84,17 +84,6 @@ function renderPosts(posts, container) {
 let currentPage = 0;
 const postsPerPage = 4;
 
-// Calculates total pages
-function getTotalPages(posts) {
-  return Math.ceil(posts.length / postsPerPage);
-}
-
-// Gets posts for current page
-function getPostsForPage(posts, page) {
-  const start = page * postsPerPage;
-  return posts.slice(start, start + postsPerPage);
-}
-
 // Updates pagination controls
 function updatePaginationControls(totalPages, container) {
   const paginationDiv = document.getElementById('pagination-controls') || document.createElement('div');

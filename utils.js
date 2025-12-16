@@ -78,13 +78,26 @@ function searchPosts(posts, searchTerm) {
   });
 }
 
+// Calculates total pages
+function getTotalPages(posts, postsPerPage = 4) {
+  return Math.ceil(posts.length / postsPerPage);
+}
+
+// Gets posts for current page
+function getPostsForPage(posts, page, postsPerPage = 4) {
+  const start = page * postsPerPage;
+  return posts.slice(start, start + postsPerPage);
+}
+
 // If in Node.js, export; else, attach to window
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { parseMarkdown, calculateReadingTime, collectTags, filterPosts, searchPosts };
+  module.exports = { parseMarkdown, calculateReadingTime, collectTags, filterPosts, searchPosts, getTotalPages, getPostsForPage };
 } else {
   window.parseMarkdown = parseMarkdown;
   window.calculateReadingTime = calculateReadingTime;
   window.collectTags = collectTags;
   window.filterPosts = filterPosts;
   window.searchPosts = searchPosts;
+  window.getTotalPages = getTotalPages;
+  window.getPostsForPage = getPostsForPage;
 }
