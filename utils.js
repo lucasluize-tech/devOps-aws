@@ -1,12 +1,6 @@
 // utils.js - Shared utility functions
 
-let matter;
-if (typeof module !== 'undefined' && module.exports) {
-  matter = require('gray-matter');
-} else {
-  // Assumes gray-matter is loaded via CDN in browser
-  matter = window.grayMatter;
-}
+const matter = require('gray-matter');
 
 // Parses markdown with front-matter
 function parseMarkdown(md) {
