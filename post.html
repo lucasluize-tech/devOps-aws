@@ -86,58 +86,7 @@
   </div>
   <script>
     document.getElementById('y').textContent = new Date().getFullYear();
-    document.addEventListener('DOMContentLoaded', () => {
-      const urlParams = new URLSearchParams(window.location.search);
-      const slug = urlParams.get('slug');
-      if (!slug) {
-        document.querySelector('.post-title').textContent = 'Post not found';
-        document.querySelector('.post-meta').textContent = 'Invalid slug';
-        return;
-      }
-      fetch(`/posts/${slug}.md`)
-        .then(res => res.text())
-        .then(md => {
-          const parts = md.split(/^---$/m);
-          let data = {};
-          let content = md;
-          if (parts.length >= 3) {
-            const front = parts[1].trim();
-            content = parts.slice(2).join('---').trim();
-            try {
-              data = jsyaml.load(front);
-            } catch (e) {
-              console.error('Error parsing front-matter:', e);
-            }
-          }
-          document.title = data.title + ' – Lucas Luize';
-          document.querySelector('.post-title').textContent = data.title;
-          document.querySelector('.post-meta').textContent = `By ${data.author} on ${new Date(data.date).toLocaleDateString()}`;
-          const badges = document.querySelector('.badges');
-          if (data.tags && data.tags.length) {
-            data.tags.forEach(tag => {
-              const span = document.createElement('span');
-              span.className = 'badge';
-              span.textContent = tag;
-              badges.appendChild(span);
-            });
-          }
-          const wordCount = content.split(/\s+/).length;
-          const readingTime = Math.ceil(wordCount / 200);
-          document.querySelector('.reading-time').textContent = `${readingTime} min read`;
-          const html = marked.parse(content);
-          document.querySelector('.post-content').innerHTML = html;
-          // Share buttons
-          const title = encodeURIComponent(data.title);
-          const url = encodeURIComponent(window.location.href);
-          document.getElementById('share-twitter').href = `https://twitter.com/intent/tweet?text=${title}&url=${url}`;
-          document.getElementById('share-linkedin').href = `https://www.linkedin.com/sharing/share-offsite/?url=${url}`;
-        })
-        .catch(err => {
-          console.error('Error loading post:', err);
-          document.querySelector('.post-title').textContent = 'Error loading post';
-          document.querySelector('.post-meta').textContent = 'Please try again later';
-        });
-    });
   </script>
+  <script src="post.js"></script>
 </body>
 </html>
