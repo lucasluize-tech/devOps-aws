@@ -1,17 +1,17 @@
 // utils.js - Shared utility functions
 
-let fm;
+let matter;
 if (typeof module !== 'undefined' && module.exports) {
-  fm = require('front-matter');
+  matter = require('gray-matter');
 } else {
-  // Assumes front-matter is loaded via CDN in browser
+  // Assumes gray-matter is loaded via CDN in browser
 }
 
 // Parses markdown with front-matter
 function parseMarkdown(md) {
   try {
-    const result = fm(md);
-    return { data: result.attributes, content: result.body };
+    const result = matter(md);
+    return { data: result.data, content: result.content };
   } catch (e) {
     console.error('Error parsing front-matter:', e);
     return { data: {}, content: md };

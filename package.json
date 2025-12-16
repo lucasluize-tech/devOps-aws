@@ -20,6 +20,6 @@
   },
   "dependencies": {
     "@playwright/test": "^1.57.0",
-    "front-matter": "^4.0.2"
+    "gray-matter": "^4.0.3"
   }
 }
