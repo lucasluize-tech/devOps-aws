@@ -1,4 +1,4 @@
-const { parseMarkdown, collectTags, filterPosts, searchPosts } = require('../utils.js');
+const { parseMarkdown, collectTags, filterPosts, searchPosts } = require('../utils');
 
 // Unit tests for index.js functions
 
