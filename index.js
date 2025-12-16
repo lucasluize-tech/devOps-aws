@@ -80,6 +80,67 @@ function renderPosts(posts, container) {
   }
 }
 
+// Manages pagination state
+let currentPage = 0;
+const postsPerPage = 4;
+
+// Calculates total pages
+function getTotalPages(posts) {
+  return Math.ceil(posts.length / postsPerPage);
+}
+
+// Gets posts for current page
+function getPostsForPage(posts, page) {
+  const start = page * postsPerPage;
+  return posts.slice(start, start + postsPerPage);
+}
+
+// Updates pagination controls
+function updatePaginationControls(totalPages, container) {
+  const paginationDiv = document.getElementById('pagination-controls') || document.createElement('div');
+  paginationDiv.id = 'pagination-controls';
+  paginationDiv.innerHTML = '';
+
+  if (totalPages <= 1) return;
+
+  // Previous arrow
+  const prevBtn = document.createElement('button');
+  prevBtn.textContent = '←';
+  prevBtn.disabled = currentPage === 0;
+  prevBtn.onclick = () => changePage(currentPage - 1);
+  paginationDiv.appendChild(prevBtn);
+
+  // Dots
+  for (let i = 0; i < totalPages; i++) {
+    const dot = document.createElement('button');
+    dot.textContent = '●';
+    dot.className = i === currentPage ? 'active' : '';
+    dot.onclick = () => changePage(i);
+    paginationDiv.appendChild(dot);
+  }
+
+  // Next arrow
+  const nextBtn = document.createElement('button');
+  nextBtn.textContent = '→';
+  nextBtn.disabled = currentPage === totalPages - 1;
+  nextBtn.onclick = () => changePage(currentPage + 1);
+  paginationDiv.appendChild(nextBtn);
+
+  container.appendChild(paginationDiv);
+}
+
+// Changes page
+function changePage(page) {
+  const postsContainer = document.getElementById('posts-list');
+  const allPosts = window.allPosts || [];
+  currentPage = page;
+
+  const filtered = filterPosts(allPosts, window.currentFilter || 'all');
+  const searched = searchPosts(filtered, document.getElementById('search-input').value);
+  renderPosts(getPostsForPage(searched, currentPage), postsContainer);
+  updatePaginationControls(getTotalPages(searched), postsContainer.parentElement);
+}
+
 // Initializes the index page
 async function initIndex() {
   const postsContainer = document.getElementById('posts-list');
@@ -87,11 +148,14 @@ async function initIndex() {
   const tagFilters = document.getElementById('tag-filters');
   let allPosts = [];
   let currentFilter = 'all';
+  window.allPosts = allPosts;
+  window.currentFilter = currentFilter;
 
   postsContainer.innerHTML = 'Loading posts...';
 
   try {
     allPosts = await loadPosts();
+    window.allPosts = allPosts;
     if (allPosts.length === 0) {
       postsContainer.innerHTML = 'No posts yet.';
       return;
@@ -100,12 +164,16 @@ async function initIndex() {
     const tags = collectTags(allPosts);
     createFilterButtons(tags, tagFilters, (filter) => {
       currentFilter = filter;
+      window.currentFilter = filter;
       const filtered = filterPosts(allPosts, filter);
       const searched = searchPosts(filtered, searchInput.value);
-      renderPosts(searched, postsContainer);
+      currentPage = 0;
+      renderPosts(getPostsForPage(searched, currentPage), postsContainer);
+      updatePaginationControls(getTotalPages(searched), postsContainer.parentElement);
     });
 
-    renderPosts(allPosts, postsContainer);
+    renderPosts(getPostsForPage(allPosts, currentPage), postsContainer);
+    updatePaginationControls(getTotalPages(allPosts), postsContainer.parentElement);
   } catch (err) {
     console.error('Error loading posts:', err);
     postsContainer.innerHTML = 'Error loading posts.';
@@ -114,7 +182,9 @@ async function initIndex() {
   searchInput.addEventListener('input', () => {
     const filtered = filterPosts(allPosts, currentFilter);
     const searched = searchPosts(filtered, searchInput.value);
-    renderPosts(searched, postsContainer);
+    currentPage = 0;
+    renderPosts(getPostsForPage(searched, currentPage), postsContainer);
+    updatePaginationControls(getTotalPages(searched), postsContainer.parentElement);
   });
 }
 
