@@ -1,32 +1,21 @@
 // utils.js - Shared utility functions
 
-let jsyaml;
+let fm;
 if (typeof module !== 'undefined' && module.exports) {
-  jsyaml = require('js-yaml');
+  fm = require('front-matter');
 } else {
-  // Assumes jsyaml is loaded via CDN in browser
+  // Assumes front-matter is loaded via CDN in browser
 }
 
 // Parses markdown with front-matter
 function parseMarkdown(md) {
-  // Normalize line endings
-  const normalizedMd = md.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
-  const lines = normalizedMd.split('\n');
-  let data = {};
-  let content = normalizedMd;
-  if (lines[0] === '---') {
-    const endIndex = lines.indexOf('---', 1);
-    if (endIndex > 0) {
-      const front = lines.slice(1, endIndex).join('\n');
-      content = lines.slice(endIndex + 1).join('\n').trim();
-      try {
-        data = jsyaml.load(front);
-      } catch (e) {
-        console.error('Error parsing front-matter:', e);
-      }
-    }
+  try {
+    const result = fm(md);
+    return { data: result.attributes, content: result.body };
+  } catch (e) {
+    console.error('Error parsing front-matter:', e);
+    return { data: {}, content: md };
   }
-  return { data, content };
 }
 
 // Calculates reading time
