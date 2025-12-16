@@ -66,7 +66,7 @@ test.describe('Blog Tests', () => {
     const firstCard = page.locator('#posts-list .card').first();
     await firstCard.click();
     await page.waitForURL(/post\.html\?slug=.+/);
-    await expect(page.locator('h1')).toBeVisible();
+    await expect(page.locator('h1.post-title')).toBeVisible();
   });
 
   test('Post page renders correctly', async ({ page }) => {

@@ -11,18 +11,79 @@
         - generic [ref=e8]: Back to Portfolio
   - article [ref=e9]:
     - generic [ref=e10]:
-      - heading [level=1]
-      - paragraph [ref=e11]: By undefined on Invalid Date
-      - generic [ref=e12]: 1 min read
+      - 'heading "Debugging Jest and Playwright Tests: Lessons from CI/CD Pipeline Setup" [level=1] [ref=e11]'
+      - paragraph [ref=e12]: By Lucas Luize on 12/15/2025
       - generic [ref=e13]:
-        - link "Tweet" [ref=e14] [cursor=pointer]:
-          - /url: https://twitter.com/intent/tweet?text=undefined&url=http%3A%2F%2Flocalhost%3A8000%2Fpost.html%3Fslug%3Dundefined
-        - link "Share on LinkedIn" [ref=e15] [cursor=pointer]:
-          - /url: https://www.linkedin.com/sharing/share-offsite/?url=http%3A%2F%2Flocalhost%3A8000%2Fpost.html%3Fslug%3Dundefined
-    - generic [ref=e16]:
-      - heading "Error response" [level=1] [ref=e17]
-      - paragraph [ref=e18]: "Error code: 404"
-      - paragraph [ref=e19]: "Message: File not found."
-      - paragraph [ref=e20]: "Error code explanation: 404 - Nothing matches the given URI."
-  - contentinfo [ref=e21]: © 2025 Cloud DevOps Portfolio
+        - generic [ref=e14]: Testing
+        - generic [ref=e15]: Jest
+        - generic [ref=e16]: Playwright
+        - generic [ref=e17]: CI/CD
+        - generic [ref=e18]: Debugging
+        - generic [ref=e19]: DevOps
+      - generic [ref=e20]: 2 min read
+      - generic [ref=e21]:
+        - link "Tweet" [ref=e22] [cursor=pointer]:
+          - /url: https://twitter.com/intent/tweet?text=Debugging%20Jest%20and%20Playwright%20Tests%3A%20Lessons%20from%20CI%2FCD%20Pipeline%20Setup&url=http%3A%2F%2Flocalhost%3A8000%2Fpost.html%3Fslug%3Ddebugging-jest-playwright-tests-ci-cd
+        - link "Share on LinkedIn" [ref=e23] [cursor=pointer]:
+          - /url: https://www.linkedin.com/sharing/share-offsite/?url=http%3A%2F%2Flocalhost%3A8000%2Fpost.html%3Fslug%3Ddebugging-jest-playwright-tests-ci-cd
+    - generic [ref=e24]:
+      - 'heading "Debugging Jest and Playwright Tests: Lessons from CI/CD Pipeline Setup" [level=1] [ref=e25]'
+      - paragraph [ref=e26]: Setting up automated testing for my DevOps portfolio blog revealed common pitfalls in e2e and unit test frameworks. This post details the debugging process, fixes, and why robust testing matters for professional software delivery.
+      - heading "The Challenge" [level=2] [ref=e27]
+      - paragraph [ref=e28]: "After implementing Jest for unit tests and Playwright for e2e tests, local runs showed issues:"
+      - list [ref=e29]:
+        - listitem [ref=e30]: Playwright tests failed with "Address already in use" on port 8000.
+        - listitem [ref=e31]: Server processes persisted between test runs.
+        - listitem [ref=e32]: Test isolation problems caused flaky results.
+        - listitem [ref=e33]: YAML front-matter parsing failed silently in some environments.
+      - paragraph [ref=e34]: These issues would break CI/CD reliability, so debugging was essential.
+      - heading "Debugging Process" [level=2] [ref=e35]
+      - heading "1. Identifying Root Causes" [level=3] [ref=e36]
+      - list [ref=e37]:
+        - listitem [ref=e38]:
+          - strong [ref=e39]: Server Lifecycle Issues
+          - text: ": Python HTTP server wasn't killed properly after tests, occupying port 8000."
+        - listitem [ref=e40]:
+          - strong [ref=e41]: Test Parallelization
+          - text: ": Playwright ran tests in parallel by default, leading to server conflicts."
+        - listitem [ref=e42]:
+          - strong [ref=e43]: Module Resolution
+          - text: ": Jest couldn't find shared utilities, requiring explicit imports."
+        - listitem [ref=e44]:
+          - strong [ref=e45]: Browser Timing
+          - text: ": E2e tests didn't wait for async JS loads, causing false negatives."
+      - heading "2. Implementing Fixes" [level=3] [ref=e46]
+      - heading "Server Management" [level=4] [ref=e47]
+      - paragraph [ref=e48]: "Added pre-start cleanup and forceful termination:"
+      - code [ref=e50]: // Kill existing servers execSync('pkill -f "python3 -m http.server 8000" || true'); // Force kill on exit process.on('exit', () => server?.kill('SIGKILL')); test.afterAll(() => server?.kill('SIGKILL'));
+      - heading "Test Isolation" [level=4] [ref=e51]
+      - paragraph [ref=e52]: "Configured Playwright for serial execution:"
+      - code [ref=e54]: "test.describe.serial('Blog Tests', () => { /* tests */ });"
+      - heading "Module Sharing" [level=4] [ref=e55]
+      - paragraph [ref=e56]:
+        - text: Created
+        - code [ref=e57]: utils.js
+        - text: "for common functions, with Node/browser compatibility:"
+      - code [ref=e59]: "if (typeof module !== 'undefined' && module.exports) { module.exports = { parseMarkdown, ... }; } else { window.parseMarkdown = parseMarkdown; }"
+      - heading "Async Handling" [level=4] [ref=e60]
+      - paragraph [ref=e61]: "Increased server startup wait and added event listeners:"
+      - code [ref=e63]: server.on('close', (code) => console.log('Server exited:', code)); await new Promise(resolve => setTimeout(resolve, 5000));
+      - heading "Results and Lessons" [level=2] [ref=e64]
+      - list [ref=e65]:
+        - listitem [ref=e66]:
+          - strong [ref=e67]: Local Tests
+          - text: ": All pass reliably, no port conflicts."
+        - listitem [ref=e68]:
+          - strong [ref=e69]: CI/CD Reliability
+          - text: ": Tests now run sequentially in GitHub Actions, preventing race conditions."
+        - listitem [ref=e70]:
+          - strong [ref=e71]: Maintainability
+          - text: ": Shared utilities reduce code duplication."
+        - listitem [ref=e72]:
+          - strong [ref=e73]: Debugging Tips
+          - text: ": Use console logs, event listeners, and serial execution for complex async setups."
+      - heading "Why This Matters" [level=2] [ref=e74]
+      - paragraph [ref=e75]: In DevOps, testing ensures deployments don't break user experiences. These fixes prevent false positives in CI/CD, saving time and building confidence in automation. As my blog grows, this foundation supports scaling to more complex features.
+      - paragraph [ref=e76]: Full code in the repo—happy testing!
+  - contentinfo [ref=e77]: © 2025 Cloud DevOps Portfolio
 ```

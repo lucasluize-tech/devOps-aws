@@ -11,99 +11,101 @@
         - generic [ref=e8]: Back to Portfolio
   - article [ref=e9]:
     - generic [ref=e10]:
-      - heading [level=1]
-      - paragraph [ref=e11]: By undefined on Invalid Date
-      - generic [ref=e12]: 4 min read
+      - 'heading "From Static S3 to CDN with HTTPS: My First DevOps Project on AWS" [level=1] [ref=e11]'
+      - paragraph [ref=e12]: By Lucas Luize on 10/27/2025
       - generic [ref=e13]:
-        - link "Tweet" [ref=e14] [cursor=pointer]:
-          - /url: https://twitter.com/intent/tweet?text=undefined&url=http%3A%2F%2Flocalhost%3A8000%2Fpost.html%3Fslug%3Ds3-cloudfront-oac-acm-static-site
-        - link "Share on LinkedIn" [ref=e15] [cursor=pointer]:
+        - generic [ref=e14]: AWS
+        - generic [ref=e15]: DevOps
+        - generic [ref=e16]: CloudFront
+        - generic [ref=e17]: S3
+        - generic [ref=e18]: ACM
+        - generic [ref=e19]: OAC
+        - generic [ref=e20]: Infrastructure
+      - generic [ref=e21]: 3 min read
+      - generic [ref=e22]:
+        - link "Tweet" [ref=e23] [cursor=pointer]:
+          - /url: https://twitter.com/intent/tweet?text=From%20Static%20S3%20to%20CDN%20with%20HTTPS%3A%20My%20First%20DevOps%20Project%20on%20AWS&url=http%3A%2F%2Flocalhost%3A8000%2Fpost.html%3Fslug%3Ds3-cloudfront-oac-acm-static-site
+        - link "Share on LinkedIn" [ref=e24] [cursor=pointer]:
           - /url: https://www.linkedin.com/sharing/share-offsite/?url=http%3A%2F%2Flocalhost%3A8000%2Fpost.html%3Fslug%3Ds3-cloudfront-oac-acm-static-site
-    - generic [ref=e16]:
-      - separator [ref=e17]
-      - 'heading "title: \"From Static S3 to CDN with HTTPS: My First DevOps Project on AWS\" author: \"Lucas Luize\" excerpt: \"How I built a secure static site on S3 behind CloudFront using OAC and ACM—plus lessons learned, costs, and next steps.\" date: \"2025-10-28\" slug: \"s3-cloudfront-oac-acm-static-site\" banner: \"https://images.unsplash.com/photo-1529107386315-e1a2ed48a620?q=80&w=1470&auto=format&fit=crop\" tags: [\"AWS\", \"DevOps\", \"CloudFront\", \"S3\", \"ACM\", \"OAC\", \"Infrastructure\"]" [level=2] [ref=e18]':
-        - text: "title: \"From Static S3 to CDN with HTTPS: My First DevOps Project on AWS\" author: \"Lucas Luize\" excerpt: \"How I built a secure static site on S3 behind CloudFront using OAC and ACM—plus lessons learned, costs, and next steps.\" date: \"2025-10-28\" slug: \"s3-cloudfront-oac-acm-static-site\" banner: \""
-        - link "https://images.unsplash.com/photo-1529107386315-e1a2ed48a620?q=80&w=1470&auto=format&fit=crop" [ref=e19] [cursor=pointer]:
-          - /url: https://images.unsplash.com/photo-1529107386315-e1a2ed48a620?q=80&w=1470&auto=format&fit=crop
-        - text: "\" tags: [\"AWS\", \"DevOps\", \"CloudFront\", \"S3\", \"ACM\", \"OAC\", \"Infrastructure\"]"
-      - 'heading "From Static S3 to CDN with HTTPS: My First DevOps Project on AWS" [level=1] [ref=e20]'
-      - paragraph [ref=e21]: "I just finished a foundational DevOps project: hosting a static landing page on S3 and securing it behind CloudFront with HTTPS using ACM, while keeping the S3 bucket private via an Origin Access Control (OAC). This post captures the why, the how, the gotchas, and what I’ll do next."
-      - heading "TL;DR" [level=2] [ref=e22]
-      - list [ref=e23]:
-        - listitem [ref=e24]: S3 hosts static content (HTML/CSS/JS), not servers or databases.
-        - listitem [ref=e25]: CloudFront provides HTTPS, caching, global performance, and security headers.
-        - listitem [ref=e26]: OAC locks S3 so only CloudFront can read it—no public S3 access.
-        - listitem [ref=e27]: ACM (in us-east-1) issues the TLS certificate for my custom domain.
-        - listitem [ref=e28]: DNS (Squarespace → later Route 53) points my subdomain to CloudFront.
-      - heading "Architecture Overview" [level=2] [ref=e29]
-      - list [ref=e30]:
-        - listitem [ref=e31]: User → CloudFront (HTTPS) → S3 (private via OAC)
-        - listitem [ref=e32]: DNS (CNAME) → CloudFront distribution domain
-        - listitem [ref=e33]: ACM certificate (us-east-1) attached to CloudFront for TLS
-        - listitem [ref=e34]: "Optional: Custom 404 page, security headers, and cache policies"
-      - paragraph [ref=e35]: "Why this design:"
+    - generic [ref=e25]:
+      - 'heading "From Static S3 to CDN with HTTPS: My First DevOps Project on AWS" [level=1] [ref=e26]'
+      - paragraph [ref=e27]: "I just finished a foundational DevOps project: hosting a static landing page on S3 and securing it behind CloudFront with HTTPS using ACM, while keeping the S3 bucket private via an Origin Access Control (OAC). This post captures the why, the how, the gotchas, and what I’ll do next."
+      - heading "TL;DR" [level=2] [ref=e28]
+      - list [ref=e29]:
+        - listitem [ref=e30]: S3 hosts static content (HTML/CSS/JS), not servers or databases.
+        - listitem [ref=e31]: CloudFront provides HTTPS, caching, global performance, and security headers.
+        - listitem [ref=e32]: OAC locks S3 so only CloudFront can read it—no public S3 access.
+        - listitem [ref=e33]: ACM (in us-east-1) issues the TLS certificate for my custom domain.
+        - listitem [ref=e34]: DNS (Squarespace → later Route 53) points my subdomain to CloudFront.
+      - heading "Architecture Overview" [level=2] [ref=e35]
       - list [ref=e36]:
-        - listitem [ref=e37]: "Security-by-default: Block public access to S3; CloudFront reads with signed requests."
-        - listitem [ref=e38]: "Performance: Edge caching + compression reduces latency and egress."
-        - listitem [ref=e39]: "Simplicity: Perfect for a landing page/SPA with minimal ops overhead."
-      - heading "Step-by-Step Build" [level=2] [ref=e40]
-      - list [ref=e41]:
-        - listitem [ref=e42]: Create/prepare S3 bucket (private)
-      - list [ref=e43]:
-        - listitem [ref=e44]: Enabled Bucket Owner Enforced (disables ACLs)
-        - listitem [ref=e45]: Kept “Block public access” ON
-        - listitem [ref=e46]: No public bucket policy
+        - listitem [ref=e37]: User → CloudFront (HTTPS) → S3 (private via OAC)
+        - listitem [ref=e38]: DNS (CNAME) → CloudFront distribution domain
+        - listitem [ref=e39]: ACM certificate (us-east-1) attached to CloudFront for TLS
+        - listitem [ref=e40]: "Optional: Custom 404 page, security headers, and cache policies"
+      - paragraph [ref=e41]: "Why this design:"
+      - list [ref=e42]:
+        - listitem [ref=e43]: "Security-by-default: Block public access to S3; CloudFront reads with signed requests."
+        - listitem [ref=e44]: "Performance: Edge caching + compression reduces latency and egress."
+        - listitem [ref=e45]: "Simplicity: Perfect for a landing page/SPA with minimal ops overhead."
+      - heading "Step-by-Step Build" [level=2] [ref=e46]
       - list [ref=e47]:
-        - listitem [ref=e48]: Build landing page
+        - listitem [ref=e48]: Create/prepare S3 bucket (private)
       - list [ref=e49]:
-        - listitem [ref=e50]: Single-page responsive HTML with minimal CSS
-        - listitem [ref=e51]: "Later: version assets (e.g., app.abc123.css) for cache-busting"
-      - list [ref=e52]:
-        - listitem [ref=e53]: CloudFront distribution
-      - list [ref=e54]:
-        - listitem [ref=e55]: "Origin: S3 REST endpoint (not website endpoint) + OAC (SigV4)"
-        - listitem [ref=e56]: "Default root object: index.html"
-        - listitem [ref=e57]: "Viewer protocol: redirect HTTP → HTTPS"
-        - listitem [ref=e58]: "Cache policy: CachingOptimized"
-        - listitem [ref=e59]: "Optional: Response headers policy (HSTS, CSP, etc.)"
+        - listitem [ref=e50]: Enabled Bucket Owner Enforced (disables ACLs)
+        - listitem [ref=e51]: Kept “Block public access” ON
+        - listitem [ref=e52]: No public bucket policy
+      - list [ref=e53]:
+        - listitem [ref=e54]: Build landing page
+      - list [ref=e55]:
+        - listitem [ref=e56]: Single-page responsive HTML with minimal CSS
+        - listitem [ref=e57]: "Later: version assets (e.g., app.abc123.css) for cache-busting"
+      - list [ref=e58]:
+        - listitem [ref=e59]: CloudFront distribution
       - list [ref=e60]:
-        - listitem [ref=e61]: TLS with ACM (us-east-1)
-      - list [ref=e62]:
-        - listitem [ref=e63]: Requested certificate for devops.lucasluize.com
-        - listitem [ref=e64]: Validated via CNAME
-        - listitem [ref=e65]: Attached to CloudFront
+        - listitem [ref=e61]: "Origin: S3 REST endpoint (not website endpoint) + OAC (SigV4)"
+        - listitem [ref=e62]: "Default root object: index.html"
+        - listitem [ref=e63]: "Viewer protocol: redirect HTTP → HTTPS"
+        - listitem [ref=e64]: "Cache policy: CachingOptimized"
+        - listitem [ref=e65]: "Optional: Response headers policy (HSTS, CSP, etc.)"
       - list [ref=e66]:
-        - listitem [ref=e67]: DNS
+        - listitem [ref=e67]: TLS with ACM (us-east-1)
       - list [ref=e68]:
-        - listitem [ref=e69]: CNAME devops.lucasluize.com → dXXXX.cloudfront.net (Squarespace DNS)
-        - listitem [ref=e70]: After propagation, HTTPS works end-to-end
-      - heading "Common Pitfalls I Hit (and Fixed)" [level=2] [ref=e71]
+        - listitem [ref=e69]: Requested certificate for devops.lucasluize.com
+        - listitem [ref=e70]: Validated via CNAME
+        - listitem [ref=e71]: Attached to CloudFront
       - list [ref=e72]:
-        - listitem [ref=e73]: "403 on S3 Website: Needed a proper bucket policy for that mode. But with OAC, I switched to the S3 REST origin and locked the bucket down."
-        - listitem [ref=e74]: "ACM validation “Host value can’t end with a .”: Removed trailing dot in CNAME value when using external DNS UI."
-        - listitem [ref=e75]: "Wrong origin type with OAC: OAC only works with S3 REST endpoint, not website endpoint."
-      - heading "Costs and Free-Tier Notes" [level=2] [ref=e76]
-      - list [ref=e77]:
-        - listitem [ref=e78]: "S3: Pennies for a few GB and requests."
-        - listitem [ref=e79]: "CloudFront: Often within free tier early on; later ~$0.085–0.12/GB egress depending on region."
-        - listitem [ref=e80]: "ACM: Free public certs."
-        - listitem [ref=e81]: "DNS: With Squarespace, domain fees; with Route 53, ~$0.50/hosted zone per month."
-        - listitem [ref=e82]: "Budgets: I created a $5 monthly alert to be safe."
-      - paragraph [ref=e83]: At small traffic (<1k users), costs are typically $1–$5/month.
-      - heading "What I Learned" [level=2] [ref=e84]
-      - list [ref=e85]:
-        - listitem [ref=e86]: S3 is object storage—not compute. Perfect for static websites and assets.
-        - listitem [ref=e87]: CloudFront + OAC is the secure, modern pattern to serve private S3 content publicly.
-        - listitem [ref=e88]: Certificates for CloudFront must be in us-east-1.
-        - listitem [ref=e89]: DNS validation can be done outside AWS; just paste ACM’s exact CNAME.
-      - heading "What’s Next" [level=2] [ref=e90]
+        - listitem [ref=e73]: DNS
+      - list [ref=e74]:
+        - listitem [ref=e75]: CNAME devops.lucasluize.com → dXXXX.cloudfront.net (Squarespace DNS)
+        - listitem [ref=e76]: After propagation, HTTPS works end-to-end
+      - heading "Common Pitfalls I Hit (and Fixed)" [level=2] [ref=e77]
+      - list [ref=e78]:
+        - listitem [ref=e79]: "403 on S3 Website: Needed a proper bucket policy for that mode. But with OAC, I switched to the S3 REST origin and locked the bucket down."
+        - listitem [ref=e80]: "ACM validation “Host value can’t end with a .”: Removed trailing dot in CNAME value when using external DNS UI."
+        - listitem [ref=e81]: "Wrong origin type with OAC: OAC only works with S3 REST endpoint, not website endpoint."
+      - heading "Costs and Free-Tier Notes" [level=2] [ref=e82]
+      - list [ref=e83]:
+        - listitem [ref=e84]: "S3: Pennies for a few GB and requests."
+        - listitem [ref=e85]: "CloudFront: Often within free tier early on; later ~$0.085–0.12/GB egress depending on region."
+        - listitem [ref=e86]: "ACM: Free public certs."
+        - listitem [ref=e87]: "DNS: With Squarespace, domain fees; with Route 53, ~$0.50/hosted zone per month."
+        - listitem [ref=e88]: "Budgets: I created a $5 monthly alert to be safe."
+      - paragraph [ref=e89]: At small traffic (<1k users), costs are typically $1–$5/month.
+      - heading "What I Learned" [level=2] [ref=e90]
       - list [ref=e91]:
-        - listitem [ref=e92]: Add security headers via a CloudFront Response Headers Policy.
-        - listitem [ref=e93]: Add a 404.html and friendly error mapping.
-        - listitem [ref=e94]: Automate deploys with GitHub Actions (sync S3 + CloudFront invalidation).
-        - listitem [ref=e95]: Migrate DNS to Route 53 so Terraform can manage cert validation and CNAMEs.
-        - listitem [ref=e96]: "Start a second project: API (API Gateway + Lambda) + SPA on this frontend."
-      - heading "Useful Commands" [level=2] [ref=e97]
-      - code [ref=e99]: "# Upload site aws s3 sync ./site s3://YOUR_BUCKET/ --delete # Invalidate CloudFront cache aws cloudfront create-invalidation --distribution-id YOUR_DIST_ID --paths \"/*\" # Verify identity for your current CLI profile aws sts get-caller-identity"
-  - contentinfo [ref=e100]: © 2025 Cloud DevOps Portfolio
+        - listitem [ref=e92]: S3 is object storage—not compute. Perfect for static websites and assets.
+        - listitem [ref=e93]: CloudFront + OAC is the secure, modern pattern to serve private S3 content publicly.
+        - listitem [ref=e94]: Certificates for CloudFront must be in us-east-1.
+        - listitem [ref=e95]: DNS validation can be done outside AWS; just paste ACM’s exact CNAME.
+      - heading "What’s Next" [level=2] [ref=e96]
+      - list [ref=e97]:
+        - listitem [ref=e98]: Add security headers via a CloudFront Response Headers Policy.
+        - listitem [ref=e99]: Add a 404.html and friendly error mapping.
+        - listitem [ref=e100]: Automate deploys with GitHub Actions (sync S3 + CloudFront invalidation).
+        - listitem [ref=e101]: Migrate DNS to Route 53 so Terraform can manage cert validation and CNAMEs.
+        - listitem [ref=e102]: "Start a second project: API (API Gateway + Lambda) + SPA on this frontend."
+      - heading "Useful Commands" [level=2] [ref=e103]
+      - code [ref=e105]: "# Upload site aws s3 sync ./site s3://YOUR_BUCKET/ --delete # Invalidate CloudFront cache aws cloudfront create-invalidation --distribution-id YOUR_DIST_ID --paths \"/*\" # Verify identity for your current CLI profile aws sts get-caller-identity"
+  - contentinfo [ref=e106]: © 2025 Cloud DevOps Portfolio
 ```
