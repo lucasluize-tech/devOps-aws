@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "jest tests/unit.test.js tests/post-unit.test.js --runInBand",
+    "test": "jest tests/unit/*.js --runInBand",
     "test:e2e": "playwright test",
     "test:all": "npm run test && npm run test:e2e"
   },
