@@ -1,4 +1,4 @@
-const jsyaml = require('js-yaml');
+const { parseMarkdown } = require('../utils');
 
 // Unit tests for index.js functions
 

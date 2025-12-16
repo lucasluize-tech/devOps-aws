@@ -13,23 +13,6 @@ async function loadPosts() {
   return postData.sort((a, b) => new Date(b.data.date) - new Date(a.data.date));
 }
 
-// Parses markdown with front-matter
-function parseMarkdown(md) {
-  const parts = md.split(/^---$/m);
-  let data = {};
-  let content = md;
-  if (parts.length >= 3) {
-    const front = parts[1].trim();
-    content = parts.slice(2).join('---').trim();
-    try {
-      data = jsyaml.load(front);
-    } catch (e) {
-      console.error('Error parsing front-matter:', e);
-    }
-  }
-  return { data, content };
-}
-
 // Collects unique tags from posts
 function collectTags(posts) {
   const allTags = new Set();

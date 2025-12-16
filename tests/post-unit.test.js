@@ -1,4 +1,4 @@
-const jsyaml = require('js-yaml');
+const { parseMarkdown, calculateReadingTime } = require('../utils');
 
 // Unit tests for post.js functions
 
