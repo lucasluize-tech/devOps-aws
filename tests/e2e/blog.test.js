@@ -60,8 +60,7 @@ test.describe('Blog Tests', () => {
     await nextBtn.click();
     const cards = page.locator('#posts-list .card');
     await expect(cards).toHaveCount(1); // Page 2 has 1 post
-    const activeDot = page.locator('.dot.active').nth(1);
-    await expect(activeDot).toBeVisible(); // Second dot active
+    await expect(page.locator('.dot').nth(1)).toHaveClass(/active/); // Second dot active
   });
 
   test('Search functionality works', async ({ page }) => {
