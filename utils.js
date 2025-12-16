@@ -1,14 +1,12 @@
 // utils.js - Shared utility functions
 
-const matter = require('gray-matter');
-
-// Parses markdown with front-matter
+// Parses markdown with gray-matter
 function parseMarkdown(md) {
   try {
     const result = matter(md);
     return { data: result.data, content: result.content };
   } catch (e) {
-    console.error('Error parsing front-matter:', e);
+    console.error('Error parsing gray-matter', e);
     return { data: {}, content: md };
   }
 }
