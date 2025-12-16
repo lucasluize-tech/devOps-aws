@@ -40,7 +40,27 @@ test.describe('Blog Tests', () => {
     await page.goto('http://localhost:8000');
     await page.waitForSelector('#posts-list .card');
     const cards = page.locator('#posts-list .card');
-    await expect(cards).toHaveCount(5); // Assuming 5 posts
+    await expect(cards).toHaveCount(4); // Max 4 per page
+  });
+
+  test('Pagination controls render', async ({ page }) => {
+    await page.goto('http://localhost:8000');
+    await page.waitForSelector('#pagination-controls');
+    const controls = page.locator('#pagination-controls');
+    await expect(controls).toBeVisible();
+    const dots = page.locator('.dot');
+    await expect(dots).toHaveCount(2); // 5 posts / 4 = 2 pages
+    const activeDot = page.locator('.dot.active');
+    await expect(activeDot).toHaveCount(1);
+  });
+
+  test('Pagination arrows work', async ({ page }) => {
+    await page.goto('http://localhost:8000');
+    const nextBtn = page.locator('.pagination-arrows button').filter({ hasText: '→' });
+    await nextBtn.click();
+    const cards = page.locator('#posts-list .card');
+    await expect(cards).toHaveCount(1); // Page 2 has 1 post
+    await expect(page.locator('.dot').nth(1)).toHaveClass(/active/); // Second dot active
   });
 
   test('Search functionality works', async ({ page }) => {

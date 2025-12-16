@@ -46,7 +46,7 @@ nav a:hover { background: #0f1a2e; color: var(--text); }
 section { margin-top: 28px; }
 h2 { font-size: 1.4rem; margin: 0 0 10px; }
 .grid { display: grid; gap: 16px; grid-template-columns: repeat(3, 1fr); }
-.card { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 16px; }
+.card { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin-bottom: 4px; }
 .card h3 { margin: 0 0 8px; font-size: 1.05rem; }
 .card p { margin: 0 0 8px; color: var(--muted); }
 .list { margin: 0; padding-left: 18px; color: var(--muted); }
@@ -57,4 +57,12 @@ h2 { font-size: 1.4rem; margin: 0 0 10px; }
 .tl strong { color: #e6f4ff; }
 .muted { color: var(--muted); }
 footer { margin: 36px 0 20px; padding: 16px; text-align: center; color: var(--muted); border-top: 1px solid var(--border); }
+#pagination-controls { display: flex; flex-direction: column; align-items: center; gap: 8px; margin-top: 16px; }
+.pagination-arrows { display: flex; gap: 8px; }
+.pagination-dots { display: flex; gap: 4px; }
+#pagination-controls button { background: var(--panel); border: 1px solid var(--border); color: var(--text); padding: 8px 12px; border-radius: 6px; cursor: pointer; }
+#pagination-controls button:disabled { opacity: 0.5; cursor: not-allowed; }
+.dot { font-size: 18px; color: var(--muted); cursor: default; }
+.dot.active { color: var(--brand); }
+
 @media (max-width: 900px) { .hero { grid-template-columns: 1fr; } .grid { grid-template-columns: 1fr; } header { flex-direction: column; align-items: flex-start; } }

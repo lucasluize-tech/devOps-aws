@@ -1,6 +1,7 @@
 const { parseMarkdown, collectTags, filterPosts, searchPosts } = require('../../utils');
 const fs = require('fs');
 const path = require('path');
+const { getTotalPages, getPostsForPage } = require('../../utils');
 
 // Unit tests for index.js functions
 
@@ -76,5 +77,25 @@ describe('searchPosts', () => {
   it('should search by tags', () => {
     const result = searchPosts(posts, 'tag1');
     expect(result).toEqual([posts[0]]);
+  });
+});
+
+describe('getTotalPages', () => {
+  it('should calculate total pages', () => {
+    expect(getTotalPages([])).toBe(0);
+    expect(getTotalPages([1])).toBe(1);
+    expect(getTotalPages([1,2,3,4,5])).toBe(2);
+  });
+});
+
+describe('getPostsForPage', () => {
+  const posts = [1,2,3,4,5,6,7];
+
+  it('should return posts for page 0', () => {
+    expect(getPostsForPage(posts, 0)).toEqual([1,2,3,4]);
+  });
+
+  it('should return posts for page 1', () => {
+    expect(getPostsForPage(posts, 1)).toEqual([5,6,7]);
   });
 });
