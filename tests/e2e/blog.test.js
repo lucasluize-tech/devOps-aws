@@ -71,7 +71,7 @@ test.describe('Blog Tests', () => {
 
   test('Post page renders correctly', async ({ page }) => {
     await page.goto('http://localhost:8000/post.html?slug=s3-cloudfront-oac-acm-static-site');
-    await expect(page.locator('h1')).toContainText('From Static S3 to CDN with HTTPS');
+    await expect(page.locator('h1.post-title')).toContainText('From Static S3 to CDN with HTTPS');
     await expect(page.locator('.post-content')).toBeVisible();
     await expect(page.locator('#share-twitter')).toHaveAttribute('href', /twitter\.com/);
   });
