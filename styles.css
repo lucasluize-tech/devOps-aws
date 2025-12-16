@@ -39,7 +39,7 @@ nav a:hover { background: #0f1a2e; color: var(--text); }
 .btn.primary { background: var(--brand); color: #0b1220; border-color: transparent; }
 .btn.primary:hover { filter: brightness(1.05); }
 .btn:hover { background: #142440; }
-.hero .panel { background: #0f1a2e; border: 1px solid var(--border); border-radius: 12px; padding: 16px; }
+.hero .panel { background: #0f1a2e; border: 1px solid var(--border); border-radius: 12px; padding: 16px; word-wrap: break-word; }
 .badges { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
 .badge { background: #0f1a2e; border: 1px solid var(--border); color: var(--muted); padding: 6px 10px; border-radius: 999px; font-size: .9rem; }
 
@@ -50,7 +50,7 @@ h2 { font-size: 1.4rem; margin: 0 0 10px; }
 .card h3 { margin: 0 0 8px; font-size: 1.05rem; }
 .card p { margin: 0 0 8px; color: var(--muted); }
 .list { margin: 0; padding-left: 18px; color: var(--muted); }
-.code { background: var(--code); color: #c7d2fe; border: 1px solid #0b1220; border-radius: 8px; padding: 10px; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: .9rem; overflow: auto; max-width: 100%; }
+.code { background: var(--code); color: #c7d2fe; border: 1px solid #0b1220; border-radius: 8px; padding: 10px; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: .9rem; overflow: auto; max-width: 100%; white-space: pre-wrap; word-break: break-word; }
 
 .timeline { display: grid; gap: 12px; }
 .tl { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px; }
@@ -65,10 +65,15 @@ footer { margin: 36px 0 20px; padding: 16px; text-align: center; color: var(--mu
 .dot { font-size: 18px; color: var(--muted); cursor: default; }
 .dot.active { color: var(--brand); }
 
+@media (min-width: 1201px) {
+  .hero { grid-template-columns: 1fr 1fr; padding: 32px; }
+  .code { max-width: 600px; }
+}
+
 @media (max-width: 1200px) {
   .wrap { padding: 15px; }
   .hero { padding: 20px; gap: 16px; }
-  .code { font-size: 0.85rem; padding: 8px; }
+  .code { font-size: 0.85rem; padding: 8px; max-width: 100%; }
 }
 
 @media (max-width: 900px) {
@@ -76,7 +81,7 @@ footer { margin: 36px 0 20px; padding: 16px; text-align: center; color: var(--mu
   .hero { grid-template-columns: 1fr; padding: 16px; margin-top: 8px; }
   .grid { grid-template-columns: 1fr; }
   header { flex-direction: column; align-items: flex-start; gap: 8px; }
-  .code { font-size: 0.8rem; padding: 6px; }
+  .code { font-size: 0.8rem; padding: 6px; white-space: pre-wrap; word-break: break-word; }
   nav { gap: 8px; }
   nav a { padding: 4px 8px; font-size: 0.9rem; }
 }
@@ -86,6 +91,6 @@ footer { margin: 36px 0 20px; padding: 16px; text-align: center; color: var(--mu
   .hero { padding: 12px; border-radius: 10px; }
   .hero h1 { font-size: 1.8rem; }
   .card { padding: 12px; }
-  .code { font-size: 0.75rem; padding: 4px; }
+  .code { font-size: 0.75rem; padding: 4px; white-space: pre-wrap; word-break: break-word; }
   footer { margin: 20px 0 10px; padding: 8px; }
 }
