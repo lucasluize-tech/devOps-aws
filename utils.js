@@ -1,14 +1,40 @@
 // utils.js - Shared utility functions
 
-// Parses markdown with gray-matter
+// Parses markdown with front-matter
 function parseMarkdown(md) {
-  try {
-    const result = matter(md);
-    return { data: result.data, content: result.content };
-  } catch (e) {
-    console.error('Error parsing gray-matter', e);
-    return { data: {}, content: md };
+  // Normalize line endings
+  const normalizedMd = md.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+  const lines = normalizedMd.split('\n');
+  let data = {};
+  let content = normalizedMd;
+  if (lines[0] === '---') {
+    const endIndex = lines.indexOf('---', 1);
+    if (endIndex > 0) {
+      const front = lines.slice(1, endIndex).join('\n');
+      content = lines.slice(endIndex + 1).join('\n').trim();
+      try {
+        if (typeof module !== 'undefined' && module.exports) {
+          const matter = require('gray-matter');
+          const result = matter(normalizedMd);
+          return { data: result.data, content: result.content };
+        } else {
+          // Manual parsing for browser
+          const frontLines = front.split('\n');
+          frontLines.forEach(line => {
+            const [key, ...valueParts] = line.split(':');
+            if (key && valueParts.length) {
+              let value = valueParts.join(':').trim();
+              if (value.startsWith('"') && value.endsWith('"')) value = value.slice(1, -1);
+              data[key.trim()] = value;
+            }
+          });
+        }
+      } catch (e) {
+        console.error('Error parsing front-matter:', e);
+      }
+    }
   }
+  return { data, content };
 }
 
 // Calculates reading time
