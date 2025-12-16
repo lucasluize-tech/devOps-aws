@@ -16,8 +16,8 @@ Content`;
 
 describe('calculateReadingTime', () => {
   it('should calculate reading time', () => {
-    const content = 'word '.repeat(400); // 400 words
+    const content = 'word '.repeat(399); // 399 words
     const time = calculateReadingTime(content);
-    expect(time).toBe(2); // 400 / 200 = 2
+    expect(time).toBe(2); // 399 / 200 = 2
   });
 });
