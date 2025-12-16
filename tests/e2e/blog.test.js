@@ -40,7 +40,7 @@ test.describe('Blog Tests', () => {
     await page.goto('http://localhost:8000');
     await page.waitForSelector('#posts-list .card');
     const cards = page.locator('#posts-list .card');
-    await expect(cards).toHaveCount(3); // Assuming 3 posts
+    await expect(cards).toHaveCount(5); // Assuming 5 posts
   });
 
   test('Search functionality works', async ({ page }) => {
@@ -65,7 +65,7 @@ test.describe('Blog Tests', () => {
     await page.goto('http://localhost:8000');
     const firstCard = page.locator('#posts-list .card').first();
     await firstCard.click();
-    await expect(page).toHaveURL(/post\.html\?slug=.+/);
+    await page.waitForURL(/post\.html\?slug=.+/);
     await expect(page.locator('h1')).toBeVisible();
   });
 
