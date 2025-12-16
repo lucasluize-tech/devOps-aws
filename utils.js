@@ -9,9 +9,11 @@ if (typeof module !== 'undefined' && module.exports) {
 
 // Parses markdown with front-matter
 function parseMarkdown(md) {
-  const lines = md.split('\n');
+  // Normalize line endings
+  const normalizedMd = md.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+  const lines = normalizedMd.split('\n');
   let data = {};
-  let content = md;
+  let content = normalizedMd;
   if (lines[0] === '---') {
     const endIndex = lines.indexOf('---', 1);
     if (endIndex > 0) {
