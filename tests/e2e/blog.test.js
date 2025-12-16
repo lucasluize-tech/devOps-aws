@@ -1,14 +1,29 @@
 const { test, expect } = require('@playwright/test');
-const { exec } = require('child_process');
+const { exec, execSync } = require('child_process');
 const path = require('path');
 
 test.describe('Blog Tests', () => {
   let server;
 
   test.beforeAll(async () => {
-    // Start local server
-    server = exec('python3 -m http.server 8000', { cwd: __dirname });
-    await new Promise(resolve => setTimeout(resolve, 2000)); // Wait for server to start
+    // Kill any existing server on port 8000
+    try {
+      execSync('pkill -f "python3 -m http.server 8000" || true');
+    } catch (e) {}
+    // Start local server in the project root
+    const projectRoot = path.join(__dirname, '..', '..');
+    try {
+      server = exec('python3 -m http.server 8000', { cwd: projectRoot });
+      console.log('Server command executed in:', projectRoot);
+      server.stdout.on('data', (data) => console.log('Server stdout:', data));
+      server.stderr.on('data', (data) => console.error('Server stderr:', data));
+      server.on('close', (code) => console.log('Server closed with code:', code));
+      await new Promise(resolve => setTimeout(resolve, 5000)); // Wait longer
+      console.log('Server should be ready after 5s');
+    } catch (error) {
+      console.error('Failed to start server:', error);
+      throw error;
+    }
   });
 
   test.afterAll(() => {
