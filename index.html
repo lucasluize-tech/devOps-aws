@@ -7,67 +7,6 @@
   <meta name="description" content="Cloud DevOps portfolio: infrastructure, automation, and reliability projects." />
   <meta http-equiv="x-ua-compatible" content="IE=edge" />
   <link rel="stylesheet" href="styles.css">
-  <style>
-    :root {
-      --bg: #0b1220;
-      --panel: #11192b;
-      --text: #e9eef8;
-      --muted: #a9b4c7;
-      --brand: #66d9e8;
-      --border: #233049;
-      --link: #7dd3fc;
-      --code: #0f172a;
-    }
-    * { box-sizing: border-box; }
-    html, body { margin: 0; padding: 0; background: var(--bg); color: var(--text); font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, sans-serif; line-height: 1.55; }
-    a { color: var(--link); text-decoration: none; }
-    a:hover { text-decoration: underline; }
-    .wrap { max-width: 1100px; margin: 0 auto; padding: 20px; }
-    header { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 14px 0 6px; }
-    .brand { display: flex; align-items: center; gap: 12px; }
-    .logo {
-      width: 40px; height: 40px; border-radius: 10px;
-      background: linear-gradient(135deg, var(--brand), #3b82f6);
-      display: grid; place-items: center; color: #0b1220; font-weight: 800; letter-spacing: .5px;
-      box-shadow: 0 6px 24px rgba(125,211,252,.22);
-    }
-    nav { display: flex; gap: 14px; flex-wrap: wrap; }
-    nav a { color: var(--muted); font-weight: 600; padding: 6px 10px; border-radius: 6px; }
-    nav a:hover { background: #0f1a2e; color: var(--text); }
-
-    .hero {
-      margin-top: 12px; padding: 28px;
-      background: radial-gradient(1200px 600px at 20% -10%, #1b2a44, transparent 60%),
-                  linear-gradient(180deg, #0c1423, #0b1220);
-      border: 1px solid var(--border); border-radius: 14px;
-      display: grid; grid-template-columns: 1.2fr .8fr; gap: 24px;
-    }
-    .hero h1 { margin: 0 0 10px; font-size: 2rem; line-height: 1.2; }
-    .hero p.lead { color: var(--muted); margin: 0 0 14px; }
-    .cta { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 10px; }
-    .btn { display: inline-block; padding: 10px 14px; border-radius: 8px; font-weight: 700; border: 1px solid var(--border); background: #122038; color: var(--text); }
-    .btn.primary { background: var(--brand); color: #0b1220; border-color: transparent; }
-    .btn.primary:hover { filter: brightness(1.05); }
-    .btn:hover { background: #142440; }
-    .hero .panel { background: #0f1a2e; border: 1px solid var(--border); border-radius: 12px; padding: 16px; }
-    .badges { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
-    .badge { background: #0f1a2e; border: 1px solid var(--border); color: var(--muted); padding: 6px 10px; border-radius: 999px; font-size: .9rem; }
-
-    section { margin-top: 28px; }
-    h2 { font-size: 1.4rem; margin: 0 0 10px; }
-    .grid { display: grid; gap: 16px; grid-template-columns: repeat(3, 1fr); }
-    .card { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 16px; }
-    .card h3 { margin: 0 0 8px; font-size: 1.05rem; }
-    .card p { margin: 0 0 8px; color: var(--muted); }
-    .list { margin: 0; padding-left: 18px; color: var(--muted); }
-    .code { background: var(--code); color: #c7d2fe; border: 1px solid #0b1220; border-radius: 8px; padding: 10px; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: .9rem; overflow: auto; }
-
-    .timeline { display: grid; gap: 12px; }
-    .tl { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px; }
-    .tl strong { color: #e6f4ff; }
-    .muted { color: var(--muted); }
-    footer { margin: 36px 0 20px; padding: 16px; text-align: center; color: var(--muted); border-top: 1px solid var(--border); }
-  </style>
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <script src="https://unpkg.com/gray-matter@4.0.3/browser/gray-matter.min.js"></script>
   <script src="utils.js"></script>
