@@ -1,6 +1,5 @@
-const { parseMarkdown, calculateReadingTime } = require('../utils');
+const { parseMarkdown, calculateReadingTime } = require('../../utils');
 
-const { parseMarkdown, calculateReadingTime } = require('../utils');
 
 // Unit tests for post.js functions
 
