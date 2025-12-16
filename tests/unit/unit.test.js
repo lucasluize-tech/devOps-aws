@@ -1,6 +1,7 @@
 const { parseMarkdown, collectTags, filterPosts, searchPosts } = require('../../utils');
 const fs = require('fs');
 const path = require('path');
+const { getTotalPages, getPostsForPage } = require('../../utils');
 
 // Unit tests for index.js functions
 
