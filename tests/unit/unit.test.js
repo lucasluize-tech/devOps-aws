@@ -1,23 +1,26 @@
 const { parseMarkdown, collectTags, filterPosts, searchPosts } = require('../../utils');
+const fs = require('fs');
+const path = require('path');
 
 // Unit tests for index.js functions
 
 describe('parseMarkdown', () => {
-  it('should parse markdown with front-matter', () => {
-    const md = `---
-title: Test
----
-Content`;
+  it('should parse s3-cloudfront-oac-acm-static-site.md', () => {
+    const mdFile = path.join(__dirname, '..', '..', 'posts', 's3-cloudfront-oac-acm-static-site.md');
+    const md = fs.readFileSync(mdFile, 'utf8');
     const result = parseMarkdown(md);
-    expect(result.data.title).toBe('Test');
-    expect(result.content.trim()).toBe('Content');
+    expect(result.data.title).toBe('From Static S3 to CDN with HTTPS: My First DevOps Project on AWS');
+    expect(result.data.slug).toBe('s3-cloudfront-oac-acm-static-site');
+    expect(result.content).toContain('# From Static S3 to CDN with HTTPS');
   });
 
-  it('should handle markdown without front-matter', () => {
-    const md = 'Just content';
+  it('should parse infrastructure-as-code-terraform.md', () => {
+    const mdFile = path.join(__dirname, '..', '..', 'posts', 'infrastructure-as-code-terraform.md');
+    const md = fs.readFileSync(mdFile, 'utf8');
     const result = parseMarkdown(md);
-    expect(result.data).toEqual({});
-    expect(result.content).toBe(md);
+    expect(result.data.title).toBe('Infrastructure as Code with Terraform: Best Practices');
+    expect(result.data.slug).toBe('infrastructure-as-code-terraform');
+    expect(result.content).toContain('# Infrastructure as Code with Terraform');
   });
 });
 
