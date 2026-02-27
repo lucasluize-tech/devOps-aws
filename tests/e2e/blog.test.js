@@ -49,17 +49,26 @@ test.describe('Blog Tests', () => {
     const controls = page.locator('#pagination-controls');
     await expect(controls).toBeVisible();
     const dots = page.locator('.dot');
-    await expect(dots).toHaveCount(2); // 5 posts / 4 = 2 pages
+    await expect(dots).toHaveCount(2); // 6 posts / 4 = 2 pages
     const activeDot = page.locator('.dot.active');
     await expect(activeDot).toHaveCount(1);
   });
 
   test('Pagination arrows work', async ({ page }) => {
     await page.goto('http://localhost:8000');
+    const totalPosts = await page.evaluate(async () => {
+      const response = await fetch('/posts/index.json');
+      const posts = await response.json();
+      return posts.length;
+    });
+
     const nextBtn = page.locator('.pagination-arrows button').filter({ hasText: '→' });
     await nextBtn.click();
     const cards = page.locator('#posts-list .card');
-    await expect(cards).toHaveCount(1); // Page 2 has 1 post
+
+    const postsPerPage = 4;
+    const expectedSecondPageCount = Math.max(0, totalPosts - postsPerPage);
+    await expect(cards).toHaveCount(expectedSecondPageCount);
     await expect(page.locator('.dot').nth(1)).toHaveClass(/active/); // Second dot active
   });
 
