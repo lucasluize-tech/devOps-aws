@@ -4,3 +4,4 @@ node_modules/
 .env
 .cache/
 publish.sh
+test-results/
