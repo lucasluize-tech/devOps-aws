@@ -48,8 +48,14 @@ test.describe('Blog Tests', () => {
     await page.waitForSelector('#pagination-controls');
     const controls = page.locator('#pagination-controls');
     await expect(controls).toBeVisible();
+    const totalPosts = await page.evaluate(async () => {
+      const response = await fetch('/posts/index.json');
+      const posts = await response.json();
+      return posts.length;
+    });
+    const expectedPages = Math.ceil(totalPosts / 4);
     const dots = page.locator('.dot');
-    await expect(dots).toHaveCount(2); // 6 posts / 4 = 2 pages
+    await expect(dots).toHaveCount(expectedPages);
     const activeDot = page.locator('.dot.active');
     await expect(activeDot).toHaveCount(1);
   });
@@ -67,7 +73,7 @@ test.describe('Blog Tests', () => {
     const cards = page.locator('#posts-list .card');
 
     const postsPerPage = 4;
-    const expectedSecondPageCount = Math.max(0, totalPosts - postsPerPage);
+    const expectedSecondPageCount = Math.min(postsPerPage, totalPosts - postsPerPage);
     await expect(cards).toHaveCount(expectedSecondPageCount);
     await expect(page.locator('.dot').nth(1)).toHaveClass(/active/); // Second dot active
   });

@@ -1,4 +1,5 @@
 [
+  {"slug": "automating-infra-with-claude-code-cli"},
   {"slug": "post-index-drift-ci-guardrail"},
   {"slug": "ci-lint-debugging-dotfiles-bootstrap"},
   {"slug": "portable-devops-workstation-dotfiles-bootstrap"},
