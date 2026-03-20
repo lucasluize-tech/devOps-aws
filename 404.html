@@ -6,31 +6,186 @@
   <title>404 - Page Not Found</title>
   <meta name="description" content="Page not found." />
   <meta http-equiv="x-ua-compatible" content="IE=edge" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=DM+Sans:wght@400;500;700&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg: #0b1220;
-      --panel: #11192b;
-      --text: #e9eef8;
-      --muted: #a9b4c7;
-      --brand: #66d9e8;
-      --border: #233049;
-      --link: #7dd3fc;
+      --bg: #100f14;
+      --bg-elevated: #1a1820;
+      --surface: #232129;
+      --text: #ece9f1;
+      --muted: #8b8697;
+      --accent: #a78bfa;
+      --secondary: #f97316;
+      --border: #2a2833;
+      --border-subtle: #1f1d26;
     }
+
     * { box-sizing: border-box; }
-    html, body { margin: 0; padding: 0; background: var(--bg); color: var(--text); font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, sans-serif; line-height: 1.55; text-align: center; }
-    a { color: var(--link); text-decoration: none; }
-    a:hover { text-decoration: underline; }
-    .wrap { max-width: 600px; margin: 100px auto; padding: 20px; }
-    h1 { font-size: 3rem; margin-bottom: 20px; }
-    p { font-size: 1.2rem; margin-bottom: 30px; }
-    .btn { display: inline-block; padding: 10px 20px; background: var(--brand); color: #0b1220; border-radius: 6px; font-weight: 600; }
+
+    html, body {
+      margin: 0; padding: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      line-height: 1.55;
+      min-height: 100vh;
+    }
+
+    /* Grid background */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(var(--border-subtle) 1px, transparent 1px),
+        linear-gradient(90deg, var(--border-subtle) 1px, transparent 1px);
+      background-size: 32px 32px;
+      opacity: 0.3;
+      pointer-events: none;
+      mask-image: radial-gradient(ellipse 70% 50% at 50% 40%, black 10%, transparent 70%);
+      -webkit-mask-image: radial-gradient(ellipse 70% 50% at 50% 40%, black 10%, transparent 70%);
+    }
+
+    .wrap {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 20px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      z-index: 1;
+      text-align: center;
+    }
+
+    .error-code {
+      font-family: 'Bricolage Grotesque', sans-serif;
+      font-size: clamp(5rem, 15vw, 9rem);
+      font-weight: 800;
+      line-height: 1;
+      margin-bottom: 16px;
+      background: linear-gradient(135deg, var(--accent), var(--secondary));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      animation: glitch 0.4s ease-out 0.3s 1;
+    }
+
+    @keyframes glitch {
+      0% { text-shadow: 2px 0 var(--accent), -2px 0 var(--secondary); clip-path: inset(0 0 0 0); }
+      20% { text-shadow: -3px 2px var(--accent), 3px -2px var(--secondary); clip-path: inset(20% 0 40% 0); }
+      40% { text-shadow: 3px -1px var(--accent), -3px 1px var(--secondary); clip-path: inset(60% 0 10% 0); }
+      60% { text-shadow: -2px 2px var(--accent), 2px -2px var(--secondary); clip-path: inset(30% 0 30% 0); }
+      100% { text-shadow: none; clip-path: inset(0 0 0 0); }
+    }
+
+    .error-msg {
+      color: var(--muted);
+      font-size: 1.1rem;
+      margin-bottom: 32px;
+    }
+
+    /* Terminal mockup */
+    .terminal {
+      width: 100%;
+      max-width: 460px;
+      border-radius: 10px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      background: #14121a;
+      text-align: left;
+      margin-bottom: 36px;
+    }
+
+    .terminal-chrome {
+      height: 36px;
+      background: var(--surface);
+      display: flex;
+      align-items: center;
+      padding: 0 14px;
+      gap: 8px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .terminal-chrome span {
+      width: 12px; height: 12px;
+      border-radius: 50%;
+    }
+
+    .terminal-chrome span:nth-child(1) { background: #ff5f57; }
+    .terminal-chrome span:nth-child(2) { background: #febc2e; }
+    .terminal-chrome span:nth-child(3) { background: #28c840; }
+
+    .terminal-body {
+      padding: 16px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.82rem;
+      line-height: 1.8;
+      color: var(--muted);
+    }
+
+    .terminal-body .cmd { color: #8b8697; }
+    .terminal-body .prompt { color: var(--accent); }
+    .terminal-body .response { color: #c7d2fe; }
+    .terminal-body .header-val { color: var(--secondary); }
+
+    .home-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 24px;
+      background: var(--secondary);
+      color: #fff;
+      border-radius: 8px;
+      font-weight: 700;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 1rem;
+      text-decoration: none;
+      transition: all 0.2s ease;
+      box-shadow: 0 0 24px rgba(249, 115, 22, 0.15);
+    }
+
+    .home-btn:hover {
+      filter: brightness(1.1);
+      transform: translateY(-1px);
+      box-shadow: 0 0 32px rgba(249, 115, 22, 0.25);
+      color: #fff;
+    }
+
+    .home-cmd {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.8rem;
+      font-weight: 400;
+      opacity: 0.8;
+    }
+
+    @media (max-width: 600px) {
+      .terminal-body { font-size: 0.72rem; padding: 12px; }
+    }
   </style>
 </head>
 <body>
   <div class="wrap">
-    <h1>404</h1>
-    <p>Oops! The page you're looking for doesn't exist.</p>
-    <a href="/" class="btn">Go Home</a>
+    <div class="error-code">404</div>
+    <p class="error-msg">This resource was never provisioned.</p>
+
+    <div class="terminal">
+      <div class="terminal-chrome">
+        <span></span><span></span><span></span>
+      </div>
+      <div class="terminal-body">
+        <div class="cmd"><span class="prompt">$ </span>curl -I /this-page</div>
+        <div class="response">HTTP/1.1 404 Not Found</div>
+        <div class="response">X-Reason: <span class="header-val">resource-never-provisioned</span></div>
+        <div class="response">X-Suggestion: <span class="header-val">try-the-homepage</span></div>
+      </div>
+    </div>
+
+    <a href="/" class="home-btn"><span class="home-cmd">$ cd /home</span></a>
   </div>
 </body>
 </html>

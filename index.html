@@ -14,6 +14,9 @@
     gtag('js', new Date());
     gtag('config', 'G-X11D57HZM9');
   </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=DM+Sans:wght@400;500;700&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/gray-matter/index.js"></script>
@@ -26,8 +29,8 @@
       <div class="brand">
         <div class="logo">D9</div>
         <div>
-          <div style="font-weight:800;">Cloud DevOps – Portfolio</div>
-          <div class="muted" style="font-size:0.95rem;">Infra • Automation • Reliability</div>
+          <div style="font-weight:800; font-family: 'Bricolage Grotesque', sans-serif;">Cloud DevOps – Portfolio</div>
+          <div class="muted" style="font-size:0.85rem; font-family: 'JetBrains Mono', monospace;">infra / automation / reliability</div>
         </div>
       </div>
        <nav>
@@ -40,7 +43,7 @@
        </nav>
     </header>
 
-    <section class="hero" id="top">
+    <section class="hero" id="top" style="opacity:1; transform:none; border-top:none; margin-top:24px; padding-top:36px;">
       <div>
         <h1>Building reliable, automated cloud platforms</h1>
         <p class="lead">Cloud DevOps Engineer focused on AWS, Terraform, Kubernetes, and CI/CD. I design, automate, and observe cloud infrastructure so teams ship faster with confidence.</p>
@@ -57,20 +60,28 @@
           <a class="btn" href="#contact">Get in Touch</a>
         </div>
       </div>
-      <aside class="panel" aria-label="Live Status">
-        <div style="font-weight:700; margin-bottom:8px;">Live Status</div>
-         <div class="code" aria-live="polite">
-<p># Served via: CloudFront (HTTPS) → OAC → S3 (private)</p>
-<p># Blog features added: pagination, search, filtering, reading time, share buttons, Disqus comments</p>
-<p># Next: Generate RSS feed, integrate CMS</p>
-         </div>
-        <div class="muted" style="font-size:0.9rem;">Tip: add a Response Headers Policy in CloudFront for HSTS, CSP, etc.</div>
+      <aside class="panel" aria-label="Deploy Terminal">
+        <div class="panel-chrome">
+          <span></span><span></span><span></span>
+          <div class="panel-title">~/portfolio</div>
+        </div>
+        <div class="code">
+          <p class="cmd">$ git push origin master</p>
+          <p>&nbsp;</p>
+          <p><span class="success">&#10003;</span> Unit tests passed <span class="dim">(4s)</span></p>
+          <p><span class="success">&#10003;</span> E2E tests passed <span class="dim">(12s)</span></p>
+          <p><span class="success">&#10003;</span> S3 sync complete</p>
+          <p><span class="success">&#10003;</span> CloudFront invalidated</p>
+          <p>&nbsp;</p>
+          <p><span class="success">Deploy successful</span> <span class="dim">── 18s total</span></p>
+          <p class="url">https://devops.lucasluize.com</p>
+        </div>
       </aside>
     </section>
 
     <section id="about">
       <h2>About</h2>
-      <p class="muted">I build modern DevOps stacks: infrastructure-as-code, container orchestration, secure delivery pipelines, and production-grade observability. This site tracks projects and lessons learned.</p>
+      <p class="muted" style="max-width: 680px; line-height: 1.7; font-size: 1.05rem;">I build modern DevOps stacks: infrastructure-as-code, container orchestration, secure delivery pipelines, and production-grade observability. This site tracks projects and lessons learned.</p>
     </section>
 
     <section id="skills">
@@ -109,17 +120,17 @@
         <div class="card">
           <h3>HA Web App on AWS</h3>
           <p>VPC across 2 AZs with ALB, Auto Scaling, and RDS. Deployed via Terraform and monitored with CloudWatch alarms.</p>
-          <div class="muted">Keywords: Terraform, ALB, ASG, RDS, CloudWatch</div>
+          <div class="muted" style="font-size: 0.85rem; font-family: 'JetBrains Mono', monospace;">Terraform, ALB, ASG, RDS, CloudWatch</div>
         </div>
         <div class="card">
           <h3>EKS + GitOps</h3>
           <p>Production-ready EKS cluster with ArgoCD, ALB controller, external-dns, cert-manager, and autoscaling.</p>
-          <div class="muted">Keywords: EKS, ArgoCD, Helm, GitOps</div>
+          <div class="muted" style="font-size: 0.85rem; font-family: 'JetBrains Mono', monospace;">EKS, ArgoCD, Helm, GitOps</div>
         </div>
         <div class="card">
           <h3>Serverless Pipeline</h3>
-          <p>Event-driven ingestion (EventBridge → SQS → Lambda) with IaC and observability dashboards.</p>
-          <div class="muted">Keywords: Lambda, SQS, IaC, Observability</div>
+          <p>Event-driven ingestion (EventBridge &rarr; SQS &rarr; Lambda) with IaC and observability dashboards.</p>
+          <div class="muted" style="font-size: 0.85rem; font-family: 'JetBrains Mono', monospace;">Lambda, SQS, IaC, Observability</div>
         </div>
       </div>
      </section>
@@ -127,8 +138,8 @@
      <section id="posts">
        <h2>Posts</h2>
        <div id="posts-controls">
-         <input type="text" id="search-input" placeholder="Search posts..." style="padding: 8px; border: 1px solid var(--border); border-radius: 6px; background: var(--panel); color: var(--text); width: 100%; max-width: 300px; margin-bottom: 10px;">
-         <div id="tag-filters" style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px;"></div>
+         <input type="text" id="search-input" placeholder="Search posts...">
+         <div id="tag-filters"></div>
        </div>
        <div id="posts-list"></div>
      </section>
@@ -145,18 +156,56 @@
 
     <section id="contact">
       <h2>Contact</h2>
-      <p class="muted">Interested in collaborating or hiring? Reach out:</p>
-      <ul class="list">
-        <li>Email: lucasluize@gmail.com</li>
-        <li>GitHub: github.com/lucasluize-tech</li>
-        <li>LinkedIn: linkedin.com/in/lucasluize</li>
-      </ul>
+      <p class="muted" style="margin-bottom: 20px;">Interested in collaborating or hiring? Reach out:</p>
+      <div class="contact-terminal">
+        <div class="panel-chrome">
+          <span></span><span></span><span></span>
+          <div class="panel-title">contact</div>
+        </div>
+        <div class="contact-body">
+          <div class="contact-group">
+            <div class="cmd"><span class="prompt">$ </span>ssh lucas@github.com</div>
+            <span class="result">&rarr; <a href="https://github.com/lucasluize-tech" target="_blank" rel="noopener">github.com/lucasluize-tech</a></span>
+          </div>
+          <div class="contact-group">
+            <div class="cmd"><span class="prompt">$ </span>mail lucas@CloudEngineer</div>
+            <span class="result">&rarr; <a href="mailto:me@lucasluize.com">me@lucasluize.com</a></span>
+          </div>
+          <div class="contact-group">
+            <div class="cmd"><span class="prompt">$ </span>curl linkedin.com/in/lucasluize</div>
+            <span class="result">&rarr; <a href="https://linkedin.com/in/lucasluize" target="_blank" rel="noopener">linkedin.com/in/lucasluize</a></span>
+          </div>
+        </div>
+      </div>
     </section>
 
     <footer>
-      © <span id="y"></span> Cloud DevOps Portfolio · Served via CloudFront (HTTPS) + OAC + S3
+      &copy; <span id="y"></span> Cloud DevOps Portfolio &middot; Served via CloudFront + OAC + S3
+      <div class="footer-tech">HTML / CSS / JS &middot; Markdown &middot; GitHub Actions &middot; AWS</div>
     </footer>
   </div>
-    <script>document.getElementById('y').textContent = new Date().getFullYear();</script>
+
+  <script>document.getElementById('y').textContent = new Date().getFullYear();</script>
+  <script>
+    // Scroll-reveal animation
+    (function() {
+      var observer = new IntersectionObserver(function(entries) {
+        entries.forEach(function(entry) {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+            // Stagger cards within the section
+            var cards = entry.target.querySelectorAll('.card, .tl');
+            cards.forEach(function(card, i) {
+              card.style.transitionDelay = (i * 0.1) + 's';
+            });
+          }
+        });
+      }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+
+      document.querySelectorAll('section:not(.hero)').forEach(function(section) {
+        observer.observe(section);
+      });
+    })();
+  </script>
 </body>
 </html>
