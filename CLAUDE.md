@@ -42,5 +42,4 @@ After every change, run in this order:
 - Don't change e2e test selectors without updating both CSS and `tests/e2e/blog.test.js` — critical selectors: `#posts-list .card`, `#pagination-controls`, `.dot.active`, `.pagination-arrows button`, `#search-input`, `h1.post-title`, `.post-content`, `#share-twitter`
 - Don't change class names used by JS rendering (`.card`, `.badge`, `.muted`, `.post-title`, `.post-meta`, `.post-content`, `.reading-time`, `.badges`) — index.js and post.js generate DOM with these
 - Don't add build tools or frameworks — the site is intentionally plain HTML/CSS/JS for simplicity and S3 static hosting
-- Don't commit secrets — AWS credentials, GA IDs for other properties, and deploy scripts are in `.gitignore` and GitHub Secrets
 - Don't use Inter, Space Grotesk, Roboto, or system-ui fonts — the design intentionally avoids generic/overused developer portfolio typography
