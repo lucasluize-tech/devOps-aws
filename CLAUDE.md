@@ -38,8 +38,23 @@ After every change, run in this order:
 - Fonts: Bricolage Grotesque for headings, DM Sans for body, JetBrains Mono for code/terminal elements
 - Section headings are uppercase with `::before` accent bars and `::after` status labels via CSS
 
+## Engagement Specialist Skill
+- `/engagement-specialist [topic] [-N]` — generates blog posts from session context (Writer → Critic → Deployer pipeline)
+- `-5` stops after save+test, `-7` stops after CI green, no flag runs full pipeline including social media
+- Social cards generated via HTML/CSS engine at `~/.claude/skills/engagement-specialist/social-cards/engine.js` (Playwright screenshots, 5 templates per platform)
+- Git push is MANUAL — deployer commits but user pushes (SSH passphrase boundary)
+- Writer agent must return text only — never save files directly
+- Commit format: `action: description` only (e.g., `new blog post: Title`). No Co-Authored-By signatures.
+
+## Security
+- `~/.claude/settings.json` has deny patterns blocking reads of `.zshrc`, `.secrets`, `.ssh/*`, `.env`, `*.pem`, `*.key` and commands like `env`, `printenv`, `echo $SECRET_*`
+- NEVER read files that may contain secrets — ask the user what's in them instead
+- NEVER dispatch agents to read secret-containing files
+
 ## Don't
 - Don't change e2e test selectors without updating both CSS and `tests/e2e/blog.test.js` — critical selectors: `#posts-list .card`, `#pagination-controls`, `.dot.active`, `.pagination-arrows button`, `#search-input`, `h1.post-title`, `.post-content`, `#share-twitter`
 - Don't change class names used by JS rendering (`.card`, `.badge`, `.muted`, `.post-title`, `.post-meta`, `.post-content`, `.reading-time`, `.badges`) — index.js and post.js generate DOM with these
 - Don't add build tools or frameworks — the site is intentionally plain HTML/CSS/JS for simplicity and S3 static hosting
+- Don't commit secrets — AWS credentials, API tokens, and auth cookies belong in `~/.secrets` (sourced by `.zshrc`, blocked from Claude)
 - Don't use Inter, Space Grotesk, Roboto, or system-ui fonts — the design intentionally avoids generic/overused developer portfolio typography
+- Don't use Canva MCP for social cards — use the HTML/CSS engine at `social-cards/engine.js` instead (brand consistency)
