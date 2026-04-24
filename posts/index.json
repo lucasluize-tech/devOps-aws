@@ -1,4 +1,6 @@
 [
+  {"slug": "tailscale-zero-trust-zero-config-aws-subnet-router-terraform"},
+  {"slug": "tailscale-wsl2-mtu-ssh-hang-debugging"},
   {"slug": "local-ci-green-remote-ci-red-post-refactor-hygiene"},
   {"slug": "securing-agentic-workflows-data-barriers"},
   {"slug": "tmux-from-zero-to-splitting-panes-with-confidence"},
