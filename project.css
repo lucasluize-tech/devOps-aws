@@ -30,19 +30,34 @@
   font-family: 'JetBrains Mono', monospace;
   font-size: 0.85rem;
   color: var(--muted);
-  margin-bottom: 16px;
+  margin-bottom: 20px;
+  padding: 10px 14px;
+  background: var(--code-bg);
+  border-left: 2px solid var(--border);
+  border-radius: 6px;
 }
 
-.project-tech .tech-list { color: var(--muted); }
+.project-tech > span:first-child {
+  color: var(--accent);
+  font-weight: 500;
+}
+
+.project-tech .tech-list { color: var(--text); }
 
 .project-actions {
   display: flex;
   gap: 12px;
   flex-wrap: wrap;
-  margin-top: 8px;
+  margin-top: 12px;
+  align-items: center;
 }
 
-.project-actions .muted { margin: 0; font-style: italic; }
+.project-actions .muted {
+  margin: 0;
+  font-style: italic;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.85rem;
+}
 
 .project-content {
   line-height: 1.85;

@@ -588,7 +588,16 @@ footer {
   font-family: 'JetBrains Mono', monospace;
   font-size: 0.8rem;
   margin-top: 6px;
+  transition: transform 0.2s ease, color 0.2s ease;
 }
+.project-card:hover .project-card-cta {
+  color: var(--accent-bright);
+  transform: translateX(3px);
+}
+
+/* ─── Dots: hover affordance ─── */
+#projects-dots .dot { transition: color 0.2s ease, transform 0.2s ease; }
+#projects-dots .dot:hover { color: var(--accent-bright); }
 
 /* ─── Category tag + status pill ─── */
 .category-tag {
@@ -600,7 +609,9 @@ footer {
   border-radius: 4px;
   border: 1px solid var(--border);
   color: var(--muted);
+  background: rgba(255, 255, 255, 0.015);
 }
+
 .status-pill {
   font-family: 'JetBrains Mono', monospace;
   font-size: 0.7rem;
@@ -608,11 +619,23 @@ footer {
   padding: 3px 10px;
   border-radius: 999px;
   border: 1px solid currentColor;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }
-.status-pill.status-production  { color: var(--success); }
-.status-pill.status-published   { color: var(--accent); }
-.status-pill.status-maintained  { color: var(--secondary); }
-.status-pill.status-archived    { color: var(--muted); }
+.status-pill::before {
+  content: '';
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  box-shadow: 0 0 6px currentColor;
+  flex-shrink: 0;
+}
+.status-pill.status-production  { color: var(--success);   background: rgba(52, 211, 153, 0.08); }
+.status-pill.status-published   { color: var(--accent);    background: rgba(167, 139, 250, 0.08); }
+.status-pill.status-maintained  { color: var(--secondary); background: rgba(249, 115, 22, 0.08); }
+.status-pill.status-archived    { color: var(--muted);     background: rgba(139, 134, 151, 0.05); }
+.status-pill.status-archived::before { box-shadow: none; opacity: 0.5; }
 
 /* ─── Tech chips ─── */
 .tech-chip {
@@ -623,6 +646,11 @@ footer {
   background: var(--code-bg);
   color: var(--muted);
   border: 1px solid var(--border-subtle);
+  transition: border-color 0.2s ease, color 0.2s ease;
+}
+.project-card:hover .tech-chip {
+  border-color: var(--border);
+  color: var(--text);
 }
 
 /* ─── Mobile: full-width project cards ─── */
