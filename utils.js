@@ -139,9 +139,29 @@ function renderStatusPill(status, container) {
   return span;
 }
 
+function renderTechChips(techArray, container, { variant }) {
+  if (!Array.isArray(techArray) || techArray.length === 0) return;
+  if (variant === 'card') {
+    const wrap = document.createElement('div');
+    wrap.className = 'tech-chips';
+    techArray.forEach((tech) => {
+      const chip = document.createElement('span');
+      chip.className = 'tech-chip';
+      chip.textContent = tech;
+      wrap.appendChild(chip);
+    });
+    container.appendChild(wrap);
+  } else if (variant === 'detail') {
+    const list = document.createElement('span');
+    list.className = 'tech-list';
+    list.textContent = techArray.join(' · ');
+    container.appendChild(list);
+  }
+}
+
 // If in Node.js, export; else, attach to window
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { parseMarkdown, calculateReadingTime, collectTags, filterPosts, searchPosts, getTotalPages, getPostsForPage, validateProject, renderCategoryTag, renderStatusPill, PROJECT_CATEGORIES, PROJECT_STATUSES, PROJECT_VISIBILITIES };
+  module.exports = { parseMarkdown, calculateReadingTime, collectTags, filterPosts, searchPosts, getTotalPages, getPostsForPage, validateProject, renderCategoryTag, renderStatusPill, renderTechChips, PROJECT_CATEGORIES, PROJECT_STATUSES, PROJECT_VISIBILITIES };
 } else {
   window.parseMarkdown = parseMarkdown;
   window.calculateReadingTime = calculateReadingTime;
@@ -153,4 +173,5 @@ if (typeof module !== 'undefined' && module.exports) {
   window.validateProject = validateProject;
   window.renderCategoryTag = renderCategoryTag;
   window.renderStatusPill = renderStatusPill;
+  window.renderTechChips = renderTechChips;
 }

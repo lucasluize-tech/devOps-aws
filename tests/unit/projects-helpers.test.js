@@ -37,3 +37,29 @@ describe('renderStatusPill', () => {
     });
   });
 });
+
+const { renderTechChips } = require('../../utils');
+
+describe('renderTechChips', () => {
+  it('renders one .tech-chip per item in card variant', () => {
+    const container = document.createElement('div');
+    renderTechChips(['Proxmox', 'Debian', 'Bash'], container, { variant: 'card' });
+    const chips = container.querySelectorAll('.tech-chip');
+    expect(chips.length).toBe(3);
+    expect(chips[0].textContent).toBe('Proxmox');
+  });
+
+  it('renders a single .tech-list with "·" separator in detail variant', () => {
+    const container = document.createElement('div');
+    renderTechChips(['Proxmox', 'Debian', 'Bash'], container, { variant: 'detail' });
+    const list = container.querySelector('.tech-list');
+    expect(list).not.toBeNull();
+    expect(list.textContent).toBe('Proxmox · Debian · Bash');
+  });
+
+  it('renders nothing when techArray is empty', () => {
+    const container = document.createElement('div');
+    renderTechChips([], container, { variant: 'card' });
+    expect(container.children.length).toBe(0);
+  });
+});
