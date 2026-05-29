@@ -195,9 +195,33 @@ function renderActionButtons(project, container) {
   container.appendChild(wrap);
 }
 
+function splitBodyByH2(content) {
+  const out = { why: '', architecture: '', cia: '', notes: '', galleryAfter: 'top' };
+  const headings = ['Why', 'Architecture', 'CIA', 'Notes'];
+  const keys =     ['why', 'architecture', 'cia', 'notes'];
+  const positions = headings.map((h) => {
+    const idx = content.search(new RegExp(`^##\\s+${h}\\s*$`, 'm'));
+    return { heading: h, idx };
+  });
+  const present = positions
+    .filter((p) => p.idx >= 0)
+    .sort((a, b) => a.idx - b.idx);
+  present.forEach((p, i) => {
+    const start = p.idx + content.slice(p.idx).indexOf('\n') + 1;
+    const end = i + 1 < present.length ? present[i + 1].idx : content.length;
+    const body = content.slice(start, end).trim();
+    const key = keys[headings.indexOf(p.heading)];
+    out[key] = body;
+  });
+  if (out.architecture) out.galleryAfter = 'architecture';
+  else if (out.why) out.galleryAfter = 'why';
+  else out.galleryAfter = 'top';
+  return out;
+}
+
 // If in Node.js, export; else, attach to window
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { parseMarkdown, calculateReadingTime, collectTags, filterPosts, searchPosts, getTotalPages, getPostsForPage, validateProject, renderCategoryTag, renderStatusPill, renderTechChips, renderActionButtons, PROJECT_CATEGORIES, PROJECT_STATUSES, PROJECT_VISIBILITIES };
+  module.exports = { parseMarkdown, calculateReadingTime, collectTags, filterPosts, searchPosts, getTotalPages, getPostsForPage, validateProject, renderCategoryTag, renderStatusPill, renderTechChips, renderActionButtons, splitBodyByH2, PROJECT_CATEGORIES, PROJECT_STATUSES, PROJECT_VISIBILITIES };
 } else {
   window.parseMarkdown = parseMarkdown;
   window.calculateReadingTime = calculateReadingTime;
@@ -211,4 +235,5 @@ if (typeof module !== 'undefined' && module.exports) {
   window.renderStatusPill = renderStatusPill;
   window.renderTechChips = renderTechChips;
   window.renderActionButtons = renderActionButtons;
+  window.splitBodyByH2 = splitBodyByH2;
 }
