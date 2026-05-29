@@ -219,9 +219,37 @@ function splitBodyByH2(content) {
   return out;
 }
 
+const SCREENSHOT_EXT_RE = /\.(png|jpg|jpeg|webp|gif)$/i;
+
+function renderScreenshotGallery(screenshots, slug, container) {
+  if (!Array.isArray(screenshots) || screenshots.length === 0) return;
+  const wrap = document.createElement('div');
+  wrap.className = 'project-screenshots';
+  screenshots.forEach((shot) => {
+    if (!shot || typeof shot.file !== 'string' || !SCREENSHOT_EXT_RE.test(shot.file)) {
+      if (typeof console !== 'undefined') console.warn('skip screenshot:', shot);
+      return;
+    }
+    const fig = document.createElement('figure');
+    const img = document.createElement('img');
+    img.setAttribute('loading', 'lazy');
+    img.setAttribute('src', `projects/images/${slug}/${shot.file}`);
+    img.setAttribute('alt', shot.caption || '');
+    fig.appendChild(img);
+    if (shot.caption) {
+      const cap = document.createElement('figcaption');
+      cap.className = 'muted';
+      cap.textContent = shot.caption;
+      fig.appendChild(cap);
+    }
+    wrap.appendChild(fig);
+  });
+  if (wrap.children.length > 0) container.appendChild(wrap);
+}
+
 // If in Node.js, export; else, attach to window
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { parseMarkdown, calculateReadingTime, collectTags, filterPosts, searchPosts, getTotalPages, getPostsForPage, validateProject, renderCategoryTag, renderStatusPill, renderTechChips, renderActionButtons, splitBodyByH2, PROJECT_CATEGORIES, PROJECT_STATUSES, PROJECT_VISIBILITIES };
+  module.exports = { parseMarkdown, calculateReadingTime, collectTags, filterPosts, searchPosts, getTotalPages, getPostsForPage, validateProject, renderCategoryTag, renderStatusPill, renderTechChips, renderActionButtons, splitBodyByH2, renderScreenshotGallery, PROJECT_CATEGORIES, PROJECT_STATUSES, PROJECT_VISIBILITIES };
 } else {
   window.parseMarkdown = parseMarkdown;
   window.calculateReadingTime = calculateReadingTime;
@@ -236,4 +264,5 @@ if (typeof module !== 'undefined' && module.exports) {
   window.renderTechChips = renderTechChips;
   window.renderActionButtons = renderActionButtons;
   window.splitBodyByH2 = splitBodyByH2;
+  window.renderScreenshotGallery = renderScreenshotGallery;
 }
