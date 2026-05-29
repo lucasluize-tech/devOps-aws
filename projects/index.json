@@ -2,5 +2,6 @@
   { "slug": "proxmox-ha-infrastructure" },
   { "slug": "it-wiki-cms" },
   { "slug": "devops-lucasluize-com" },
-  { "slug": "magazine-tracker" }
+  { "slug": "magazine-tracker" },
+  { "slug": "todo-cli-tool" }
 ]
