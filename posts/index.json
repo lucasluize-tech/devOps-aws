@@ -1,4 +1,5 @@
 [
+  {"slug": "tailnet-shared-dashboard-zero-config"},
   {"slug": "tailscale-zero-trust-zero-config-aws-subnet-router-terraform"},
   {"slug": "tailscale-wsl2-mtu-ssh-hang-debugging"},
   {"slug": "local-ci-green-remote-ci-red-post-refactor-hygiene"},
