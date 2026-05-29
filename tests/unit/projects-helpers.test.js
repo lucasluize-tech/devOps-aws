@@ -63,3 +63,43 @@ describe('renderTechChips', () => {
     expect(container.children.length).toBe(0);
   });
 });
+
+const { renderActionButtons } = require('../../utils');
+
+describe('renderActionButtons', () => {
+  it('renders both GitHub and Demo buttons for public project with both URLs', () => {
+    const container = document.createElement('div');
+    renderActionButtons(
+      { visibility: 'public', github: 'https://github.com/x/y', demo: 'https://example.com' },
+      container
+    );
+    const links = container.querySelectorAll('a');
+    expect(links.length).toBe(2);
+    expect(links[0].href).toBe('https://github.com/x/y');
+    expect(links[0].rel).toMatch(/noopener/);
+    expect(links[0].rel).toMatch(/noreferrer/);
+    expect(links[0].target).toBe('_blank');
+    expect(links[1].href).toBe('https://example.com/');
+  });
+
+  it('renders only GitHub button when demo is absent', () => {
+    const container = document.createElement('div');
+    renderActionButtons({ visibility: 'public', github: 'https://github.com/x/y' }, container);
+    const links = container.querySelectorAll('a');
+    expect(links.length).toBe(1);
+  });
+
+  it('renders private muted note for visibility=private', () => {
+    const container = document.createElement('div');
+    renderActionButtons({ visibility: 'private' }, container);
+    expect(container.querySelectorAll('a').length).toBe(0);
+    expect(container.textContent).toMatch(/private repo/i);
+  });
+
+  it('renders internal muted note for visibility=internal', () => {
+    const container = document.createElement('div');
+    renderActionButtons({ visibility: 'internal' }, container);
+    expect(container.querySelectorAll('a').length).toBe(0);
+    expect(container.textContent).toMatch(/internal/i);
+  });
+});

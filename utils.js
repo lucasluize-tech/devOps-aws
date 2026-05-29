@@ -159,9 +159,45 @@ function renderTechChips(techArray, container, { variant }) {
   }
 }
 
+function renderActionButtons(project, container) {
+  const wrap = document.createElement('div');
+  wrap.className = 'project-action-buttons';
+
+  if (project.visibility === 'private' || project.visibility === 'internal') {
+    const note = document.createElement('p');
+    note.className = 'muted';
+    note.textContent = project.visibility === 'private'
+      ? 'private repo — see case study below'
+      : 'internal EPL deployment — case study below';
+    wrap.appendChild(note);
+    container.appendChild(wrap);
+    return;
+  }
+
+  if (project.github) {
+    const a = document.createElement('a');
+    a.className = 'btn';
+    a.href = project.github;
+    a.target = '_blank';
+    a.rel = 'noopener noreferrer';
+    a.textContent = 'GitHub ↗';
+    wrap.appendChild(a);
+  }
+  if (project.demo) {
+    const a = document.createElement('a');
+    a.className = 'btn primary';
+    a.href = project.demo;
+    a.target = '_blank';
+    a.rel = 'noopener noreferrer';
+    a.textContent = 'Live demo ↗';
+    wrap.appendChild(a);
+  }
+  container.appendChild(wrap);
+}
+
 // If in Node.js, export; else, attach to window
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { parseMarkdown, calculateReadingTime, collectTags, filterPosts, searchPosts, getTotalPages, getPostsForPage, validateProject, renderCategoryTag, renderStatusPill, renderTechChips, PROJECT_CATEGORIES, PROJECT_STATUSES, PROJECT_VISIBILITIES };
+  module.exports = { parseMarkdown, calculateReadingTime, collectTags, filterPosts, searchPosts, getTotalPages, getPostsForPage, validateProject, renderCategoryTag, renderStatusPill, renderTechChips, renderActionButtons, PROJECT_CATEGORIES, PROJECT_STATUSES, PROJECT_VISIBILITIES };
 } else {
   window.parseMarkdown = parseMarkdown;
   window.calculateReadingTime = calculateReadingTime;
@@ -174,4 +210,5 @@ if (typeof module !== 'undefined' && module.exports) {
   window.renderCategoryTag = renderCategoryTag;
   window.renderStatusPill = renderStatusPill;
   window.renderTechChips = renderTechChips;
+  window.renderActionButtons = renderActionButtons;
 }
