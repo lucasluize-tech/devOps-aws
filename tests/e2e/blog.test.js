@@ -25,9 +25,9 @@ test.describe('Blog Tests', () => {
       return posts.length;
     });
     const expectedPages = Math.ceil(totalPosts / 4);
-    const dots = page.locator('.dot');
+    const dots = page.locator('#pagination-controls .dot');
     await expect(dots).toHaveCount(expectedPages);
-    const activeDot = page.locator('.dot.active');
+    const activeDot = page.locator('#pagination-controls .dot.active');
     await expect(activeDot).toHaveCount(1);
   });
 
@@ -46,7 +46,7 @@ test.describe('Blog Tests', () => {
     const postsPerPage = 4;
     const expectedSecondPageCount = Math.min(postsPerPage, totalPosts - postsPerPage);
     await expect(cards).toHaveCount(expectedSecondPageCount);
-    await expect(page.locator('.dot').nth(1)).toHaveClass(/active/); // Second dot active
+    await expect(page.locator('#pagination-controls .dot').nth(1)).toHaveClass(/active/); // Second dot active
   });
 
   test('Search functionality works', async ({ page }) => {
@@ -60,7 +60,7 @@ test.describe('Blog Tests', () => {
 
   test('Tag filtering works', async ({ page }) => {
     await page.goto('/');
-    await page.click('text=AWS'); // Click AWS tag button
+    await page.locator('#tag-filters button', { hasText: 'AWS' }).click(); // Click AWS tag button
     await page.waitForTimeout(500);
     const cards = page.locator('#posts-list .card');
     const count = await cards.count();
