@@ -36,7 +36,7 @@ function parseMarkdown(md) {
             currentArrayKey = null;
             currentArray = null;
             const [key, ...valueParts] = line.split(':');
-            if (key && valueParts.length >= 0) {
+            if (key && valueParts.length > 0) {
               const trimmedKey = key.trim();
               let value = valueParts.join(':').trim();
               if (value === '') {

@@ -282,7 +282,7 @@ h2::before {
 }
 
 #projects h2::after {
-  content: '[6 active]';
+  content: '[active]';
   font-family: 'JetBrains Mono', monospace;
   font-size: 0.65rem;
   color: var(--success);
