@@ -116,9 +116,32 @@ function validateProject(data) {
   return { ok: errors.length === 0, errors };
 }
 
+const STATUS_CLASS_MAP = {
+  'in production': 'status-production',
+  'published':     'status-published',
+  'maintained':    'status-maintained',
+  'archived':      'status-archived',
+};
+
+function renderCategoryTag(category, container) {
+  const span = document.createElement('span');
+  span.className = 'category-tag';
+  span.textContent = category;
+  container.appendChild(span);
+  return span;
+}
+
+function renderStatusPill(status, container) {
+  const span = document.createElement('span');
+  span.className = 'status-pill ' + (STATUS_CLASS_MAP[status] || '');
+  span.textContent = status;
+  container.appendChild(span);
+  return span;
+}
+
 // If in Node.js, export; else, attach to window
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { parseMarkdown, calculateReadingTime, collectTags, filterPosts, searchPosts, getTotalPages, getPostsForPage, validateProject, PROJECT_CATEGORIES, PROJECT_STATUSES, PROJECT_VISIBILITIES };
+  module.exports = { parseMarkdown, calculateReadingTime, collectTags, filterPosts, searchPosts, getTotalPages, getPostsForPage, validateProject, renderCategoryTag, renderStatusPill, PROJECT_CATEGORIES, PROJECT_STATUSES, PROJECT_VISIBILITIES };
 } else {
   window.parseMarkdown = parseMarkdown;
   window.calculateReadingTime = calculateReadingTime;
@@ -128,4 +151,6 @@ if (typeof module !== 'undefined' && module.exports) {
   window.getTotalPages = getTotalPages;
   window.getPostsForPage = getPostsForPage;
   window.validateProject = validateProject;
+  window.renderCategoryTag = renderCategoryTag;
+  window.renderStatusPill = renderStatusPill;
 }
