@@ -133,7 +133,8 @@ function renderCategoryTag(category, container) {
 
 function renderStatusPill(status, container) {
   const span = document.createElement('span');
-  span.className = 'status-pill ' + (STATUS_CLASS_MAP[status] || '');
+  const cls = STATUS_CLASS_MAP[status];
+  span.className = cls ? `status-pill ${cls}` : 'status-pill';
   span.textContent = status;
   container.appendChild(span);
   return span;
@@ -227,7 +228,7 @@ function renderScreenshotGallery(screenshots, slug, container) {
   wrap.className = 'project-screenshots';
   screenshots.forEach((shot) => {
     if (!shot || typeof shot.file !== 'string' || !SCREENSHOT_EXT_RE.test(shot.file)) {
-      if (typeof console !== 'undefined') console.warn('skip screenshot:', shot);
+      console.warn('skip screenshot:', shot);
       return;
     }
     const fig = document.createElement('figure');
