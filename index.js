@@ -263,19 +263,29 @@ function attachCarouselDots(container, dotsContainer, count) {
   }
   const cards = Array.from(container.querySelectorAll('.project-card'));
   if (cards.length === 0) return;
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach((entry) => {
-      if (entry.isIntersecting && entry.intersectionRatio > 0.6) {
-        const idx = cards.indexOf(entry.target);
-        if (idx >= 0) {
-          dotsContainer.querySelectorAll('.dot').forEach((d, i) => {
-            d.classList.toggle('active', i === idx);
-          });
-        }
+
+  function setActiveDot() {
+    const containerLeft = container.scrollLeft;
+    let bestIdx = 0;
+    let bestDistance = Infinity;
+    cards.forEach((card, i) => {
+      const cardLeft = card.offsetLeft - container.offsetLeft;
+      const distance = Math.abs(cardLeft - containerLeft);
+      if (distance < bestDistance) {
+        bestDistance = distance;
+        bestIdx = i;
       }
     });
-  }, { root: container, threshold: [0.6] });
-  cards.forEach((c) => observer.observe(c));
+    const dots = dotsContainer.querySelectorAll('.dot');
+    dots.forEach((d, i) => d.classList.toggle('active', i === bestIdx));
+  }
+
+  let scrollTimeout;
+  container.addEventListener('scroll', () => {
+    clearTimeout(scrollTimeout);
+    scrollTimeout = setTimeout(setActiveDot, 50);
+  }, { passive: true });
+  setActiveDot();
 }
 
 document.addEventListener('DOMContentLoaded', initIndex);

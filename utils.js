@@ -17,23 +17,40 @@ function parseMarkdown(md) {
           const matter = require('gray-matter');
           const result = matter(normalizedMd);
           return { data: result.data, content: result.content };
+        } else if (typeof window !== 'undefined' && typeof window.matter === 'function') {
+          const result = window.matter(normalizedMd);
+          return { data: result.data, content: result.content };
         } else {
-          // Manual parsing for browser
+          // Manual parsing fallback for browser without gray-matter
           const frontLines = front.split('\n');
+          let currentArrayKey = null;
+          let currentArray = null;
           frontLines.forEach(line => {
+            const arrayItemMatch = line.match(/^\s+-\s+(.*)$/);
+            if (currentArrayKey && arrayItemMatch) {
+              let item = arrayItemMatch[1].trim();
+              if (item.startsWith('"') && item.endsWith('"')) item = item.slice(1, -1);
+              currentArray.push(item);
+              return;
+            }
+            currentArrayKey = null;
+            currentArray = null;
             const [key, ...valueParts] = line.split(':');
-            if (key && valueParts.length) {
+            if (key && valueParts.length >= 0) {
+              const trimmedKey = key.trim();
               let value = valueParts.join(':').trim();
+              if (value === '') {
+                currentArrayKey = trimmedKey;
+                currentArray = [];
+                data[trimmedKey] = currentArray;
+                return;
+              }
               if (value.startsWith('"') && value.endsWith('"')) {
                 value = value.slice(1, -1);
               } else if (value.startsWith('[') && value.endsWith(']')) {
-                try {
-                  value = JSON.parse(value);
-                } catch (e) {
-                  // Keep as string if not valid JSON
-                }
+                try { value = JSON.parse(value); } catch (e) { /* keep string */ }
               }
-              data[key.trim()] = value;
+              data[trimmedKey] = value;
             }
           });
         }
