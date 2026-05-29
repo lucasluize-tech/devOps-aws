@@ -89,9 +89,36 @@ function getPostsForPage(posts, page, postsPerPage = 4) {
   return posts.slice(start, start + postsPerPage);
 }
 
+const PROJECT_CATEGORIES = ['Infra', 'Apps', 'Dev Tools', 'Other'];
+const PROJECT_STATUSES = ['in production', 'published', 'maintained', 'archived'];
+const PROJECT_VISIBILITIES = ['public', 'private', 'internal'];
+const PROJECT_REQUIRED = ['title', 'slug', 'category', 'status', 'goal', 'visibility', 'date', 'tech_stack'];
+
+function validateProject(data) {
+  const errors = [];
+  PROJECT_REQUIRED.forEach((field) => {
+    if (data[field] === undefined || data[field] === null) {
+      errors.push(`missing required field: ${field}`);
+    }
+  });
+  if (data.category && !PROJECT_CATEGORIES.includes(data.category)) {
+    errors.push(`invalid category: ${data.category}`);
+  }
+  if (data.status && !PROJECT_STATUSES.includes(data.status)) {
+    errors.push(`invalid status: ${data.status}`);
+  }
+  if (data.visibility && !PROJECT_VISIBILITIES.includes(data.visibility)) {
+    errors.push(`invalid visibility: ${data.visibility}`);
+  }
+  if (data.tech_stack !== undefined && !Array.isArray(data.tech_stack)) {
+    errors.push('tech_stack must be an array');
+  }
+  return { ok: errors.length === 0, errors };
+}
+
 // If in Node.js, export; else, attach to window
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { parseMarkdown, calculateReadingTime, collectTags, filterPosts, searchPosts, getTotalPages, getPostsForPage };
+  module.exports = { parseMarkdown, calculateReadingTime, collectTags, filterPosts, searchPosts, getTotalPages, getPostsForPage, validateProject, PROJECT_CATEGORIES, PROJECT_STATUSES, PROJECT_VISIBILITIES };
 } else {
   window.parseMarkdown = parseMarkdown;
   window.calculateReadingTime = calculateReadingTime;
@@ -100,4 +127,5 @@ if (typeof module !== 'undefined' && module.exports) {
   window.searchPosts = searchPosts;
   window.getTotalPages = getTotalPages;
   window.getPostsForPage = getPostsForPage;
+  window.validateProject = validateProject;
 }
