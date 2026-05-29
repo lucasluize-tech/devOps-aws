@@ -17,9 +17,6 @@ function parseMarkdown(md) {
           const matter = require('gray-matter');
           const result = matter(normalizedMd);
           return { data: result.data, content: result.content };
-        } else if (typeof window !== 'undefined' && typeof window.matter === 'function') {
-          const result = window.matter(normalizedMd);
-          return { data: result.data, content: result.content };
         } else {
           // Manual parsing fallback for browser without gray-matter
           const frontLines = front.split('\n');
