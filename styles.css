@@ -282,7 +282,7 @@ h2::before {
 }
 
 #projects h2::after {
-  content: '[deployed]';
+  content: '[active]';
   font-family: 'JetBrains Mono', monospace;
   font-size: 0.65rem;
   color: var(--success);
@@ -516,4 +516,144 @@ footer {
   body::before { opacity: 0.15; }
   .contact-body { font-size: 0.75rem; padding: 14px; }
   section { margin-top: 36px; padding-top: 24px; }
+}
+
+/* ─── Skills 4-col grid ─── */
+@media (min-width: 1101px) {
+  .grid.grid-4 { grid-template-columns: repeat(4, 1fr); }
+}
+@media (max-width: 1100px) and (min-width: 701px) {
+  .grid.grid-4 { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* ─── Projects carousel ─── */
+#projects-carousel {
+  display: flex;
+  gap: 16px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  padding: 4px 4px 16px;
+  -webkit-overflow-scrolling: touch;
+}
+#projects-carousel::-webkit-scrollbar { display: none; }
+
+#projects-dots {
+  justify-content: center;
+  margin-top: 4px;
+}
+
+.project-card {
+  scroll-snap-align: start;
+  flex: 0 0 320px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  border-radius: 10px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  text-decoration: none;
+  color: var(--text);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.project-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 40px rgba(167, 139, 250, 0.08);
+  border-left-color: var(--secondary);
+  color: var(--text);
+  text-decoration: none;
+}
+.project-card-pills { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.project-card .project-title {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: var(--text-bright);
+}
+.project-card .project-goal {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+.project-card .tech-chips {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: auto;
+}
+.project-card-cta {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.8rem;
+  margin-top: 6px;
+  transition: transform 0.2s ease, color 0.2s ease;
+}
+.project-card:hover .project-card-cta {
+  color: var(--accent-bright);
+  transform: translateX(3px);
+}
+
+/* ─── Dots: hover affordance ─── */
+#projects-dots .dot { transition: color 0.2s ease, transform 0.2s ease; }
+#projects-dots .dot:hover { color: var(--accent-bright); }
+
+/* ─── Category tag + status pill ─── */
+.category-tag {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 3px 8px;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+  color: var(--muted);
+  background: rgba(255, 255, 255, 0.015);
+}
+
+.status-pill {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.02em;
+  padding: 3px 10px;
+  border-radius: 999px;
+  border: 1px solid currentColor;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.status-pill::before {
+  content: '';
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  box-shadow: 0 0 6px currentColor;
+  flex-shrink: 0;
+}
+.status-pill.status-production  { color: var(--success);   background: rgba(52, 211, 153, 0.08); }
+.status-pill.status-published   { color: var(--accent);    background: rgba(167, 139, 250, 0.08); }
+.status-pill.status-maintained  { color: var(--secondary); background: rgba(249, 115, 22, 0.08); }
+.status-pill.status-archived    { color: var(--muted);     background: rgba(139, 134, 151, 0.05); }
+.status-pill.status-archived::before { box-shadow: none; opacity: 0.5; }
+
+/* ─── Tech chips ─── */
+.tech-chip {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.7rem;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: var(--code-bg);
+  color: var(--muted);
+  border: 1px solid var(--border-subtle);
+  transition: border-color 0.2s ease, color 0.2s ease;
+}
+.project-card:hover .tech-chip {
+  border-color: var(--border);
+  color: var(--text);
+}
+
+/* ─── Mobile: full-width project cards ─── */
+@media (max-width: 900px) {
+  .project-card { flex: 0 0 min(85vw, 360px); }
 }

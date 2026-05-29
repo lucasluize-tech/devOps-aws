@@ -1,0 +1,105 @@
+/* project.css — detail page styles. Inherits base + post.css. */
+
+.wrap { max-width: 880px; }
+
+.project-header { margin-bottom: 32px; padding-top: 16px; }
+
+.project-pills {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.project-title {
+  margin: 0 0 8px;
+  font-family: 'Bricolage Grotesque', sans-serif;
+  font-size: clamp(1.8rem, 4vw, 2.8rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  color: var(--text-bright);
+}
+
+.project-goal {
+  margin: 0 0 16px;
+  font-size: 1rem;
+}
+
+.project-tech {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.85rem;
+  color: var(--muted);
+  margin-bottom: 20px;
+  padding: 10px 14px;
+  background: var(--code-bg);
+  border-left: 2px solid var(--border);
+  border-radius: 6px;
+}
+
+.project-tech > span:first-child {
+  color: var(--accent);
+  font-weight: 500;
+}
+
+.project-tech .tech-list { color: var(--text); }
+
+.project-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+  align-items: center;
+}
+
+.project-actions .muted {
+  margin: 0;
+  font-style: italic;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.85rem;
+}
+
+.project-content {
+  line-height: 1.85;
+  font-size: 1.05rem;
+}
+
+.project-content h2 {
+  text-transform: none;
+  letter-spacing: normal;
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--text-bright);
+  margin: 40px 0 16px;
+  padding-left: 16px;
+  position: relative;
+}
+.project-content h2::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 4px; bottom: 4px;
+  width: 3px;
+  background: var(--accent);
+  border-radius: 2px;
+}
+.project-content p { margin: 0 0 16px; color: var(--text); }
+
+.project-screenshots { display: grid; gap: 24px; margin: 24px 0; }
+.project-screenshots figure { margin: 0; }
+.project-screenshots img {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  display: block;
+}
+.project-screenshots figcaption {
+  font-size: 0.85rem;
+  text-align: center;
+  margin-top: 8px;
+}
+
+/* Pills + chips shared via styles.css; defined there to be reusable on homepage carousel. */
+
+@media (max-width: 600px) {
+  .project-title { font-size: clamp(1.5rem, 4vw, 2rem); }
+}

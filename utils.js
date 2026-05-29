@@ -18,22 +18,36 @@ function parseMarkdown(md) {
           const result = matter(normalizedMd);
           return { data: result.data, content: result.content };
         } else {
-          // Manual parsing for browser
+          // Manual parsing fallback for browser without gray-matter
           const frontLines = front.split('\n');
+          let currentArrayKey = null;
+          let currentArray = null;
           frontLines.forEach(line => {
+            const arrayItemMatch = line.match(/^\s+-\s+(.*)$/);
+            if (currentArrayKey && arrayItemMatch) {
+              let item = arrayItemMatch[1].trim();
+              if (item.startsWith('"') && item.endsWith('"')) item = item.slice(1, -1);
+              currentArray.push(item);
+              return;
+            }
+            currentArrayKey = null;
+            currentArray = null;
             const [key, ...valueParts] = line.split(':');
-            if (key && valueParts.length) {
+            if (key && valueParts.length > 0) {
+              const trimmedKey = key.trim();
               let value = valueParts.join(':').trim();
+              if (value === '') {
+                currentArrayKey = trimmedKey;
+                currentArray = [];
+                data[trimmedKey] = currentArray;
+                return;
+              }
               if (value.startsWith('"') && value.endsWith('"')) {
                 value = value.slice(1, -1);
               } else if (value.startsWith('[') && value.endsWith(']')) {
-                try {
-                  value = JSON.parse(value);
-                } catch (e) {
-                  // Keep as string if not valid JSON
-                }
+                try { value = JSON.parse(value); } catch (e) { /* keep string */ }
               }
-              data[key.trim()] = value;
+              data[trimmedKey] = value;
             }
           });
         }
@@ -89,9 +103,168 @@ function getPostsForPage(posts, page, postsPerPage = 4) {
   return posts.slice(start, start + postsPerPage);
 }
 
+const PROJECT_CATEGORIES = ['Infra', 'Apps', 'Dev Tools', 'Other'];
+const PROJECT_STATUSES = ['in production', 'published', 'maintained', 'archived'];
+const PROJECT_VISIBILITIES = ['public', 'private', 'internal'];
+const PROJECT_REQUIRED = ['title', 'slug', 'category', 'status', 'goal', 'visibility', 'date', 'tech_stack'];
+
+function validateProject(data) {
+  const errors = [];
+  PROJECT_REQUIRED.forEach((field) => {
+    if (data[field] === undefined || data[field] === null) {
+      errors.push(`missing required field: ${field}`);
+    }
+  });
+  if (data.category && !PROJECT_CATEGORIES.includes(data.category)) {
+    errors.push(`invalid category: ${data.category}`);
+  }
+  if (data.status && !PROJECT_STATUSES.includes(data.status)) {
+    errors.push(`invalid status: ${data.status}`);
+  }
+  if (data.visibility && !PROJECT_VISIBILITIES.includes(data.visibility)) {
+    errors.push(`invalid visibility: ${data.visibility}`);
+  }
+  if (data.tech_stack !== undefined && !Array.isArray(data.tech_stack)) {
+    errors.push('tech_stack must be an array');
+  }
+  return { ok: errors.length === 0, errors };
+}
+
+const STATUS_CLASS_MAP = {
+  'in production': 'status-production',
+  'published':     'status-published',
+  'maintained':    'status-maintained',
+  'archived':      'status-archived',
+};
+
+function renderCategoryTag(category, container) {
+  const span = document.createElement('span');
+  span.className = 'category-tag';
+  span.textContent = category;
+  container.appendChild(span);
+  return span;
+}
+
+function renderStatusPill(status, container) {
+  const span = document.createElement('span');
+  const cls = STATUS_CLASS_MAP[status];
+  span.className = cls ? `status-pill ${cls}` : 'status-pill';
+  span.textContent = status;
+  container.appendChild(span);
+  return span;
+}
+
+function renderTechChips(techArray, container, { variant }) {
+  if (!Array.isArray(techArray) || techArray.length === 0) return;
+  if (variant === 'card') {
+    const wrap = document.createElement('div');
+    wrap.className = 'tech-chips';
+    techArray.forEach((tech) => {
+      const chip = document.createElement('span');
+      chip.className = 'tech-chip';
+      chip.textContent = tech;
+      wrap.appendChild(chip);
+    });
+    container.appendChild(wrap);
+  } else if (variant === 'detail') {
+    const list = document.createElement('span');
+    list.className = 'tech-list';
+    list.textContent = techArray.join(' · ');
+    container.appendChild(list);
+  }
+}
+
+function renderActionButtons(project, container) {
+  const wrap = document.createElement('div');
+  wrap.className = 'project-action-buttons';
+
+  if (project.visibility === 'private' || project.visibility === 'internal') {
+    const note = document.createElement('p');
+    note.className = 'muted';
+    note.textContent = project.visibility === 'private'
+      ? 'private repo — see case study below'
+      : 'internal EPL deployment — case study below';
+    wrap.appendChild(note);
+    container.appendChild(wrap);
+    return;
+  }
+
+  if (project.github) {
+    const a = document.createElement('a');
+    a.className = 'btn';
+    a.href = project.github;
+    a.target = '_blank';
+    a.rel = 'noopener noreferrer';
+    a.textContent = 'GitHub ↗';
+    wrap.appendChild(a);
+  }
+  if (project.demo) {
+    const a = document.createElement('a');
+    a.className = 'btn primary';
+    a.href = project.demo;
+    a.target = '_blank';
+    a.rel = 'noopener noreferrer';
+    a.textContent = 'Live demo ↗';
+    wrap.appendChild(a);
+  }
+  container.appendChild(wrap);
+}
+
+function splitBodyByH2(content) {
+  const out = { why: '', architecture: '', cia: '', notes: '', galleryAfter: 'top' };
+  const headings = ['Why', 'Architecture', 'CIA', 'Notes'];
+  const keys =     ['why', 'architecture', 'cia', 'notes'];
+  const positions = headings.map((h) => {
+    const idx = content.search(new RegExp(`^##\\s+${h}\\s*$`, 'm'));
+    return { heading: h, idx };
+  });
+  const present = positions
+    .filter((p) => p.idx >= 0)
+    .sort((a, b) => a.idx - b.idx);
+  present.forEach((p, i) => {
+    const start = p.idx + content.slice(p.idx).indexOf('\n') + 1;
+    const end = i + 1 < present.length ? present[i + 1].idx : content.length;
+    const body = content.slice(start, end).trim();
+    const key = keys[headings.indexOf(p.heading)];
+    out[key] = body;
+  });
+  if (out.architecture) out.galleryAfter = 'architecture';
+  else if (out.why) out.galleryAfter = 'why';
+  else out.galleryAfter = 'top';
+  return out;
+}
+
+const SCREENSHOT_EXT_RE = /\.(png|jpg|jpeg|webp|gif)$/i;
+
+function renderScreenshotGallery(screenshots, slug, container) {
+  if (!Array.isArray(screenshots) || screenshots.length === 0) return;
+  const wrap = document.createElement('div');
+  wrap.className = 'project-screenshots';
+  screenshots.forEach((shot) => {
+    if (!shot || typeof shot.file !== 'string' || !SCREENSHOT_EXT_RE.test(shot.file)) {
+      console.warn('skip screenshot:', shot);
+      return;
+    }
+    const fig = document.createElement('figure');
+    const img = document.createElement('img');
+    img.setAttribute('loading', 'lazy');
+    img.setAttribute('src', `projects/images/${slug}/${shot.file}`);
+    img.setAttribute('alt', shot.caption || '');
+    fig.appendChild(img);
+    if (shot.caption) {
+      const cap = document.createElement('figcaption');
+      cap.className = 'muted';
+      cap.textContent = shot.caption;
+      fig.appendChild(cap);
+    }
+    wrap.appendChild(fig);
+  });
+  if (wrap.children.length > 0) container.appendChild(wrap);
+}
+
 // If in Node.js, export; else, attach to window
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { parseMarkdown, calculateReadingTime, collectTags, filterPosts, searchPosts, getTotalPages, getPostsForPage };
+  module.exports = { parseMarkdown, calculateReadingTime, collectTags, filterPosts, searchPosts, getTotalPages, getPostsForPage, validateProject, renderCategoryTag, renderStatusPill, renderTechChips, renderActionButtons, splitBodyByH2, renderScreenshotGallery, PROJECT_CATEGORIES, PROJECT_STATUSES, PROJECT_VISIBILITIES };
 } else {
   window.parseMarkdown = parseMarkdown;
   window.calculateReadingTime = calculateReadingTime;
@@ -100,4 +273,11 @@ if (typeof module !== 'undefined' && module.exports) {
   window.searchPosts = searchPosts;
   window.getTotalPages = getTotalPages;
   window.getPostsForPage = getPostsForPage;
+  window.validateProject = validateProject;
+  window.renderCategoryTag = renderCategoryTag;
+  window.renderStatusPill = renderStatusPill;
+  window.renderTechChips = renderTechChips;
+  window.renderActionButtons = renderActionButtons;
+  window.splitBodyByH2 = splitBodyByH2;
+  window.renderScreenshotGallery = renderScreenshotGallery;
 }

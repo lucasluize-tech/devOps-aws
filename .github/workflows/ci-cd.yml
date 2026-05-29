@@ -9,25 +9,45 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
     - uses: actions/checkout@v4
     - uses: actions/setup-node@v4
       with:
-        node-version: '18'
+        node-version: '20'
+        cache: 'npm'
     - name: Install dependencies
       run: npm ci
-    - name: Install Playwright
-      run: npx playwright install
+    - uses: actions/cache@v4
+      id: playwright-cache
+      with:
+        path: ~/.cache/ms-playwright
+        key: pw-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+    - name: Install Playwright browsers
+      if: steps.playwright-cache.outputs.cache-hit != 'true'
+      run: npx playwright install --with-deps
     - name: Run unit tests
       run: npm test
     - name: Run e2e tests
       run: npm run test:e2e
+    - uses: actions/upload-artifact@v4
+      if: failure()
+      with:
+        name: playwright-report
+        path: |
+          playwright-report/
+          test-results/
+        retention-days: 14
 
   deploy:
     needs: test
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     environment: production
     if: github.ref == 'refs/heads/master' && github.event_name == 'push'
+    concurrency:
+      group: deploy-master
+      cancel-in-progress: false
     steps:
     - uses: actions/checkout@v4
     - name: Configure AWS
@@ -38,6 +58,15 @@ jobs:
         aws-region: us-east-1
     - name: Sync to S3
       run: |
-        aws s3 sync . s3://${{ secrets.AWS_S3_BUCKET }} --delete --exclude "node_modules/*" --exclude ".git/*" --exclude ".github/*" --exclude "tests/*" --exclude ".gitignore" --exclude "package.json" --exclude "package-lock.json"
+        aws s3 sync . s3://${{ secrets.AWS_S3_BUCKET }} --delete \
+          --exclude "node_modules/*" \
+          --exclude ".git/*" \
+          --exclude ".github/*" \
+          --exclude "tests/*" \
+          --exclude "docs/*" \
+          --exclude ".gitignore" \
+          --exclude "package.json" \
+          --exclude "package-lock.json" \
+          --exclude "skills-lock.json"
     - name: Invalidate CloudFront
       run: aws cloudfront create-invalidation --distribution-id ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }} --paths "/*"

@@ -152,6 +152,21 @@ async function initIndex() {
 
   postsContainer.innerHTML = 'Loading posts...';
 
+  // Load projects in parallel
+  const carouselContainer = document.getElementById('projects-carousel');
+  const dotsContainer = document.getElementById('projects-dots');
+  if (carouselContainer) {
+    loadProjects()
+      .then((projects) => {
+        renderProjectCarousel(projects, carouselContainer);
+        attachCarouselDots(carouselContainer, dotsContainer, projects.length);
+      })
+      .catch((err) => {
+        console.error('Error loading projects:', err);
+        carouselContainer.textContent = 'Error loading projects.';
+      });
+  }
+
   try {
     allPosts = await loadPosts();
     window.allPosts = allPosts;
@@ -185,6 +200,92 @@ async function initIndex() {
     renderPosts(getPostsForPage(searched, currentPage), postsContainer);
     updatePaginationControls(getTotalPages(searched), postsContainer.parentElement);
   });
+}
+
+// ─── Projects ───
+async function loadProjects() {
+  const response = await fetch('/projects/index.json');
+  const registry = await response.json();
+  const promises = registry.map(async (entry) => {
+    const res = await fetch(`/projects/${entry.slug}.md`);
+    const md = await res.text();
+    const parsed = parseMarkdown(md);
+    if (!parsed.data.slug) parsed.data.slug = entry.slug;
+    return parsed;
+  });
+  const projectData = await Promise.all(promises);
+  return projectData.sort((a, b) => new Date(b.data.date) - new Date(a.data.date));
+}
+
+function renderProjectCard({ data }) {
+  const a = document.createElement('a');
+  a.className = 'project-card';
+  a.href = `/project.html?slug=${data.slug}`;
+
+  const pills = document.createElement('div');
+  pills.className = 'project-card-pills';
+  renderCategoryTag(data.category, pills);
+  renderStatusPill(data.status, pills);
+  a.appendChild(pills);
+
+  const title = document.createElement('h3');
+  title.className = 'project-title';
+  title.textContent = data.title;
+  a.appendChild(title);
+
+  const goal = document.createElement('p');
+  goal.className = 'project-goal';
+  goal.textContent = data.goal;
+  a.appendChild(goal);
+
+  renderTechChips(data.tech_stack || [], a, { variant: 'card' });
+
+  const cta = document.createElement('div');
+  cta.className = 'project-card-cta muted';
+  cta.textContent = 'view case study →';
+  a.appendChild(cta);
+
+  return a;
+}
+
+function renderProjectCarousel(projects, container) {
+  container.innerHTML = '';
+  projects.forEach((p) => container.appendChild(renderProjectCard(p)));
+}
+
+function attachCarouselDots(container, dotsContainer, count) {
+  dotsContainer.innerHTML = '';
+  for (let i = 0; i < count; i++) {
+    const dot = document.createElement('span');
+    dot.className = 'dot' + (i === 0 ? ' active' : '');
+    dot.textContent = '●';
+    dotsContainer.appendChild(dot);
+  }
+  const cards = Array.from(container.querySelectorAll('.project-card'));
+  if (cards.length === 0) return;
+
+  function setActiveDot() {
+    const containerLeft = container.scrollLeft;
+    let bestIdx = 0;
+    let bestDistance = Infinity;
+    cards.forEach((card, i) => {
+      const cardLeft = card.offsetLeft - container.offsetLeft;
+      const distance = Math.abs(cardLeft - containerLeft);
+      if (distance < bestDistance) {
+        bestDistance = distance;
+        bestIdx = i;
+      }
+    });
+    const dots = dotsContainer.querySelectorAll('.dot');
+    dots.forEach((d, i) => d.classList.toggle('active', i === bestIdx));
+  }
+
+  let scrollTimeout;
+  container.addEventListener('scroll', () => {
+    clearTimeout(scrollTimeout);
+    scrollTimeout = setTimeout(setActiveDot, 50);
+  }, { passive: true });
+  setActiveDot();
 }
 
 document.addEventListener('DOMContentLoaded', initIndex);
