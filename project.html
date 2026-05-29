@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Project – Lucas Luize</title>
+  <meta name="description" content="Project case study." />
+  <meta http-equiv="x-ua-compatible" content="IE=edge" />
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-X11D57HZM9"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-X11D57HZM9');
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=DM+Sans:wght@400;500;700&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="post.css">
+  <link rel="stylesheet" href="project.css">
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gray-matter/index.js"></script>
+  <script src="utils.js"></script>
+  <script src="project.js"></script>
+</head>
+<body>
+  <div id="progress-bar"></div>
+  <div class="wrap">
+    <header>
+      <a href="/" class="brand">
+        <div class="logo">D9</div>
+        <div>
+          <div style="font-weight:800; font-family: 'Bricolage Grotesque', sans-serif;">Cloud DevOps</div>
+          <div class="muted" style="font-size:0.8rem; font-family: 'JetBrains Mono', monospace;">cd /projects</div>
+        </div>
+      </a>
+    </header>
+
+    <article id="project-article">
+      <div class="project-header">
+        <div class="project-pills"></div>
+        <h1 class="project-title">Loading...</h1>
+        <p class="project-goal muted">Loading...</p>
+        <div class="project-tech"></div>
+        <div class="project-actions"></div>
+      </div>
+      <div class="project-content"></div>
+      <a href="/#projects" class="back-to-top">^ back to all projects</a>
+    </article>
+
+    <div id="disqus_thread"></div>
+    <script>
+      var disqus_config = function () {
+        this.page.url = window.location.href;
+        var slug = new URLSearchParams(window.location.search).get('slug');
+        this.page.identifier = 'project-' + slug;
+      };
+      (function() {
+        var d = document, s = d.createElement('script');
+        s.src = 'https://devopsd9.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+      })();
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+
+    <footer>
+      &copy; <span id="y"></span> Cloud DevOps Portfolio
+    </footer>
+  </div>
+
+  <script>
+    document.getElementById('y').textContent = new Date().getFullYear();
+    (function() {
+      var bar = document.getElementById('progress-bar');
+      window.addEventListener('scroll', function() {
+        var scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
+        var docHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+        bar.style.width = (docHeight > 0 ? (scrollTop / docHeight) * 100 : 0) + '%';
+      });
+    })();
+  </script>
+  <script id="dsq-count-scr" src="//devopsd9.disqus.com/count.js" async></script>
+</body>
+</html>
