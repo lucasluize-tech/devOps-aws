@@ -41,4 +41,31 @@ test.describe('Projects carousel', () => {
     await expect(card.locator('.project-goal')).toBeVisible();
     await expect(card.locator('.tech-chip').first()).toBeVisible();
   });
+
+  const scrollLeft = (page) =>
+    page.evaluate(() => document.getElementById('projects-carousel').scrollLeft);
+
+  test('next arrow scrolls the carousel right', async ({ page }) => {
+    await page.goto('/');
+    await page.waitForSelector('#projects-carousel .project-card');
+    const before = await scrollLeft(page);
+    await page.click('#carousel-next');
+    await expect.poll(() => scrollLeft(page)).toBeGreaterThan(before + 50);
+  });
+
+  test('clicking a dot scrolls the carousel', async ({ page }) => {
+    await page.goto('/');
+    await page.waitForSelector('#projects-dots .dot');
+    const before = await scrollLeft(page);
+    await page.locator('#projects-dots .dot').nth(3).click();
+    await expect.poll(() => scrollLeft(page)).toBeGreaterThan(before + 50);
+  });
+
+  test('prev arrow is disabled at the start, enabled after scrolling', async ({ page }) => {
+    await page.goto('/');
+    await page.waitForSelector('#projects-carousel .project-card');
+    await expect(page.locator('#carousel-prev')).toBeDisabled();
+    await page.click('#carousel-next');
+    await expect(page.locator('#carousel-prev')).toBeEnabled();
+  });
 });

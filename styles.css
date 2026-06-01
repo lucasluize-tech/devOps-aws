@@ -538,37 +538,98 @@ footer {
 }
 #projects-carousel::-webkit-scrollbar { display: none; }
 
-#projects-dots {
-  justify-content: center;
+/* Positioning context for overlay arrows + mobile flex parent */
+.carousel-viewport { position: relative; }
+
+/* Edge fades: cards appear to slide under the arrows (desktop only) */
+.carousel-fade {
+  position: absolute;
+  top: 0;
+  bottom: 16px; /* align to cards, above the 16px scroll padding */
+  width: 64px;
+  pointer-events: none;
+  z-index: 2;
+  opacity: 0;
+  transition: opacity 0.25s ease;
 }
-#projects-controls {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 14px;
-  margin-top: 4px;
-}
+.carousel-fade--left  { left: 0;  background: linear-gradient(to right, var(--bg), rgba(0, 0, 0, 0)); }
+.carousel-fade--right { right: 0; background: linear-gradient(to left,  var(--bg), rgba(0, 0, 0, 0)); }
+
 .carousel-arrow {
   background: var(--bg-elevated);
   border: 1px solid var(--border);
   color: var(--text);
-  width: 34px;
-  height: 34px;
+  width: 42px;
+  height: 42px;
   border-radius: 50%;
   cursor: pointer;
-  font-size: 1.2rem;
+  font-size: 1.5rem;
   line-height: 1;
+  padding-bottom: 2px; /* optical centering of ‹ › glyphs */
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.2s ease;
+  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease,
+              box-shadow 0.2s ease, transform 0.15s ease, opacity 0.2s ease;
 }
 .carousel-arrow:hover:not(:disabled) {
   background: var(--surface);
   border-color: var(--accent);
   color: var(--accent-bright);
+  box-shadow: 0 6px 22px rgba(167, 139, 250, 0.22);
 }
-.carousel-arrow:disabled { opacity: 0.35; cursor: not-allowed; }
+.carousel-arrow:active:not(:disabled) { border-color: var(--secondary); color: var(--secondary); }
+.carousel-arrow:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.carousel-arrow:disabled {
+  opacity: 0.3; cursor: not-allowed; box-shadow: none;
+  backdrop-filter: none; -webkit-backdrop-filter: none;
+}
+
+#projects-controls {
+  display: flex;
+  justify-content: center;
+  margin-top: 12px;
+}
+#projects-dots { display: flex; justify-content: center; gap: 10px; }
+
+/* Desktop: overlay arrows on the strip edges */
+@media (min-width: 768px) {
+  .carousel-fade { opacity: 1; }
+  .carousel-arrow {
+    position: absolute;
+    top: calc(50% - 8px); /* lift above the 16px bottom scroll padding */
+    transform: translateY(-50%);
+    z-index: 3;
+    background: color-mix(in srgb, var(--bg-elevated) 88%, transparent);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+  }
+  .carousel-arrow--prev { left: 8px; }
+  .carousel-arrow--next { right: 8px; }
+  .carousel-arrow:hover:not(:disabled)  { transform: translateY(-50%) scale(1.06); }
+  .carousel-arrow:active:not(:disabled) { transform: translateY(-50%) scale(0.97); }
+}
+
+/* Mobile: inline row [prev] [dots] [next] below the strip */
+@media (max-width: 767.98px) {
+  .carousel-viewport {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+  }
+  #projects-carousel { order: 0; flex: 1 1 100%; }
+  .carousel-fade { display: none; }
+  .carousel-arrow {
+    position: static;
+    width: 34px; height: 34px; font-size: 1.2rem;
+  }
+  .carousel-arrow--prev { order: 1; }
+  #projects-controls    { order: 2; margin-top: 0; flex: 0 0 auto; }
+  .carousel-arrow--next { order: 3; }
+}
 
 .project-card {
   scroll-snap-align: start;
@@ -622,9 +683,21 @@ footer {
   transform: translateX(3px);
 }
 
-/* ─── Dots: hover affordance ─── */
-#projects-dots .dot { cursor: pointer; transition: color 0.2s ease, transform 0.2s ease; }
-#projects-dots .dot:hover { color: var(--accent-bright); }
+/* ─── Dots: clickable pagination ─── */
+#projects-dots .dot {
+  width: 9px;
+  height: 9px;
+  padding: 0;
+  border-radius: 50%;
+  background: var(--muted);
+  font-size: 0; /* hide the injected ● glyph; background renders the dot */
+  opacity: 0.4;
+  cursor: pointer;
+  transition: background 0.2s ease, opacity 0.2s ease, transform 0.2s ease, width 0.2s ease;
+}
+#projects-dots .dot:hover { opacity: 0.8; transform: scale(1.25); background: var(--accent-bright); }
+#projects-dots .dot:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+#projects-dots .dot.active { background: var(--accent); opacity: 1; width: 22px; border-radius: 5px; }
 
 /* ─── Category tag + status pill ─── */
 .category-tag {

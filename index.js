@@ -294,8 +294,8 @@ function attachCarouselDots(container, dotsContainer, count) {
   function updateControls() {
     const idx = currentIndex();
     dotsContainer.querySelectorAll('.dot').forEach((d, i) => d.classList.toggle('active', i === idx));
-    if (prevBtn) prevBtn.disabled = container.scrollLeft <= 1;
-    if (nextBtn) nextBtn.disabled = container.scrollLeft >= container.scrollWidth - container.clientWidth - 1;
+    if (prevBtn) prevBtn.disabled = container.scrollLeft <= 8;
+    if (nextBtn) nextBtn.disabled = container.scrollLeft >= container.scrollWidth - container.clientWidth - 8;
   }
 
   dotsContainer.querySelectorAll('.dot').forEach((dot, i) => {
