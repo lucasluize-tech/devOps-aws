@@ -259,12 +259,18 @@ function attachCarouselDots(container, dotsContainer, count) {
     const dot = document.createElement('span');
     dot.className = 'dot' + (i === 0 ? ' active' : '');
     dot.textContent = '●';
+    dot.setAttribute('role', 'button');
+    dot.setAttribute('tabindex', '0');
+    dot.setAttribute('aria-label', `Go to project ${i + 1}`);
     dotsContainer.appendChild(dot);
   }
   const cards = Array.from(container.querySelectorAll('.project-card'));
   if (cards.length === 0) return;
 
-  function setActiveDot() {
+  const prevBtn = document.getElementById('carousel-prev');
+  const nextBtn = document.getElementById('carousel-next');
+
+  function currentIndex() {
     const containerLeft = container.scrollLeft;
     let bestIdx = 0;
     let bestDistance = Infinity;
@@ -276,16 +282,41 @@ function attachCarouselDots(container, dotsContainer, count) {
         bestIdx = i;
       }
     });
-    const dots = dotsContainer.querySelectorAll('.dot');
-    dots.forEach((d, i) => d.classList.toggle('active', i === bestIdx));
+    return bestIdx;
   }
+
+  function scrollToCard(i) {
+    const idx = Math.max(0, Math.min(i, cards.length - 1));
+    const left = cards[idx].offsetLeft - container.offsetLeft;
+    container.scrollTo({ left, behavior: 'smooth' });
+  }
+
+  function updateControls() {
+    const idx = currentIndex();
+    dotsContainer.querySelectorAll('.dot').forEach((d, i) => d.classList.toggle('active', i === idx));
+    if (prevBtn) prevBtn.disabled = container.scrollLeft <= 1;
+    if (nextBtn) nextBtn.disabled = container.scrollLeft >= container.scrollWidth - container.clientWidth - 1;
+  }
+
+  dotsContainer.querySelectorAll('.dot').forEach((dot, i) => {
+    dot.addEventListener('click', () => scrollToCard(i));
+    dot.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        scrollToCard(i);
+      }
+    });
+  });
+
+  if (prevBtn) prevBtn.addEventListener('click', () => scrollToCard(currentIndex() - 1));
+  if (nextBtn) nextBtn.addEventListener('click', () => scrollToCard(currentIndex() + 1));
 
   let scrollTimeout;
   container.addEventListener('scroll', () => {
     clearTimeout(scrollTimeout);
-    scrollTimeout = setTimeout(setActiveDot, 50);
+    scrollTimeout = setTimeout(updateControls, 50);
   }, { passive: true });
-  setActiveDot();
+  updateControls();
 }
 
 document.addEventListener('DOMContentLoaded', initIndex);
