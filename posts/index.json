@@ -1,4 +1,5 @@
 [
+  {"slug": "proxmox-terraform-foundation-lucaslab"},
   {"slug": "encrypting-automating-bitwarden-vault-backup"},
   {"slug": "tailnet-shared-dashboard-zero-config"},
   {"slug": "tailscale-zero-trust-zero-config-aws-subnet-router-terraform"},
