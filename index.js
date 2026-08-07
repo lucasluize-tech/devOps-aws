@@ -150,7 +150,8 @@ async function initIndex() {
   window.allPosts = allPosts;
   window.currentFilter = currentFilter;
 
-  postsContainer.innerHTML = 'Loading posts...';
+  const skeleton = '<div class="skeleton-card"><div class="skeleton-line w-60"></div><div class="skeleton-line"></div><div class="skeleton-line w-80"></div></div>';
+  postsContainer.innerHTML = skeleton + skeleton + skeleton + skeleton;
 
   // Load projects in parallel
   const carouselContainer = document.getElementById('projects-carousel');

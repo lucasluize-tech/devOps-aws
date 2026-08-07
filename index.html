@@ -6,6 +6,12 @@
   <title>Cloud DevOps Portfolio – Lucas Luize</title>
   <meta name="description" content="Cloud DevOps portfolio: infrastructure, automation, and reliability projects." />
   <meta http-equiv="x-ua-compatible" content="IE=edge" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Cloud DevOps Portfolio – Lucas Luize" />
+  <meta property="og:description" content="Cloud DevOps portfolio: infrastructure, automation, and reliability projects." />
+  <meta property="og:url" content="https://devops.lucasluize.com/" />
+  <meta name="twitter:card" content="summary" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%23a78bfa'/%3E%3Cstop offset='1' stop-color='%23f97316'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='14' fill='url(%23g)'/%3E%3Ctext x='32' y='43' font-family='sans-serif' font-size='26' font-weight='800' text-anchor='middle' fill='%23100f14'%3ED9%3C/text%3E%3C/svg%3E" />
   <!-- Google tag (gtag.js) -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-X11D57HZM9"></script>
   <script>
@@ -23,13 +29,14 @@
   <script src="index.js"></script>
 </head>
 <body>
+  <a class="skip-link" href="#top">Skip to content</a>
   <div class="wrap">
     <header>
       <div class="brand">
         <div class="logo">D9</div>
         <div>
-          <div style="font-weight:800; font-family: 'Bricolage Grotesque', sans-serif;">Cloud DevOps – Portfolio</div>
-          <div class="muted" style="font-size:0.85rem; font-family: 'JetBrains Mono', monospace;">infra / automation / reliability</div>
+          <div class="brand-name">Cloud DevOps – Portfolio</div>
+          <div class="muted brand-sub">infra / automation / reliability</div>
         </div>
       </div>
        <nav>
@@ -42,7 +49,7 @@
        </nav>
     </header>
 
-    <section class="hero" id="top" style="opacity:1; transform:none; border-top:none; margin-top:24px; padding-top:36px;">
+    <section class="hero" id="top">
       <div>
         <h1>Building reliable, automated cloud platforms</h1>
         <p class="lead">Cloud DevOps Engineer focused on AWS, Terraform, Kubernetes, and CI/CD. I design, automate, and observe cloud infrastructure so teams ship faster with confidence.</p>
@@ -80,7 +87,7 @@
 
     <section id="about">
       <h2>About</h2>
-      <p class="muted" style="max-width: 680px; line-height: 1.7; font-size: 1.05rem;">I build modern DevOps stacks: infrastructure-as-code, container orchestration, secure delivery pipelines, and production-grade observability. This site tracks projects and lessons learned.</p>
+      <p class="muted about-lead">I build modern DevOps stacks: infrastructure-as-code, container orchestration, secure delivery pipelines, and production-grade observability. This site tracks projects and lessons learned.</p>
     </section>
 
     <section id="skills">
@@ -165,7 +172,7 @@
 
     <section id="contact">
       <h2>Contact</h2>
-      <p class="muted" style="margin-bottom: 20px;">Interested in collaborating or hiring? Reach out:</p>
+      <p class="muted contact-intro">Interested in collaborating or hiring? Reach out:</p>
       <div class="contact-terminal">
         <div class="panel-chrome">
           <span></span><span></span><span></span>
@@ -214,6 +221,19 @@
       document.querySelectorAll('section:not(.hero)').forEach(function(section) {
         observer.observe(section);
       });
+
+      // Nav scroll-spy: highlight the link for the section in view
+      var navLinks = document.querySelectorAll('nav a[href^="#"]');
+      var spy = new IntersectionObserver(function(entries) {
+        entries.forEach(function(entry) {
+          if (entry.isIntersecting) {
+            navLinks.forEach(function(a) {
+              a.classList.toggle('active', a.getAttribute('href') === '#' + entry.target.id);
+            });
+          }
+        });
+      }, { rootMargin: '-40% 0px -55% 0px' });
+      document.querySelectorAll('section[id]').forEach(function(s) { spy.observe(s); });
     })();
   </script>
 </body>
