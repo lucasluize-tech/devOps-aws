@@ -226,11 +226,6 @@ nav a.active::after { width: 70%; left: 15%; }
   border-color: rgba(167, 139, 250, 0.3);
 }
 
-button.badge {
-  cursor: pointer;
-  font-family: 'DM Sans', sans-serif;
-}
-
 .code {
   background: var(--code-bg); color: #c7d2fe;
   border: none; border-radius: 0;
@@ -367,28 +362,30 @@ h2::before {
 .contact-intro { margin-bottom: 20px; }
 
 /* ─── Posts Section ─── */
-#search-input {
+#posts-controls { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
+
+#search-input, #tag-filter {
   padding: 10px 14px;
   border: 1px solid var(--border);
   border-radius: 8px;
   background: var(--bg-elevated);
   color: var(--text);
-  width: 100%; max-width: 320px;
-  margin-bottom: 12px;
   font-family: 'DM Sans', sans-serif;
   font-size: 0.95rem;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
   outline: none;
 }
 
-#search-input:focus {
+#search-input { width: 100%; max-width: 320px; }
+
+#tag-filter { cursor: pointer; color-scheme: dark; }
+
+#search-input:focus, #tag-filter:focus {
   border-color: var(--accent);
   box-shadow: 0 0 0 3px var(--accent-glow);
 }
 
 #search-input::placeholder { color: var(--muted); opacity: 0.6; }
-
-#tag-filters { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
 
 #posts-list { display: grid; gap: 16px; }
 #posts-list .card { cursor: pointer; margin-bottom: 0; }

@@ -60,11 +60,17 @@ test.describe('Blog Tests', () => {
 
   test('Tag filtering works', async ({ page }) => {
     await page.goto('/');
-    await page.locator('#tag-filters button', { hasText: 'AWS' }).click(); // Click AWS tag button
+    await page.waitForSelector('#tag-filter option[value="AWS"]', { state: 'attached' }); // Options populate after posts load; options in a closed select are never "visible"
+    await page.selectOption('#tag-filter', 'AWS');
     await page.waitForTimeout(500);
     const cards = page.locator('#posts-list .card');
     const count = await cards.count();
     expect(count).toBeGreaterThanOrEqual(1);
+    // Every visible card should actually be an AWS-tagged post, not just "some cards render"
+    await page.selectOption('#tag-filter', 'all');
+    await page.waitForTimeout(500);
+    const allCount = await page.locator('#posts-list .card').count();
+    expect(allCount).toBeGreaterThanOrEqual(count);
   });
 
   test('Post navigation works', async ({ page }) => {

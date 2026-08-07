@@ -24,22 +24,15 @@ function collectTags(posts) {
   return Array.from(allTags).sort();
 }
 
-// Creates filter buttons
-function createFilterButtons(tags, tagFilters, onFilter) {
-  const allButton = document.createElement('button');
-  allButton.className = 'badge';
-  allButton.textContent = 'All';
-  allButton.style.cursor = 'pointer';
-  allButton.onclick = () => onFilter('all');
-  tagFilters.appendChild(allButton);
+// Populates the tag filter dropdown
+function populateTagFilter(tags, select, onFilter) {
   tags.forEach(tag => {
-    const button = document.createElement('button');
-    button.className = 'badge';
-    button.textContent = tag;
-    button.style.cursor = 'pointer';
-    button.onclick = () => onFilter(tag);
-    tagFilters.appendChild(button);
+    const option = document.createElement('option');
+    option.value = tag;
+    option.textContent = tag;
+    select.appendChild(option);
   });
+  select.addEventListener('change', () => onFilter(select.value));
 }
 
 // Filters posts by tag
@@ -144,7 +137,7 @@ function changePage(page) {
 async function initIndex() {
   const postsContainer = document.getElementById('posts-list');
   const searchInput = document.getElementById('search-input');
-  const tagFilters = document.getElementById('tag-filters');
+  const tagFilter = document.getElementById('tag-filter');
   let allPosts = [];
   let currentFilter = 'all';
   window.allPosts = allPosts;
@@ -177,7 +170,7 @@ async function initIndex() {
     }
 
     const tags = collectTags(allPosts);
-    createFilterButtons(tags, tagFilters, (filter) => {
+    populateTagFilter(tags, tagFilter, (filter) => {
       currentFilter = filter;
       window.currentFilter = filter;
       const filtered = filterPosts(allPosts, filter);
