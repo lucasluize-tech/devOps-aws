@@ -2,7 +2,7 @@
   "name": "s3-bucket-landing",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "scripts/build-content.js",
   "scripts": {
     "build": "node scripts/build-content.js",
     "serve": "npm run build && python3 -m http.server 8000 --directory dist",

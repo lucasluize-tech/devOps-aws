@@ -82,7 +82,7 @@ Favicon, sidebar header, and MOTD ASCII art all derive from the chosen mark.
 
 Constraint reframed: **no framework and no runtime package dependencies; one deterministic content-compile step in CI.** The browser never parses markdown or front matter.
 
-`scripts/build-content.mjs` (Node, no framework) runs in CI and locally:
+`scripts/build-content.js` (Node, no framework) runs in CI and locally:
 - validates front matter against the content schema (build fails on violation - validation cannot be dead code)
 - renders markdown → sanitized HTML (marked + sanitizer at build time only)
 - emits `dist/`: per-post and per-project pages with unique canonical URL, title, description, OG/twitter meta; the shell pages; `manifest.json` (posts + projects with metadata, replacing runtime registry fetch-and-parse); `sitemap.xml`; `build-info.json` (commit SHA, build timestamp)

@@ -25,10 +25,10 @@
 
 ```
 scripts/
-  build-content.mjs        # orchestrator: clean dist/, compile, copy, emit
-  lib/schema.mjs           # validatePost/validateProject (pure, Jest-tested)
-  lib/render.mjs           # markdown -> sanitized HTML; screenshots marker
-  lib/pages.mjs            # HTML page templates (shell + meta injection)
+  build-content.js        # orchestrator: clean dist/, compile, copy, emit
+  lib/schema.js           # validatePost/validateProject (pure, Jest-tested)
+  lib/render.js           # markdown -> sanitized HTML; screenshots marker
+  lib/pages.js            # HTML page templates (shell + meta injection)
 app/
   config.js                # CONTACT_ENDPOINT, SITE_ORIGIN
   shell.js                 # boot: chrome render, hydration, statusline clock
@@ -67,7 +67,7 @@ npm install --save-dev marked sanitize-html @axe-core/playwright
 ### Task 1: Content schema validation (pure)
 
 **Files:**
-- Create: `scripts/lib/schema.mjs`
+- Create: `scripts/lib/schema.js`
 - Test: `tests/unit/schema.test.js`
 
 **Interfaces:**
@@ -76,7 +76,7 @@ npm install --save-dev marked sanitize-html @axe-core/playwright
 - [ ] **Step 1: Write failing tests**
 ```js
 // tests/unit/schema.test.js
-const { validatePost, validateProject } = require('../../scripts/lib/schema.mjs');
+const { validatePost, validateProject } = require('../../scripts/lib/schema.js');
 
 const goodPost = { title: 'T', author: 'Lucas', excerpt: 'E', date: '2026-08-10',
   slug: 'good-post', tags: ['DevOps'] };
@@ -111,7 +111,7 @@ test('featured_order must be a positive integer', () => {
 - [ ] **Step 2:** Run `npx jest tests/unit/schema.test.js` → FAIL (module not found).
 - [ ] **Step 3: Implement**
 ```js
-// scripts/lib/schema.mjs  (CommonJS-compatible via module.exports for Jest)
+// scripts/lib/schema.js  (CommonJS-compatible via module.exports for Jest)
 const SLUG_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 const FILE_RE = /^[a-z0-9._-]+\.(png|jpe?g|webp|gif|svg)$/i;
@@ -164,7 +164,7 @@ module.exports = { validatePost, validateProject, SLUG_RE };
 ### Task 2: Markdown rendering + sanitization (pure)
 
 **Files:**
-- Create: `scripts/lib/render.mjs`
+- Create: `scripts/lib/render.js`
 - Test: `tests/unit/render.test.js`
 
 **Interfaces:**
@@ -174,7 +174,7 @@ module.exports = { validatePost, validateProject, SLUG_RE };
 - [ ] **Step 1: Write failing tests**
 ```js
 // tests/unit/render.test.js
-const { renderMarkdown, extractScreenshotSlot } = require('../../scripts/lib/render.mjs');
+const { renderMarkdown, extractScreenshotSlot } = require('../../scripts/lib/render.js');
 
 test('renders markdown to html', () => {
   expect(renderMarkdown('# Hi\n\nbody')).toContain('<h1');
@@ -197,7 +197,7 @@ test('screenshot marker splits content', () => {
 - [ ] **Step 2:** Run → FAIL.
 - [ ] **Step 3: Implement**
 ```js
-// scripts/lib/render.mjs
+// scripts/lib/render.js
 const { marked } = require('marked');
 const sanitizeHtml = require('sanitize-html');
 
@@ -242,7 +242,7 @@ module.exports = { renderMarkdown, extractScreenshotSlot, MARKER };
 ```js
 // tests/unit/content-valid.test.js
 const fs = require('fs'); const path = require('path');
-const { validatePost, validateProject } = require('../../scripts/lib/schema.mjs');
+const { validatePost, validateProject } = require('../../scripts/lib/schema.js');
 const { parseMarkdown } = require('../../utils');
 
 function files(dir) { return fs.readdirSync(dir).filter(f => f.endsWith('.md')); }
@@ -269,10 +269,10 @@ test('all projects pass schema', () => {
 
 ---
 
-### Task 4: build-content.mjs - dist generation
+### Task 4: build-content.js - dist generation
 
 **Files:**
-- Create: `scripts/build-content.mjs`, `scripts/lib/pages.mjs`
+- Create: `scripts/build-content.js`, `scripts/lib/pages.js`
 - Modify: `package.json` (scripts), `.gitignore` (`dist/` - done Task 0)
 - Test: `tests/unit/build-output.test.js` (runs the build into a tmp dir, asserts output)
 
@@ -285,7 +285,7 @@ test('all projects pass schema', () => {
   "projects": [{ "slug", "title", "goal", "category", "lifecycle", "featured_order",
                  "provenance", "tech_stack", "url" }] }
 ```
-- Page template contract (`pages.mjs`): `pageHtml({ title, description, canonical, ogType, bodyClass, pane, pageData })` returns a full document containing the shell skeleton (sidebar nav, `<main id="pane">` with pre-rendered `pane` HTML, prompt line, statusline), unique meta, favicon, `<script>window.__PAGE__ = pageData</script>`, `<script type="module" src="/app/shell.js">`, and a `<noscript>` block with plain links (populated from the manifest at build time - deterministic by construction).
+- Page template contract (`pages.js`): `pageHtml({ title, description, canonical, ogType, bodyClass, pane, pageData })` returns a full document containing the shell skeleton (sidebar nav, `<main id="pane">` with pre-rendered `pane` HTML, prompt line, statusline), unique meta, favicon, `<script>window.__PAGE__ = pageData</script>`, `<script type="module" src="/app/shell.js">`, and a `<noscript>` block with plain links (populated from the manifest at build time - deterministic by construction).
 
 - [ ] **Step 1: Write failing test**
 ```js
@@ -294,7 +294,7 @@ const { execSync } = require('child_process');
 const fs = require('fs');
 jest.setTimeout(30000);
 
-beforeAll(() => { execSync('node scripts/build-content.mjs', { stdio: 'pipe' }); });
+beforeAll(() => { execSync('node scripts/build-content.js', { stdio: 'pipe' }); });
 
 test('dist contains a page per post and project plus core pages', () => {
   const manifest = JSON.parse(fs.readFileSync('dist/manifest.json', 'utf8'));
@@ -327,7 +327,7 @@ test('noscript block lists every post', () => {
 });
 ```
 - [ ] **Step 2:** Run → FAIL.
-- [ ] **Step 3:** Implement `scripts/lib/pages.mjs` (template literals; shell skeleton per the Interfaces contract; sidebar `<nav aria-label="workspaces">` with links to the six core pages; statusline `<footer role="contentinfo">` with placeholders `data-clock`, `data-sha`; prompt `<form data-prompt><label>...<input></label></form>`) and `scripts/build-content.mjs`:
+- [ ] **Step 3:** Implement `scripts/lib/pages.js` (template literals; shell skeleton per the Interfaces contract; sidebar `<nav aria-label="workspaces">` with links to the six core pages; statusline `<footer role="contentinfo">` with placeholders `data-clock`, `data-sha`; prompt `<form data-prompt><label>...<input></label></form>`) and `scripts/build-content.js`:
   - clean + mkdir `dist/`
   - read all posts/projects, `parseMarkdown`, run validators; **exit non-zero printing all errors if any file fails** (validation can never be dead code)
   - `renderMarkdown` bodies; for projects, inject `<figure>` gallery at the screenshot slot from front matter (`<img src loading="lazy" alt>` + figcaption)
@@ -335,7 +335,7 @@ test('noscript block lists every post', () => {
   - emit pages via `pageHtml`, manifest (posts sorted by date desc, projects by `featured_order`), `sitemap.xml` (all canonical URLs), `build-info.json` `{ sha: process.env.GITHUB_SHA || 'dev', time: new Date().toISOString() }`
   - redirect stubs: `dist/post.html` = tiny document with `<script>var s=new URLSearchParams(location.search).get('slug');location.replace(s?'/posts/'+encodeURIComponent(s)+'.html':'/');</script>` (same for project.html)
   - copy `app/` dir, raw `posts/*.md`, and `projects/screenshots/**` into dist
-  - add `package.json` scripts: `"build": "node scripts/build-content.mjs"`, `"serve": "npm run build && python3 -m http.server 8000 --directory dist"`
+  - add `package.json` scripts: `"build": "node scripts/build-content.js"`, `"serve": "npm run build && python3 -m http.server 8000 --directory dist"`
 - [ ] **Step 4:** Run tests → PASS. Also run `npm run build` and eyeball `dist/posts/<any>.html` in a browser (unstyled content is expected - shell arrives Task 5).
 - [ ] **Step 5:** Commit: `feat: content compiler - dist pages, manifest, sitemap, build-info`
 
@@ -348,7 +348,7 @@ test('noscript block lists every post', () => {
 - Test: visual (screenshots at 1440px and 390px) - behavioral e2e lands in Task 10
 
 **Interfaces:**
-- Consumes: shell skeleton emitted by `pages.mjs` (Task 4), `window.__PAGE__`, `/build-info.json`.
+- Consumes: shell skeleton emitted by `pages.js` (Task 4), `window.__PAGE__`, `/build-info.json`.
 - Produces: `initShell()` (auto-runs on module load): marks active sidebar item from `location.pathname`, starts statusline clock (1s interval), fetches `build-info.json` into `[data-sha]`, CI badge spinner→check animation. Exports nothing consumed elsewhere; `router.js` (Task 7) imports `swapPane` contract defined there.
 
 - [ ] **Step 1:** Implement `app/config.js`:
@@ -393,7 +393,7 @@ body::before {
 /* Statusline + prompt + mobile bottom-bar: see spec frame; mobile: grid collapses,
    .side becomes a fixed bottom row of icon tabs */
 ```
-plus prompt-line segments, statusline segments (session, tabs, sha, clock, CI badge), eza-style color-coded icons (inline SVG sprite in the skeleton: folder=violet, md-file=orange, ok=green), blinking block cursor, `:wq` logo block, Martian Mono `<link>` with `&text=LUCASLUIZEDEVOPS%20` in `pages.mjs` head.
+plus prompt-line segments, statusline segments (session, tabs, sha, clock, CI badge), eza-style color-coded icons (inline SVG sprite in the skeleton: folder=violet, md-file=orange, ok=green), blinking block cursor, `:wq` logo block, Martian Mono `<link>` with `&text=LUCASLUIZEDEVOPS%20` in `pages.js` head.
 - [ ] **Step 3:** Implement `app/shell.js` (active-nav marking, clock, `build-info.json` fetch with `response.ok` guard - `[data-sha]` shows `dev` on failure, never blank).
 - [ ] **Step 4:** `npm run serve`, screenshot desktop + mobile, fix obvious breakage.
 - [ ] **Step 5:** Commit: `feat: terminal shell chrome - glass frame, wordmark, sidebar, statusline`
@@ -428,7 +428,7 @@ plus prompt-line segments, statusline segments (session, tabs, sha, clock, CI ba
 
 **Files:**
 - Create: `app/buffers.js`, `app/reader.css`
-- Modify: `scripts/lib/pages.mjs` (buffer-specific pane content: MOTD pane for index, picker panes, neofetch about, systemd roadmap)
+- Modify: `scripts/lib/pages.js` (buffer-specific pane content: MOTD pane for index, picker panes, neofetch about, systemd roadmap)
 - Test: unit for picker filtering glue; e2e in Task 10
 
 **Interfaces:**
@@ -437,7 +437,7 @@ plus prompt-line segments, statusline segments (session, tabs, sha, clock, CI ba
   - `runMotd(el)`: types the login+MOTD text (~1.5s, `requestAnimationFrame` batches); any keydown/click/scroll completes instantly; `sessionStorage.motdDone` skips; `prefers-reduced-motion` renders final state immediately. Fixed-height container (zero CLS - reserve the full block height up front).
   - `initTelescope(el, items, kind)`: fuzzy input (bottom), results list (left, `role="listbox"`, arrow-key + click selection), preview pane (right, excerpt/goal). Tag filter chips from manifest tags. Enter/click navigates via `router.navigate`. Counts shown as `[n/total]`.
   - `initStatus(el)`: renders the visitor's real session telemetry (nav timing, transfer sum via `performance.getEntriesByType`, LCP via buffered `PerformanceObserver`) as an aligned key-value table.
-  - About pane = neofetch layout (ASCII `:wq` logo left; key-values incl. skills with provenance labels `[prod]`/`[lab]`); roadmap pane = systemd unit list - both are build-time HTML in `pages.mjs`, no JS needed.
+  - About pane = neofetch layout (ASCII `:wq` logo left; key-values incl. skills with provenance labels `[prod]`/`[lab]`); roadmap pane = systemd unit list - both are build-time HTML in `pages.js`, no JS needed.
 - [ ] Steps: TDD the pure parts (fuzzy match + tag filter given manifest fixtures), implement, visual pass, commit per buffer: `feat: MOTD buffer`, `feat: telescope pickers`, `feat: status + themed section buffers`.
 
 ---
@@ -531,7 +531,7 @@ test('contact starts wizard; clear clears', () => {
 ### Task 12: Legacy teardown + docs
 
 **Files:**
-- Delete: `index.js`, `post.js`, `project.js`, `styles.css`, `post.css`, `project.css`, root `index.html`/`post.html`/`project.html`/`404.html` sources (all replaced by `pages.mjs` output), `tests/unit/` suites that tested deleted code (`load-posts`, `post-unit`, `project-body-split`, `project-screenshots`, old filtering/search if superseded by ported versions)
+- Delete: `index.js`, `post.js`, `project.js`, `styles.css`, `post.css`, `project.css`, root `index.html`/`post.html`/`project.html`/`404.html` sources (all replaced by `pages.js` output), `tests/unit/` suites that tested deleted code (`load-posts`, `post-unit`, `project-body-split`, `project-screenshots`, old filtering/search if superseded by ported versions)
 - Modify: `CLAUDE.md` (commands: build/serve; structure; locator policy replaces the selector inventory; conventions: front-matter schema, screenshots marker), `utils.js` (keep only what build + tests consume)
 
 - [ ] **Step 1:** Delete legacy files; run `npm run build && npm run test:all` → everything green with no references to deleted files (grep for them).
@@ -548,6 +548,6 @@ test('contact starts wizard; clear clears', () => {
 
 ## Self-review notes
 
-- Spec coverage: build step (T4), pushState+hydration (T7), MOTD (T8), telescope (T8), nvim reader styling (T8 reader.css + T13), prompt+wizard (T9), provenance labels/neofetch/systemd roadmap (T8 via pages.mjs), OIDC/cache-control/smoke (T11), perf/axe/keyboard (T10), noscript sync (T4 test), content model (T1/T3), teardown+CLAUDE.md (T12). Gap check: reading-progress % in reader statusline - folded into T8 reader.css scroll listener; share links on post pages - emitted by pages.mjs template (T4).
+- Spec coverage: build step (T4), pushState+hydration (T7), MOTD (T8), telescope (T8), nvim reader styling (T8 reader.css + T13), prompt+wizard (T9), provenance labels/neofetch/systemd roadmap (T8 via pages.js), OIDC/cache-control/smoke (T11), perf/axe/keyboard (T10), noscript sync (T4 test), content model (T1/T3), teardown+CLAUDE.md (T12). Gap check: reading-progress % in reader statusline - folded into T8 reader.css scroll listener; share links on post pages - emitted by pages.js template (T4).
 - Deferred to sub-projects: Lambda+SES contact backend; OIDC IAM role Terraform (workflow consumes its ARN via secret).
 - Type consistency: `parseCommand` return kinds match T9 tests; manifest field names consistent across T4/T8/T10.

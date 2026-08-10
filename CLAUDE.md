@@ -2,25 +2,29 @@
 s3-bucket-landing — Cloud DevOps portfolio website with blog, showcasing projects, skills, and technical writing for recruiters and companies.
 
 ## Stack
-- Vanilla HTML/CSS/JS (no build tools, no frameworks)
-- Markdown blog posts with YAML front-matter, parsed client-side
-- marked.js (CDN) for markdown rendering
-- gray-matter (CDN + npm) for front-matter parsing
+- Terminal-multiplexer UI: static HTML pages shell in runtime ES modules (`app/`) - no frameworks
+- Markdown is an AUTHORING format only, compiled to HTML at build time; NEVER parsed in the browser
+- One deterministic content-compile step (`scripts/build-content.js` → `dist/`) is the only build
+- marked + sanitize-html + gray-matter run at BUILD time (Node), not shipped to the browser
 - Google Fonts: Bricolage Grotesque, DM Sans, JetBrains Mono
 - Jest 30 for unit tests, Playwright 1.57 for e2e tests
-- Deployed on AWS S3 (private) + CloudFront (HTTPS) via GitHub Actions CI/CD
+- Deployed on AWS S3 (private) + CloudFront (HTTPS) via GitHub Actions CI/CD (CI runs the build, deploys `dist/`)
 
 ## Structure
-- `/` — HTML pages (index.html, post.html, 404.html), JS modules (index.js, post.js, utils.js), CSS (styles.css, post.css)
-- `posts/` — Markdown blog posts and `index.json` registry of all post slugs
-- `tests/unit/` — Jest unit tests (parsing, filtering, search, pagination, index consistency)
-- `tests/e2e/` — Playwright browser tests (homepage, posts, pagination, search, navigation)
-- `.github/workflows/` — CI/CD pipeline (test + deploy to S3 + CloudFront invalidation)
+- `app/` — runtime browser ES modules (`shell.js`, `router.js`, `prompt.js`, `buffers.js`, `config.js`) + `terminal.css`, `reader.css`. This is what the browser loads.
+- `scripts/` — the build step. `build-content.js` (entry) + `lib/{schema.js,render.js,pages.js}`. All CommonJS `.js`.
+- `utils.js` — build-time markdown helpers (`parseMarkdown`, `calculateReadingTime`), consumed by `build-content.js` and content-valid tests.
+- `dist/` — build output (HTML pages, per-post/-project pages, `manifest.json`, sitemap, build-info). This is the deployed artifact; gitignored.
+- `posts/`, `projects/` — Markdown source (`*.md`). The build globs these directly; there is NO index.json registry.
+- `tests/unit/` — Jest unit tests (schema, render, build-output, content-valid, buffers, prompt, router-paths).
+- `tests/e2e/` — Playwright tests; the webServer runs `npm run build` then serves `dist/`.
+- `.github/workflows/` — CI/CD (test + build + deploy to S3 + CloudFront invalidation).
 
 ## Commands
-- Dev: `python3 -m http.server 8000` (serve from project root)
+- Build: `npm run build` (compiles markdown → `dist/`)
+- Dev/serve: `npm run serve` (builds then serves `dist/` on port 8000)
 - Test unit: `npm test`
-- Test e2e: `npm run test:e2e`
+- Test e2e: `npm run test:e2e` (builds + serves `dist/` itself)
 - Test all: `npm run test:all`
 - Deploy: automatic via GitHub Actions on push to `master`
 
@@ -30,9 +34,13 @@ After every change, run in this order:
 2. `npm run test:e2e` — fix e2e test failures (starts its own server on port 8000)
 
 ## Conventions
-- Blog posts are markdown files in `posts/` with YAML front-matter (title, author, excerpt, date, slug, banner, tags)
-- Every new post must be added to `posts/index.json` — the `posts-index-consistency` test enforces this
-- utils.js uses a dual-export pattern: `module.exports` for Node.js tests, `window.*` for browser
+- Content is markdown in `posts/` / `projects/`; the build globs `*.md` directly (no index.json to update). Front-matter is validated by `scripts/lib/schema.js` at build time - a bad field fails the build.
+- Post front-matter (required): `title, author, excerpt, date, slug`; optional `tags` (array). `slug` must match the filename.
+- Project front-matter (required): `title, slug, category, lifecycle, goal, date`; plus `provenance`, `featured_order` (int ≥ 1), `tech_stack` (non-empty array). Optional: `repo_visibility` (`public|private`), `github`/`demo` (must be https), `screenshots`.
+  - `lifecycle` ∈ `production|maintained|archived|prototype`; `provenance` ∈ `prod|personal|lab|learning`.
+  - `screenshots` is a list of `{ file, alt, caption }` (`file` matches `*.png|jpg|jpeg|webp|gif|svg`, `alt` required). Place a `<!-- screenshots -->` marker in the body to control where the gallery renders.
+- Build modules are CommonJS `.js` (NOT `.mjs`) - required by both Jest and the native-Node build.
+- `utils.js` keeps a dual-export shape: `module.exports` for the build/tests, `window.*` fallback.
 - CSS uses custom properties in `:root` — all colors, spacing, and theme values are centralized there
 - Design uses a warm violet (#a78bfa) + orange (#f97316) palette with terminal/infrastructure aesthetic
 - Fonts: Bricolage Grotesque for headings, DM Sans for body, JetBrains Mono for code/terminal elements
@@ -52,9 +60,8 @@ After every change, run in this order:
 - NEVER dispatch agents to read secret-containing files
 
 ## Don't
-- Don't change e2e test selectors without updating both CSS and the corresponding `tests/e2e/*.test.js` file — critical selectors: `#posts-list .card`, `#pagination-controls`, `.dot.active`, `.pagination-arrows button`, `#search-input`, `h1.post-title`, `.post-content`, `#share-twitter`, `#projects-carousel`, `#projects-carousel .project-card`, `.project-card .category-tag`, `.project-card .status-pill`, `.project-card .tech-chips`, `.project-card .project-title`, `.project-card .project-goal`, `#projects-dots .dot`, `#project-article`, `.project-header`, `.project-pills`, `.project-tech`, `.project-actions`, `.project-content`, `.project-screenshots`
-- Don't change class names used by JS rendering (`.card`, `.badge`, `.muted`, `.post-title`, `.post-meta`, `.post-content`, `.reading-time`, `.badges`) — index.js and post.js generate DOM with these
-- Don't add frameworks or runtime package dependencies — the site runs as plain HTML/CSS/JS. One deterministic content-compile step in CI (`scripts/build-content.mjs` → `dist/`) is the only build; markdown is an authoring format, never parsed in the browser
+- Locator policy for e2e: tests locate via `getByRole` / `getByLabel` / `getByText` (accessible, resilient), NOT brittle CSS class selectors. Content counts come from `dist/manifest.json` (fetched at runtime), never hardcoded. Don't reintroduce hardcoded selector inventories or counts.
+- Don't add frameworks or runtime package dependencies — the browser loads plain ES modules from `app/`. One deterministic content-compile step in CI (`scripts/build-content.js` → `dist/`) is the only build; markdown is an authoring format, never parsed in the browser
 - Don't commit secrets — AWS credentials, API tokens, and auth cookies belong in `~/.secrets` (sourced by `.zshrc`, blocked from Claude)
 - Don't use Inter, Space Grotesk, Roboto, or system-ui fonts — the design intentionally avoids generic/overused developer portfolio typography
 - Don't use Canva MCP for social cards — use the HTML/CSS engine at `social-cards/engine.js` instead (brand consistency)
