@@ -1,4 +1,4 @@
-// scripts/lib/render.mjs  (CommonJS-compatible via module.exports for Jest)
+// scripts/lib/render.js  (CommonJS - required by Jest and the native-Node build)
 const { marked } = require('marked');
 const sanitizeHtml = require('sanitize-html');
 

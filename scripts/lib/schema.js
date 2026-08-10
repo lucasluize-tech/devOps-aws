@@ -1,4 +1,4 @@
-// scripts/lib/schema.mjs  (CommonJS-compatible via module.exports for Jest)
+// scripts/lib/schema.js  (CommonJS - required by Jest and the native-Node build)
 const SLUG_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 const FILE_RE = /^[a-z0-9._-]+\.(png|jpe?g|webp|gif|svg)$/i;

@@ -1,5 +1,5 @@
 const fs = require('fs'); const path = require('path');
-const { validatePost, validateProject } = require('../../scripts/lib/schema.mjs');
+const { validatePost, validateProject } = require('../../scripts/lib/schema.js');
 const { parseMarkdown } = require('../../utils');
 
 function files(dir) { return fs.readdirSync(dir).filter(f => f.endsWith('.md')); }

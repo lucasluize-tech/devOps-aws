@@ -1,5 +1,5 @@
 // tests/unit/schema.test.js
-const { validatePost, validateProject } = require('../../scripts/lib/schema.mjs');
+const { validatePost, validateProject } = require('../../scripts/lib/schema.js');
 
 const goodPost = { title: 'T', author: 'Lucas', excerpt: 'E', date: '2026-08-10',
   slug: 'good-post', tags: ['DevOps'] };

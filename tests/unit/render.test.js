@@ -1,5 +1,5 @@
 // tests/unit/render.test.js
-const { renderMarkdown, extractScreenshotSlot } = require('../../scripts/lib/render.mjs');
+const { renderMarkdown, extractScreenshotSlot } = require('../../scripts/lib/render.js');
 
 test('renders markdown to html', () => {
   expect(renderMarkdown('# Hi\n\nbody')).toContain('<h1');
