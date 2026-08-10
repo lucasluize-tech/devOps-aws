@@ -5,7 +5,7 @@
 
 :root {
   --font-read-head: 'Bricolage Grotesque', 'JetBrains Mono', monospace;
-  --font-read-body: 'DM Sans', system-ui, sans-serif;
+  --font-read-body: 'DM Sans', sans-serif;
   --read-measure: 68ch;
 }
 

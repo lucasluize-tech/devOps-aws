@@ -38,33 +38,38 @@ function showError(pane, url) {
 async function swapTo(url, push) {
   const pane = document.getElementById('pane');
   if (!pane) return;
+  let doc, html;
   try {
     const res = await fetch(url);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const html = await res.text();
-    const doc = new DOMParser().parseFromString(html, 'text/html');
+    html = await res.text();
+    doc = new DOMParser().parseFromString(html, 'text/html');
     const newPane = doc.getElementById('pane');
     if (!newPane) throw new Error('response missing #pane');
-
     pane.innerHTML = newPane.innerHTML;
-    document.title = doc.title;
-    // Refresh window.__PAGE__ from the fetched page so buffers (telescope items,
-    // page kind) read the new page's data, then let them re-boot into the pane.
-    const m = html.match(/window\.__PAGE__ = (.*);<\/script>/);
-    if (m) { try { window.__PAGE__ = JSON.parse(m[1]); } catch (_) { /* keep old */ } }
-    if (push) history.pushState({}, '', url);
-    markActiveNav(new URL(url, location.origin).pathname);
-    document.dispatchEvent(new CustomEvent('pane:swapped', { detail: { url } }));
-
-    const h1 = pane.querySelector('h1');
-    if (h1) {
-      if (!h1.hasAttribute('tabindex')) h1.setAttribute('tabindex', '-1');
-      h1.focus();
-    }
-    pane.scrollTo({ top: 0 });
   } catch (_) {
     showError(pane, url);
+    return;
   }
+
+  // Pane content already swapped successfully at this point - a throw below
+  // must not overwrite it with the fetch-error UI, so these steps run
+  // outside the fetch try/catch.
+  document.title = doc.title;
+  // Refresh window.__PAGE__ from the fetched page so buffers (telescope items,
+  // page kind) read the new page's data, then let them re-boot into the pane.
+  const m = html.match(/window\.__PAGE__ = (.*);<\/script>/);
+  if (m) { try { window.__PAGE__ = JSON.parse(m[1]); } catch (_) { /* keep old */ } }
+  if (push) history.pushState({}, '', url);
+  try { markActiveNav(new URL(url, location.origin).pathname); } catch (_) { /* non-fatal */ }
+  document.dispatchEvent(new CustomEvent('pane:swapped', { detail: { url } }));
+
+  const h1 = pane.querySelector('h1');
+  if (h1) {
+    if (!h1.hasAttribute('tabindex')) h1.setAttribute('tabindex', '-1');
+    h1.focus();
+  }
+  pane.scrollTo({ top: 0 });
 }
 
 export function navigate(url) {

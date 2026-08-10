@@ -308,9 +308,16 @@ export function initStatus(el) {
 
 // ---- Reading progress ----------------------------------------------------
 
+// #pane is persistent across pjax swaps, so each reader visit must tear down
+// the previous scroll listener before adding a new one - otherwise reader ->
+// reader -> reader navigation stacks N identical listeners on the same node.
+let readingProgressCleanup = null;
+
 // initReadingProgress(): on reader pages, write % scrolled through the article
 // into [data-progress]. Passive scroll, rAF-throttled. No-op elsewhere.
 export function initReadingProgress() {
+  if (readingProgressCleanup) { readingProgressCleanup(); readingProgressCleanup = null; }
+
   const pane = document.getElementById('pane');
   const out = document.querySelector('[data-progress]');
   const article = pane && pane.querySelector('.post-content, .project-content');
@@ -330,7 +337,8 @@ export function initReadingProgress() {
   };
   pane.addEventListener('scroll', onScroll, { passive: true });
   compute();
-  return () => pane.removeEventListener('scroll', onScroll);
+  readingProgressCleanup = () => pane.removeEventListener('scroll', onScroll);
+  return readingProgressCleanup;
 }
 
 // ---- Boot dispatch -------------------------------------------------------
@@ -356,7 +364,13 @@ export function bootBuffers() {
   const statusEl = pane.querySelector('[data-status]');
   if (statusEl) initStatus(statusEl);
 
-  if (pane.querySelector('.post-content, .project-content')) initReadingProgress();
+  if (pane.querySelector('.post-content, .project-content')) {
+    initReadingProgress();
+  } else if (readingProgressCleanup) {
+    // Navigated from a reader page to a non-reader page - drop the stale listener.
+    readingProgressCleanup();
+    readingProgressCleanup = null;
+  }
 }
 
 if (typeof document !== 'undefined') {
