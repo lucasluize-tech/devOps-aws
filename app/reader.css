@@ -1,0 +1,275 @@
+/* app/reader.css - article typography for reader buffers (post/project pages).
+   Loaded ONLY on page-post / page-project, on top of terminal.css. Inside the
+   mono terminal chrome, the article itself reads like a well-set nvim buffer:
+   Bricolage Grotesque headings, DM Sans prose, JetBrains Mono code. */
+
+:root {
+  --font-read-head: 'Bricolage Grotesque', 'JetBrains Mono', monospace;
+  --font-read-body: 'DM Sans', system-ui, sans-serif;
+  --read-measure: 68ch;
+}
+
+/* ---- Prose column ------------------------------------------------------ */
+#pane .post-content,
+#pane .project-content { max-width: var(--read-measure); }
+
+#pane .post-content > p,
+#pane .post-content > ul,
+#pane .post-content > ol,
+#pane .post-content > blockquote,
+#pane .project-content > p,
+#pane .project-content > ul,
+#pane .project-content > ol,
+#pane .project-content > blockquote,
+#pane .post-content li,
+#pane .project-content li {
+  font-family: var(--font-read-body);
+  font-size: 1.02rem;
+  line-height: 1.72;
+  letter-spacing: 0.005em;
+}
+
+#pane .post-content,
+#pane .project-content { color: var(--text); }
+
+/* ---- Headings ---------------------------------------------------------- */
+#pane .post-content h1, #pane .project-content h1,
+#pane .post-content h2, #pane .project-content h2,
+#pane .post-content h3, #pane .project-content h3,
+#pane .post-content h4, #pane .project-content h4,
+#pane .post-title, #pane .project-title {
+  font-family: var(--font-read-head);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--text-bright);
+}
+#pane .post-title, #pane .project-title { line-height: 1.12; margin: 0 0 0.4em; }
+#pane .post-content h2, #pane .project-content h2 {
+  font-size: 1.5rem;
+  margin: 1.8em 0 0.5em;
+  padding-top: 0.4em;
+  border-top: 1px solid var(--border-subtle);
+}
+#pane .post-content h3, #pane .project-content h3 { font-size: 1.2rem; margin: 1.5em 0 0.4em; }
+#pane .post-content h4, #pane .project-content h4 { font-size: 1.05rem; margin: 1.3em 0 0.3em; color: var(--accent-bright); }
+
+/* ---- Links ------------------------------------------------------------- */
+#pane .post-content a, #pane .project-content a {
+  color: var(--link);
+  text-decoration: none;
+  border-bottom: 1px solid color-mix(in srgb, var(--link) 35%, transparent);
+  transition: color 0.12s ease, border-color 0.12s ease;
+}
+#pane .post-content a:hover, #pane .project-content a:hover {
+  color: var(--accent-bright);
+  border-bottom-color: var(--accent-bright);
+}
+
+/* ---- Lists / hr / images ---------------------------------------------- */
+#pane .post-content li, #pane .project-content li { margin: 0.3em 0; }
+#pane .post-content li::marker, #pane .project-content li::marker { color: var(--accent); }
+#pane .post-content hr, #pane .project-content hr {
+  border: 0;
+  border-top: 1px solid var(--border);
+  margin: 2em 0;
+}
+#pane .post-content img, #pane .project-content img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+  border: 1px solid var(--border-subtle);
+}
+
+/* ---- Blockquote -------------------------------------------------------- */
+#pane .post-content blockquote, #pane .project-content blockquote {
+  margin: 1.4em 0;
+  padding: 0.5em 1.2em;
+  border-left: 3px solid var(--accent);
+  background: color-mix(in srgb, var(--accent) 6%, transparent);
+  border-radius: 0 6px 6px 0;
+  color: var(--muted);
+  font-style: italic;
+}
+#pane .post-content blockquote p, #pane .project-content blockquote p { margin: 0.4em 0; }
+
+/* ---- Tables ------------------------------------------------------------ */
+#pane .post-content table, #pane .project-content table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.4em 0;
+  font-family: var(--font-read-body);
+  font-size: 0.95rem;
+}
+#pane .post-content th, #pane .project-content th,
+#pane .post-content td, #pane .project-content td {
+  padding: 0.5em 0.8em;
+  border: 1px solid var(--border);
+  text-align: left;
+}
+#pane .post-content th, #pane .project-content th {
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+  color: var(--accent-bright);
+  font-weight: 600;
+}
+
+/* ---- Code -------------------------------------------------------------- */
+#pane .post-content code, #pane .project-content code {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 0.88em;
+}
+/* inline code */
+#pane .post-content :not(pre) > code, #pane .project-content :not(pre) > code {
+  padding: 0.12em 0.4em;
+  background: var(--code-bg);
+  border: 1px solid var(--border-subtle);
+  border-radius: 4px;
+  color: var(--accent-bright);
+}
+/* fenced blocks: overrides terminal.css #pane pre with a left accent + lang label */
+#pane .post-content pre, #pane .project-content pre {
+  position: relative;
+  margin: 1.4em 0;
+  padding: 1em 1.1em;
+  background: var(--code-bg);
+  border: 1px solid var(--border-subtle);
+  border-left: 3px solid var(--accent);
+  border-radius: 8px;
+  overflow-x: auto;
+  line-height: 1.55;
+}
+#pane .post-content pre code, #pane .project-content pre code {
+  padding: 0;
+  background: none;
+  border: 0;
+  color: var(--text);
+  font-size: 0.85rem;
+}
+/* CSS-only language label from marked's class="language-xxx" (no JS highlight) */
+#pane pre > code[class*="language-"]::before {
+  content: attr(class);
+  position: absolute;
+  top: 0;
+  right: 0;
+  padding: 2px 8px;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+  border-radius: 0 8px 0 6px;
+  /* strip the "language-" prefix visually is not possible in pure CSS;
+     keep the full token - it reads fine as e.g. "language-bash" */
+}
+
+/* ---- Meta row + tags (above the article) ------------------------------ */
+#pane .post-meta {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.8rem;
+  color: var(--muted);
+  margin: 0 0 0.6em;
+}
+#pane .post-meta .reading-time::before { content: '~ '; color: var(--accent); }
+#pane .badges { margin: 0 0 1.6em; }
+
+/* ---- Share links (below the article) ----------------------------------- */
+#pane .share {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 2.5em;
+  padding-top: 1.2em;
+  border-top: 1px solid var(--border);
+}
+#pane .share a {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.8rem;
+  padding: 6px 12px;
+  color: var(--accent-bright);
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent) 28%, transparent);
+  border-radius: 6px;
+  text-decoration: none;
+  transition: border-color 0.12s ease, background 0.12s ease;
+}
+#pane .share a:hover {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 18%, transparent);
+}
+
+/* ---- Project header: pills, provenance, tech, action buttons ---------- */
+#pane .project-pills {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin: 0.6em 0;
+}
+#pane .category-tag,
+#pane .status-pill,
+#pane .provenance-pill {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  padding: 3px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+}
+#pane .category-tag {
+  color: var(--accent-bright);
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  border-color: color-mix(in srgb, var(--accent) 30%, transparent);
+}
+#pane .status-pill {
+  color: var(--secondary);
+  background: color-mix(in srgb, var(--secondary) 12%, transparent);
+  border-color: color-mix(in srgb, var(--secondary) 30%, transparent);
+}
+/* provenance reads as a small bracketed tag: [prod] / [lab] / ... */
+#pane .provenance-pill {
+  color: var(--muted);
+  background: color-mix(in srgb, var(--muted) 10%, transparent);
+  border-radius: 4px;
+}
+#pane .provenance-pill::before { content: '['; }
+#pane .provenance-pill::after { content: ']'; }
+
+#pane .project-tech { margin: 0.6em 0; }
+#pane .project-goal {
+  font-family: var(--font-read-body);
+  font-size: 1.1rem;
+  color: var(--text);
+  margin: 0.8em 0 1em;
+}
+
+#pane .project-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin: 1em 0 0.4em;
+}
+#pane .btn {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.82rem;
+  padding: 7px 14px;
+  color: var(--bg);
+  background: var(--accent);
+  border: 1px solid var(--accent);
+  border-radius: 6px;
+  text-decoration: none;
+  font-weight: 700;
+  transition: background 0.12s ease, transform 0.12s ease;
+}
+#pane .btn:hover { background: var(--accent-bright); transform: translateY(-1px); }
+#pane .btn::before { content: '$ '; opacity: 0.6; }
+
+/* screenshot gallery figures */
+#pane .project-screenshots figure { margin: 1.4em 0; }
+#pane .project-screenshots figcaption {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.78rem;
+  color: var(--muted);
+  margin-top: 0.4em;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #pane .btn:hover { transform: none; }
+}
