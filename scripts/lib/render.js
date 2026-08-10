@@ -23,4 +23,11 @@ function extractScreenshotSlot(html) {
   return { before, after };
 }
 
-module.exports = { renderMarkdown, extractScreenshotSlot, MARKER };
+// Drop a leading <h1> from a rendered body: the pane already emits the
+// front-matter title as its own <h1>, so a body that opens with "# Title"
+// would double-title the page.
+function stripLeadingH1(html) {
+  return html.replace(/^\s*<h1\b[^>]*>[\s\S]*?<\/h1>\s*/i, '');
+}
+
+module.exports = { renderMarkdown, extractScreenshotSlot, stripLeadingH1, MARKER };
