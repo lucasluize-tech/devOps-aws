@@ -27,6 +27,17 @@ test('projects in manifest are ordered by featured_order', () => {
   const orders = m.projects.map(p => p.featured_order);
   expect(orders).toEqual([...orders].sort((a, b) => a - b));
 });
+test('window.__PAGE__ payload is script-tag-escaped (no breakout)', () => {
+  const { pageHtml } = require('../../scripts/lib/pages');
+  const html = pageHtml({
+    title: 'x', description: 'x', canonical: 'x.html', ogType: 'website',
+    pane: '', manifest: {}, pageData: { title: '</script><!--pwn' },
+  });
+  const payload = html.match(/window\.__PAGE__ = (.*);<\/script>/)[1];
+  expect(payload).not.toContain('</script>');
+  expect(payload).not.toContain('<!--');
+  expect(payload).toContain('\\u003c');
+});
 test('noscript block lists every post', () => {
   const m = JSON.parse(fs.readFileSync('dist/manifest.json', 'utf8'));
   const html = fs.readFileSync('dist/index.html', 'utf8');

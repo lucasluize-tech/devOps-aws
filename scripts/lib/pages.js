@@ -79,7 +79,7 @@ ${sidebar(active)}
 <footer role="contentinfo"><span data-clock></span> <span data-sha></span></footer>
 </div>
 ${noscriptLinks(manifest || {})}
-<script>window.__PAGE__ = ${JSON.stringify(pageData || {})};</script>
+<script>window.__PAGE__ = ${JSON.stringify(pageData || {}).replace(/</g, '\\u003c')};</script>
 <script type="module" src="/app/shell.js"></script>
 </body>
 </html>`;
