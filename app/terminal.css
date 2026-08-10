@@ -296,6 +296,122 @@ nav[aria-label="workspaces"] a[aria-current="page"]::before {
 .unit-inactive .unit-state { color: var(--muted); }
 @keyframes unit-pulse { 50% { opacity: 0.35; } }
 
+/* ---- MOTD login buffer (index) ------------------------------------ */
+.motd {
+  margin: 0 0 22px;
+  white-space: pre;
+  overflow-x: auto;
+  font-size: clamp(10px, 1.15vw, 13px);
+  line-height: 1.35;
+  color: var(--accent-bright);
+  text-shadow: 0 0 16px var(--accent-glow);
+}
+
+/* ---- Telescope fuzzy picker (posts/projects) ---------------------- */
+.telescope { display: flex; flex-direction: column; gap: 12px; }
+.tl-body {
+  display: grid;
+  grid-template-columns: minmax(0, 42%) minmax(0, 1fr);
+  gap: 14px;
+  min-height: 0;
+}
+.tl-results {
+  list-style: none;
+  margin: 0;
+  padding: 6px;
+  max-height: 52vh;
+  overflow: auto;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--surface) 35%, transparent);
+}
+.tl-results:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.tl-option {
+  padding: 7px 10px;
+  border-radius: 5px;
+  border-left: 2px solid transparent;
+  color: var(--text);
+  cursor: pointer;
+  font-size: 13px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.tl-option:hover { background: color-mix(in srgb, var(--accent) 8%, transparent); }
+.tl-option.is-selected {
+  background: color-mix(in srgb, var(--accent) 16%, transparent);
+  border-left-color: var(--accent);
+  color: var(--accent-bright);
+}
+.tl-empty { padding: 7px 10px; color: var(--muted); font-size: 13px; }
+.tl-preview {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px 16px;
+  background: color-mix(in srgb, var(--surface) 35%, transparent);
+  overflow: auto;
+  min-height: 0;
+}
+.tl-preview h3 { margin: 0 0 6px; color: var(--text-bright); font-size: 1.05rem; }
+.tl-preview .tl-meta { margin: 0 0 10px; font-size: 12px; color: var(--secondary); }
+.tl-preview .tl-excerpt { margin: 0 0 10px; color: var(--text); font-size: 13px; }
+.tl-preview .tl-tags { margin: 0; font-size: 12px; color: var(--muted); }
+.tl-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.tl-chip {
+  font: inherit;
+  font-size: 12px;
+  padding: 3px 10px;
+  color: var(--muted);
+  background: color-mix(in srgb, var(--surface) 50%, transparent);
+  border: 1px solid var(--border-subtle);
+  border-radius: 20px;
+  cursor: pointer;
+  transition: color 0.12s ease, border-color 0.12s ease;
+}
+.tl-chip:hover { color: var(--text); border-color: var(--accent); }
+.tl-chip.is-active {
+  color: var(--accent-bright);
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+}
+.tl-chip:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.tl-input {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--bg-elevated) 60%, transparent);
+}
+.tl-input:focus-within { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent-glow); }
+.tl-prompt { color: var(--success); font-weight: 700; }
+.tl-query {
+  flex: 1;
+  min-width: 0;
+  background: transparent;
+  border: 0;
+  outline: none;
+  color: var(--text);
+  font: inherit;
+  font-size: 13px;
+  caret-color: var(--accent);
+}
+.tl-query::placeholder { color: var(--muted); }
+.tl-count { color: var(--muted); font-size: 12px; }
+@media (max-width: 640px) {
+  .tl-body { grid-template-columns: minmax(0, 1fr); }
+  .tl-results { max-height: 34vh; }
+}
+
+/* ---- Status telemetry buffer -------------------------------------- */
+.status h1 { margin-bottom: 0.2em; }
+.status .st-cmd { font-size: 12px; margin: 0 0 16px; }
+.st-table { font-size: 13px; }
+.st-row { display: flex; gap: 12px; padding: 3px 0; }
+.st-key { white-space: pre; color: var(--accent); font-weight: 700; }
+.st-val { color: var(--text); }
+
 /* ---- Prompt line (form[data-prompt]) ------------------------------ */
 form[data-prompt] {
   grid-area: prompt;
@@ -363,6 +479,20 @@ footer[role="contentinfo"]::before {
   color: var(--bg);
   background: var(--accent);
   font-weight: 700;
+}
+/* reading-progress segment (reader pages only; empty elsewhere -> hidden) */
+footer[role="contentinfo"] [data-progress] {
+  padding: 0 12px;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  color: var(--accent-bright);
+  border-right: 1px solid var(--border);
+}
+footer[role="contentinfo"] [data-progress]:empty { display: none; }
+footer[role="contentinfo"] [data-progress]::before {
+  content: 'read ';
+  color: var(--muted);
 }
 /* flexible spacer pushes sha + clock right */
 footer[role="contentinfo"] [data-sha] {
