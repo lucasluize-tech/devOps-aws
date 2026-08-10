@@ -4,6 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "build": "node scripts/build-content.js",
+    "serve": "npm run build && python3 -m http.server 8000 --directory dist",
     "test": "jest tests/unit/ --runInBand",
     "test:e2e": "playwright test",
     "test:all": "npm run test && npm run test:e2e"
