@@ -54,6 +54,7 @@ function sidebar(active) {
 function pageHtml({ title, description, canonical, ogType, bodyClass, pane, pageData, manifest, active }) {
   const canonicalUrl = `${ORIGIN}/${canonical}`;
   const font = 'https://fonts.googleapis.com/css2?family=Martian+Mono:wght@400;700&text=LUCASLUIZEDEVOPS%20&display=swap';
+  const chromeFont = 'https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap';
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -68,6 +69,7 @@ function pageHtml({ title, description, canonical, ogType, bodyClass, pane, page
 <link rel="canonical" href="${canonicalUrl}">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="${chromeFont}">
 <link rel="stylesheet" href="${font}">
 <link rel="stylesheet" href="/app/terminal.css">
 </head>
