@@ -137,13 +137,14 @@ export function initTelescope(el, items, kind) {
   el.classList.add('telescope');
   el.innerHTML = `
 <div class="tl-body">
-  <ul class="tl-results" role="listbox" aria-label="${kind} results" tabindex="0"></ul>
+  <ul class="tl-results" id="tl-listbox" role="listbox" aria-label="${kind} results"></ul>
   <div class="tl-preview" aria-live="polite"></div>
 </div>
 <div class="tl-chips" role="group" aria-label="filter by tag"></div>
 <div class="tl-input">
   <span class="tl-prompt">&gt;</span>
-  <input type="text" class="tl-query" autocomplete="off" spellcheck="false"
+  <input type="text" class="tl-query" role="combobox" aria-controls="tl-listbox"
+         aria-expanded="true" autocomplete="off" spellcheck="false"
          aria-label="fuzzy filter ${kind}" placeholder="type to filter…">
   <span class="tl-count"></span>
 </div>`;
@@ -162,7 +163,7 @@ export function initTelescope(el, items, kind) {
 
   // tag chips
   chipsEl.innerHTML = tags
-    .map((t) => `<button type="button" class="tl-chip" data-tag="${t}">${t}</button>`)
+    .map((t) => `<button type="button" class="tl-chip" data-tag="${escapeHtml(t)}">${escapeHtml(t)}</button>`)
     .join('');
   const markChips = () => {
     for (const b of chipsEl.querySelectorAll('.tl-chip')) {
@@ -196,7 +197,9 @@ ${tagline ? `<p class="tl-tags">${escapeHtml(tagline)}</p>` : ''}`;
         id="tl-opt-${i}" aria-selected="${i === sel}" data-i="${i}">${escapeHtml(it.title)}</li>`)
       .join('') || '<li class="tl-empty" role="option" aria-selected="false">no matches</li>';
     countEl.textContent = `[${current.length}/${total}]`;
-    resultsEl.setAttribute('aria-activedescendant', current.length ? `tl-opt-${sel}` : '');
+    // Combobox pattern: activedescendant lives on the focused input, not the
+    // listbox, so screen readers announce selection changes as arrows move.
+    inputEl.setAttribute('aria-activedescendant', current.length ? `tl-opt-${sel}` : '');
     const selEl = resultsEl.querySelector('.is-selected');
     if (selEl) selEl.scrollIntoView({ block: 'nearest' });
     renderPreview();
