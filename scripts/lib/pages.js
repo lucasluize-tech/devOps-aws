@@ -85,12 +85,13 @@ function pageHtml({ title, description, canonical, ogType, bodyClass, pane, page
 ${sidebar(active)}
 <main id="pane">${pane}</main>
 <form data-prompt><label>&gt; <input type="text" name="cmd" autocomplete="off" spellcheck="false" aria-label="command"></label></form>
-<footer role="contentinfo"><span data-clock></span> <span data-sha></span></footer>
+<footer role="contentinfo"><span data-progress></span><span data-clock></span> <span data-sha></span></footer>
 </div>
 ${noscriptLinks(manifest || {})}
 <script>window.__PAGE__ = ${JSON.stringify(pageData || {}).replace(/</g, '\\u003c')};</script>
 <script type="module" src="/app/shell.js"></script>
 <script type="module" src="/app/router.js"></script>
+<script type="module" src="/app/buffers.js"></script>
 </body>
 </html>`;
 }
@@ -144,6 +145,21 @@ function postsListPane(posts) {
 <p class="post-meta"><span class="reading-time">${p.readingTime} min read</span> <span class="muted">${esc(p.date)}</span></p>
 </a>`).join('');
   return `<section id="posts-list">${cards}</section>`;
+}
+
+// MOTD block for the index pane: runMotd() types into this <pre>. Empty at
+// build time; JS reserves its height before typing (zero CLS).
+function motdBlock() {
+  return `<pre class="motd" aria-label="message of the day"></pre>`;
+}
+
+// Picker pane (posts/projects): heading + empty telescope container that
+// initTelescope() fills, plus a pre-rendered .tl-fallback list that stays for
+// no-JS visitors (JS hides it once the telescope boots).
+function pickerPane(heading, kind, listHtml) {
+  return `<h1>${esc(heading)}</h1>
+<div data-telescope data-kind="${attr(kind)}"></div>
+<div class="tl-fallback">${listHtml}</div>`;
 }
 
 function projectsListPane(projects) {
@@ -233,5 +249,5 @@ function roadmapPane() {
 module.exports = {
   ORIGIN, NAV, esc,
   pageHtml, postPane, projectPane, postsListPane, projectsListPane, galleryHtml,
-  aboutPane, roadmapPane,
+  aboutPane, roadmapPane, motdBlock, pickerPane,
 };

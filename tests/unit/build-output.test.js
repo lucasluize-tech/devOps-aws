@@ -38,6 +38,19 @@ test('window.__PAGE__ payload is script-tag-escaped (no breakout)', () => {
   expect(payload).not.toContain('<!--');
   expect(payload).toContain('\\u003c');
 });
+test('picker pages embed their manifest items + kind in window.__PAGE__', () => {
+  const m = JSON.parse(fs.readFileSync('dist/manifest.json', 'utf8'));
+  const posts = fs.readFileSync('dist/posts.html', 'utf8');
+  expect(posts).toContain('"kind":"posts"');
+  expect(posts).toContain('data-telescope');
+  for (const p of m.posts) expect(posts).toContain(`"slug":"${p.slug}"`);
+  const projects = fs.readFileSync('dist/projects.html', 'utf8');
+  expect(projects).toContain('"kind":"projects"');
+  for (const p of m.projects) expect(projects).toContain(`"slug":"${p.slug}"`);
+});
+test('index pane carries the MOTD container', () => {
+  expect(fs.readFileSync('dist/index.html', 'utf8')).toContain('class="motd"');
+});
 test('noscript block lists every post', () => {
   const m = JSON.parse(fs.readFileSync('dist/manifest.json', 'utf8'));
   const html = fs.readFileSync('dist/index.html', 'utf8');

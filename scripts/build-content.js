@@ -11,7 +11,7 @@ const { validatePost, validateProject } = require('./lib/schema');
 const { renderMarkdown, extractScreenshotSlot, stripLeadingH1 } = require('./lib/render');
 const {
   ORIGIN, pageHtml, postPane, projectPane, postsListPane, projectsListPane, galleryHtml,
-  aboutPane, roadmapPane,
+  aboutPane, roadmapPane, motdBlock, pickerPane,
 } = require('./lib/pages');
 
 const ROOT = path.resolve(__dirname, '..');
@@ -120,25 +120,28 @@ function main() {
   }
 
   // 5. core pages
-  const corePage = (file, { title, description, pane, active, bodyClass }) => write(file, pageHtml({
+  const corePage = (file, { title, description, pane, active, bodyClass, data }) => write(file, pageHtml({
     title, description, canonical: file, ogType: 'website', bodyClass,
-    pane, manifest, active, pageData: { type: 'page', page: file },
+    pane, manifest, active, pageData: Object.assign({ type: 'page', page: file }, data || {}),
   }));
 
   corePage('index.html', {
     title: 'Lucas Luize - DevOps Engineer', bodyClass: 'page-index', active: 'index.html',
     description: 'Cloud DevOps portfolio, blog, and projects by Lucas Luize.',
-    pane: `<section class="intro"><h1>Lucas Luize</h1><p class="muted">Cloud DevOps engineer. Infrastructure, automation, and the writing behind it.</p></section>${postsListPane(manifestPosts)}`,
+    data: { kind: 'index' },
+    pane: `<section class="intro">${motdBlock()}<h1>Lucas Luize</h1><p class="muted">Cloud DevOps engineer. Infrastructure, automation, and the writing behind it.</p></section>${postsListPane(manifestPosts)}`,
   });
   corePage('posts.html', {
     title: 'Posts - Lucas Luize', bodyClass: 'page-posts', active: 'posts.html',
     description: 'Technical writing on DevOps, cloud infrastructure, and automation.',
-    pane: `<h1>Posts</h1>${postsListPane(manifestPosts)}`,
+    data: { kind: 'posts', items: manifestPosts },
+    pane: pickerPane('Posts', 'posts', postsListPane(manifestPosts)),
   });
   corePage('projects.html', {
     title: 'Projects - Lucas Luize', bodyClass: 'page-projects', active: 'projects.html',
     description: 'Infrastructure and automation projects by Lucas Luize.',
-    pane: `<h1>Projects</h1>${projectsListPane(manifestProjects)}`,
+    data: { kind: 'projects', items: manifestProjects },
+    pane: pickerPane('Projects', 'projects', projectsListPane(manifestProjects)),
   });
   corePage('about.html', {
     title: 'About - Lucas Luize', bodyClass: 'page-about', active: 'about.html',

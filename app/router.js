@@ -48,8 +48,13 @@ async function swapTo(url, push) {
 
     pane.innerHTML = newPane.innerHTML;
     document.title = doc.title;
+    // Refresh window.__PAGE__ from the fetched page so buffers (telescope items,
+    // page kind) read the new page's data, then let them re-boot into the pane.
+    const m = html.match(/window\.__PAGE__ = (.*);<\/script>/);
+    if (m) { try { window.__PAGE__ = JSON.parse(m[1]); } catch (_) { /* keep old */ } }
     if (push) history.pushState({}, '', url);
     markActiveNav(new URL(url, location.origin).pathname);
+    document.dispatchEvent(new CustomEvent('pane:swapped', { detail: { url } }));
 
     const h1 = pane.querySelector('h1');
     if (h1) {
