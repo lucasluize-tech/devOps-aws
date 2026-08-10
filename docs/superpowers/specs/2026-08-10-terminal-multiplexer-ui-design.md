@@ -75,7 +75,7 @@ Favicon, sidebar header, and MOTD ASCII art all derive from the chosen mark.
   - `nvim` (post/project reader) - markdown via marked.js, syntax highlighting via highlight.js (CDN, same precedent as marked), inline images, statusline showing NORMAL / filename.md / scroll % / reading time. Share links kept.
   - `roadmap` - phases as systemd targets with OK/ACTIVE states and progress.
   - `contact` - interactive wizard (below).
-- **prompt** - command engine. Small fixed set: `help`, `ls [posts|projects]`, `open <x>` / `cd <x>`, `cat <slug>`, `whoami`, `contact`, `clear`, arrow-key history. Unknown command → helpful error. Every command maps to a route the mouse can also reach. (Pipes/tab-completion: out of scope, layerable later.)
+- **prompt** - command engine. Small fixed set: `help`, `ls [posts|projects]`, `open <x>` / `cd <x>`, `cat <slug>`, `whoami`, `status`, `contact`, `clear`, arrow-key history. Unknown command → helpful error. Every command maps to a route the mouse can also reach. (Pipes/tab-completion: out of scope, layerable later.)
 - **redirect stubs** - `post.html`/`project.html` keep their filenames and immediately `location.replace('/#/posts/<slug>')` (`/#/projects/<slug>`), preserving every link ever shared.
 
 ### Data flow
@@ -101,6 +101,20 @@ Cost: ~$0/mo (Lambda perpetual free tier, no API Gateway, SES pennies). Abuse: c
 - Fetch failures render as terminal-style errors in the pane (`curl: (7) failed to fetch posts index - retry`) with a retry affordance.
 - JS disabled: `<noscript>` block with plain links to posts (markdown is client-rendered today already; not a regression).
 - Unknown hash → 404 buffer with `help` hint.
+
+## Engineering principles - the implementation is the portfolio
+
+For a DevOps/SRE portfolio, the implementation itself must demonstrate the judgment being advertised. Every principle below is a concrete commitment with an enforcement mechanism - if it isn't tested or CI-enforced, it doesn't count.
+
+| Principle | Commitment | Enforcement |
+|---|---|---|
+| Observability | RUM via `PerformanceObserver` (LCP, CLS, INP, long tasks) + `window.onerror`, reported as GA4 events. `status` command prints the visitor's own live session telemetry (load time, LCP, transfer size) in the terminal - observability as a feature. | e2e asserts `status` outputs real measured values |
+| Failure handling | Content fetch retry with backoff; highlight.js CDN failure degrades to plain code blocks; contact POST failure/timeout falls back to mailto with honest messaging; unknown routes get a 404 buffer. | e2e simulates blocked CDN and dead endpoint, asserts graceful paths |
+| Progressive enhancement | `@supports` fallback for `backdrop-filter`; reduced-motion serves full content without theater; `<noscript>` links directly to raw `posts/*.md` (deployed to S3, human-readable). | Jest test: noscript link list must match `posts/index.json` (extends existing index-consistency pattern) |
+| Performance budgets | App JS+CSS ≤ 75KB gzipped; LCP < 2.5s on throttled mobile; zero CLS from the MOTD sequence; wordmark font subset via Google Fonts `text=` parameter. | Playwright perf test reads `performance` entries, fails CI over budget |
+| Deterministic content validation | Front-matter schema test (required fields per post/project), internal slug-link checker, image-alt presence check - all offline, no network. | Jest in CI, blocking deploy |
+| Accessibility | Keyboard-only journey (MOTD → posts → read → contact) as a first-class e2e test; axe-core scan per buffer route; contrast verified against the glassy background. | Playwright + axe-core, CI-blocking |
+| Operational polish | Cache-Control on S3 sync (HTML `no-cache`, hashed/static assets long max-age) - eliminates the stale-asset bug class seen twice; $1 billing alarm on the contact stack; deploy summary in Actions output. | CI workflow + Terraform |
 
 ## Accessibility
 
