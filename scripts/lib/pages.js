@@ -21,6 +21,14 @@ function esc(s) {
 
 function attr(s) { return esc(s); }
 
+// compactSlugs: {slug,title} only - the prompt engine (app/prompt.js) needs
+// no other fields to resolve `open`/`cat`/`ls`. Keeps window.__PAGE__ small
+// on every page (not just the posts/projects pickers, which already embed
+// their own full manifest for the telescope).
+function compactSlugs(list) {
+  return (list || []).map((p) => ({ slug: p.slug, title: p.title }));
+}
+
 // Deterministic noscript block built from the manifest: plain links to every core
 // page, plus raw markdown for every post/project so content is reachable JS-off.
 function noscriptLinks(manifest) {
@@ -84,14 +92,22 @@ function pageHtml({ title, description, canonical, ogType, bodyClass, pane, page
 <div class="workspace">
 ${sidebar(active)}
 <main id="pane">${pane}</main>
-<form data-prompt><label>&gt; <input type="text" name="cmd" autocomplete="off" spellcheck="false" aria-label="command"></label></form>
+<form data-prompt>
+<div class="scrollback" data-scrollback aria-live="polite" aria-label="command output"></div>
+<label>&gt; <input type="text" name="cmd" autocomplete="off" spellcheck="false" aria-label="command"></label>
+<input type="hidden" name="website" data-hp>
+</form>
 <footer role="contentinfo"><span data-progress></span><span data-clock></span> <span data-sha></span></footer>
 </div>
 ${noscriptLinks(manifest || {})}
-<script>window.__PAGE__ = ${JSON.stringify(pageData || {}).replace(/</g, '\\u003c')};</script>
+<script>window.__PAGE__ = ${JSON.stringify(Object.assign(
+    { manifest: { posts: compactSlugs(manifest && manifest.posts), projects: compactSlugs(manifest && manifest.projects) } },
+    pageData || {}
+  )).replace(/</g, '\\u003c')};</script>
 <script type="module" src="/app/shell.js"></script>
 <script type="module" src="/app/router.js"></script>
 <script type="module" src="/app/buffers.js"></script>
+<script type="module" src="/app/prompt.js"></script>
 </body>
 </html>`;
 }

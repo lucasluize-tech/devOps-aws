@@ -416,11 +416,26 @@ nav[aria-label="workspaces"] a[aria-current="page"]::before {
 form[data-prompt] {
   grid-area: prompt;
   display: flex;
-  align-items: center;
+  flex-direction: column;
+  align-items: stretch;
   padding: 10px clamp(16px, 3vw, 28px);
   border-top: 1px solid var(--border-subtle);
   background: color-mix(in srgb, var(--bg) 40%, transparent);
 }
+/* ---- Scrollback (command echoes + output, above the input) -------- */
+.scrollback {
+  max-height: 220px;
+  overflow-y: auto;
+  margin-bottom: 8px;
+  font-size: 12px;
+  line-height: 1.55;
+}
+.scrollback:empty { display: none; margin-bottom: 0; }
+.sb-line { padding: 1px 0; white-space: pre-wrap; word-break: break-word; color: var(--text); }
+.sb-echo { color: var(--accent-bright); }
+.sb-ok { color: var(--success); }
+.sb-mailto { color: var(--link); }
+.sb-status .status { padding: 4px 0; }
 form[data-prompt] label {
   display: flex;
   align-items: center;

@@ -1,0 +1,91 @@
+// tests/unit/prompt.test.js - pure parseCommand() logic (no DOM needed).
+const { parseCommand } = require('../../app/prompt.js');
+
+const m = {
+  posts: [{ slug: 'proxmox-lab', title: 'P' }],
+  projects: [{ slug: 'ha-proxmox', title: 'H' }],
+};
+
+test('nav commands', () => {
+  expect(parseCommand('open posts', m)).toEqual({ kind: 'nav', url: '/posts.html' });
+  expect(parseCommand('cd projects', m)).toEqual({ kind: 'nav', url: '/projects.html' });
+  expect(parseCommand('cat proxmox-lab', m)).toEqual({ kind: 'nav', url: '/posts/proxmox-lab.html' });
+  expect(parseCommand('whoami', m)).toEqual({ kind: 'nav', url: '/about.html' });
+});
+
+test('ls prints slugs', () => {
+  expect(parseCommand('ls posts', m).lines.join(' ')).toContain('proxmox-lab');
+});
+
+test('unknown command', () => {
+  expect(parseCommand('sudo rm -rf /', m).lines[0]).toMatch(/command not found/);
+});
+
+test('contact starts wizard; clear clears', () => {
+  expect(parseCommand('contact', m)).toEqual({ kind: 'wizard' });
+  expect(parseCommand('clear', m)).toEqual({ kind: 'clear' });
+});
+
+// Additional coverage beyond the brief's exact cases.
+describe('parseCommand extras', () => {
+  test('open resolves other workspace names', () => {
+    expect(parseCommand('open about', m)).toEqual({ kind: 'nav', url: '/about.html' });
+    expect(parseCommand('open roadmap', m)).toEqual({ kind: 'nav', url: '/roadmap.html' });
+    expect(parseCommand('open contact', m)).toEqual({ kind: 'nav', url: '/contact.html' });
+    expect(parseCommand('open index', m)).toEqual({ kind: 'nav', url: '/index.html' });
+    expect(parseCommand('cd home', m)).toEqual({ kind: 'nav', url: '/index.html' });
+  });
+
+  test('open/cd resolves a project slug', () => {
+    expect(parseCommand('open ha-proxmox', m)).toEqual({ kind: 'nav', url: '/projects/ha-proxmox.html' });
+    expect(parseCommand('cd ha-proxmox', m)).toEqual({ kind: 'nav', url: '/projects/ha-proxmox.html' });
+  });
+
+  test('cat falls back to a project slug', () => {
+    expect(parseCommand('cat ha-proxmox', m)).toEqual({ kind: 'nav', url: '/projects/ha-proxmox.html' });
+  });
+
+  test('open unknown target prints an error, does not throw', () => {
+    const r = parseCommand('open nope', m);
+    expect(r.kind).toBe('print');
+    expect(r.lines[0]).toMatch(/no such file or directory/i);
+  });
+
+  test('cat unknown slug prints an error', () => {
+    const r = parseCommand('cat nope', m);
+    expect(r.kind).toBe('print');
+    expect(r.lines[0]).toMatch(/no such file or directory/i);
+  });
+
+  test('ls projects lists project slugs', () => {
+    expect(parseCommand('ls projects', m).lines.join(' ')).toContain('ha-proxmox');
+  });
+
+  test('ls with no args lists workspaces', () => {
+    const r = parseCommand('ls', m);
+    expect(r.kind).toBe('print');
+    expect(r.lines.join(' ')).toMatch(/posts/);
+  });
+
+  test('help prints a command list', () => {
+    const r = parseCommand('help', m);
+    expect(r.kind).toBe('print');
+    expect(r.lines.length).toBeGreaterThan(0);
+  });
+
+  test('status returns status kind', () => {
+    expect(parseCommand('status', m)).toEqual({ kind: 'status' });
+  });
+
+  test('command word is trimmed and lowercased', () => {
+    expect(parseCommand('  WHOAMI  ', m)).toEqual({ kind: 'nav', url: '/about.html' });
+  });
+
+  test('empty input is a no-op print', () => {
+    expect(parseCommand('', m)).toEqual({ kind: 'print', lines: [] });
+  });
+
+  test('parseCommand is pure - no globals touched, safe under Node', () => {
+    expect(() => parseCommand('help', m)).not.toThrow();
+  });
+});
