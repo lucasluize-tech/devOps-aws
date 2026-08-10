@@ -55,6 +55,13 @@ function pageHtml({ title, description, canonical, ogType, bodyClass, pane, page
   const canonicalUrl = `${ORIGIN}/${canonical}`;
   const font = 'https://fonts.googleapis.com/css2?family=Saira+Stencil+One&display=swap';
   const chromeFont = 'https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap';
+  // Reader pages (post/project) load article typography (Bricolage headings,
+  // DM Sans prose) + reader.css on top of the mono chrome. Nothing else does.
+  const isReader = /\bpage-(post|project)\b/.test(bodyClass || '');
+  const readerFont = 'https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;1,9..40,400&display=swap';
+  const readerHead = isReader
+    ? `\n<link rel="stylesheet" href="${readerFont}">\n<link rel="stylesheet" href="/app/reader.css">`
+    : '';
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -71,7 +78,7 @@ function pageHtml({ title, description, canonical, ogType, bodyClass, pane, page
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="${chromeFont}">
 <link rel="stylesheet" href="${font}">
-<link rel="stylesheet" href="/app/terminal.css">
+<link rel="stylesheet" href="/app/terminal.css">${readerHead}
 </head>
 <body class="${attr(bodyClass || '')}">
 <div class="workspace">
@@ -158,7 +165,73 @@ ${s.caption ? `<figcaption>${esc(s.caption)}</figcaption>` : ''}
   return `<div class="project-screenshots">${figs}</div>`;
 }
 
+// About pane: neofetch layout - ASCII >_ logo left, key/value column right.
+// Skills carry provenance labels [prod]/[lab]/[personal] matching the schema.
+function aboutPane() {
+  const logo = [
+    '        __         ',
+    '   ___ / /_        ',
+    '  / _ \\/ __/       ',
+    ' /  __/ /_         ',
+    ' \\___/\\__/  _      ',
+    '     >_    (_)     ',
+  ].join('\n');
+  const row = (k, v) => `<div class="nf-row"><span class="nf-key">${esc(k)}</span><span class="nf-val">${v}</span></div>`;
+  const skill = (name, prov) => `<span class="nf-skill">${esc(name)}<span class="prov prov-${esc(prov)}">[${esc(prov)}]</span></span>`;
+  const skills = [
+    skill('AWS (S3/CloudFront/ACM)', 'prod'),
+    skill('Terraform', 'prod'),
+    skill('GitHub Actions CI/CD', 'prod'),
+    skill('Proxmox VE / LXC', 'lab'),
+    skill('Tailscale', 'lab'),
+    skill('Bash / dotfiles', 'personal'),
+    skill('Docker', 'lab'),
+    skill('Kubernetes / EKS', 'learning'),
+  ].join('');
+  const kv = [
+    row('host', 'lucas@devops'),
+    row('role', 'Cloud DevOps Engineer'),
+    row('base', 'Edison, NJ - remote-friendly'),
+    row('focus', 'private-origin, CDN-fronted, test-gated infra'),
+    row('uptime', 'shipping since 2024'),
+    row('skills', `<div class="nf-skills">${skills}</div>`),
+    row('contact', '<a href="mailto:lucasluize@gmail.com">lucasluize@gmail.com</a>'),
+  ].join('');
+  return `<section class="neofetch" aria-label="about">
+<pre class="nf-logo" aria-hidden="true">${esc(logo)}</pre>
+<div class="nf-info"><h1 class="nf-title">lucas@devops</h1><hr class="nf-sep">${kv}</div>
+</section>`;
+}
+
+// Roadmap pane: systemd-style unit list (like `systemctl status`).
+// state: active (done/running), activating (in progress), inactive (queued).
+function roadmapPane() {
+  const units = [
+    ['s3-cloudfront-site', 'active', 'Static site on private S3 + CloudFront + ACM (HTTPS)'],
+    ['proxmox-ha-lab', 'active', 'CIA-triad on-prem HA cluster with keepalived VIP'],
+    ['ci-cd-pipeline', 'active', 'GitHub Actions test-gated deploy + CDN invalidation'],
+    ['tailscale-zero-trust', 'active', 'Zero-config subnet router into AWS via Terraform'],
+    ['terminal-ui-redesign', 'activating', 'tmux/nvim-style portfolio buffer UI (this site)'],
+    ['eks-gitops', 'inactive', 'EKS clusters with ArgoCD GitOps deployments'],
+    ['observability-stack', 'inactive', 'Prometheus + Grafana + alerting on the lab'],
+    ['secrets-automation', 'inactive', 'Vault-backed secret rotation across environments'],
+  ];
+  const label = { active: 'active (running)', activating: 'activating (start)', inactive: 'inactive (dead)' };
+  const rows = units.map(([name, state, desc]) => `<li class="unit unit-${state}">
+<span class="unit-dot" aria-hidden="true">●</span>
+<span class="unit-name">${esc(name)}.service</span>
+<span class="unit-state">${esc(label[state])}</span>
+<span class="unit-desc">${esc(desc)}</span>
+</li>`).join('');
+  return `<section class="systemd" aria-label="roadmap">
+<h1>roadmap.target</h1>
+<p class="systemd-cmd muted">$ systemctl status roadmap.target</p>
+<ul class="unit-list">${rows}</ul>
+</section>`;
+}
+
 module.exports = {
   ORIGIN, NAV, esc,
   pageHtml, postPane, projectPane, postsListPane, projectsListPane, galleryHtml,
+  aboutPane, roadmapPane,
 };

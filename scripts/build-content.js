@@ -8,9 +8,10 @@ const path = require('path');
 
 const { parseMarkdown, calculateReadingTime } = require('../utils');
 const { validatePost, validateProject } = require('./lib/schema');
-const { renderMarkdown, extractScreenshotSlot } = require('./lib/render');
+const { renderMarkdown, extractScreenshotSlot, stripLeadingH1 } = require('./lib/render');
 const {
   ORIGIN, pageHtml, postPane, projectPane, postsListPane, projectsListPane, galleryHtml,
+  aboutPane, roadmapPane,
 } = require('./lib/pages');
 
 const ROOT = path.resolve(__dirname, '..');
@@ -55,7 +56,7 @@ function main() {
 
   // 3. render post bodies + build manifest entries + emit per-post pages
   const postManifest = posts.map((p) => {
-    const bodyHtml = renderMarkdown(p.content);
+    const bodyHtml = stripLeadingH1(renderMarkdown(p.content));
     const readingTime = calculateReadingTime(p.content);
     const url = `posts/${p.slug}.html`;
     const canonicalUrl = `${ORIGIN}/${url}`;
@@ -64,7 +65,7 @@ function main() {
 
   // 4. render project bodies (inject gallery at screenshot slot)
   const projManifest = projects.map((p) => {
-    const rendered = renderMarkdown(p.content);
+    const rendered = stripLeadingH1(renderMarkdown(p.content));
     const { before, after } = extractScreenshotSlot(rendered);
     const bodyHtml = before + galleryHtml(p.data.screenshots, p.slug) + after;
     const url = `projects/${p.slug}.html`;
@@ -142,12 +143,12 @@ function main() {
   corePage('about.html', {
     title: 'About - Lucas Luize', bodyClass: 'page-about', active: 'about.html',
     description: 'About Lucas Luize, cloud DevOps engineer.',
-    pane: `<h1>About</h1><p>Cloud DevOps engineer building private-origin, CDN-fronted, test-gated infrastructure.</p>`,
+    pane: aboutPane(),
   });
   corePage('roadmap.html', {
     title: 'Roadmap - Lucas Luize', bodyClass: 'page-roadmap', active: 'roadmap.html',
     description: 'What Lucas Luize is learning and building next.',
-    pane: `<h1>Roadmap</h1><p>Where this portfolio and skill set are headed next.</p>`,
+    pane: roadmapPane(),
   });
   corePage('contact.html', {
     title: 'Contact - Lucas Luize', bodyClass: 'page-contact', active: 'contact.html',
