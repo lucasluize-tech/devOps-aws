@@ -44,7 +44,7 @@ function sidebar(active) {
     const cur = href === active ? ' aria-current="page"' : '';
     return `<li><a href="/${attr(href)}"${cur}>${esc(label)}</a></li>`;
   }).join('');
-  return `<nav aria-label="workspaces"><ul>${items}</ul></nav>`;
+  return `<nav aria-label="workspaces"><span class="logo-mark" aria-label="lucasluize devops">&gt;_</span><ul>${items}</ul></nav>`;
 }
 
 // pageHtml: full HTML document for one page.
@@ -53,7 +53,7 @@ function sidebar(active) {
 //   manifest (for the noscript block), active (nav href to mark current).
 function pageHtml({ title, description, canonical, ogType, bodyClass, pane, pageData, manifest, active }) {
   const canonicalUrl = `${ORIGIN}/${canonical}`;
-  const font = 'https://fonts.googleapis.com/css2?family=Martian+Mono:wght@400;700&text=LUCASLUIZEDEVOPS%20&display=swap';
+  const font = 'https://fonts.googleapis.com/css2?family=Saira+Stencil+One&display=swap';
   const chromeFont = 'https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap';
   return `<!DOCTYPE html>
 <html lang="en">

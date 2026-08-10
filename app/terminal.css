@@ -43,12 +43,11 @@ body::before {
   display: grid;
   place-content: center;
   text-align: center;
-  font-family: 'Martian Mono', monospace;
-  font-weight: 800;
+  font-family: 'Saira Stencil One', monospace;
   font-size: clamp(3rem, 11vw, 9rem);
   line-height: 1.05;
   letter-spacing: -0.03em;
-  color: color-mix(in srgb, var(--accent) 16%, transparent);
+  color: color-mix(in srgb, var(--accent) 20%, transparent);
   z-index: 0;
   pointer-events: none;
   user-select: none;
@@ -69,7 +68,7 @@ body::before {
   border: 1px solid var(--border);
   border-radius: 12px;
   overflow: hidden;
-  background: color-mix(in srgb, var(--bg) 55%, transparent);
+  background: color-mix(in srgb, var(--bg) 45%, transparent);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
   box-shadow: 0 24px 60px -20px rgba(0, 0, 0, 0.6),
@@ -87,6 +86,24 @@ nav[aria-label="workspaces"] {
   padding: 14px 10px;
   border-right: 1px solid var(--border-subtle);
   background: color-mix(in srgb, var(--bg-elevated) 60%, transparent);
+  display: flex;
+  flex-direction: column;
+}
+/* >_ logo mark: tmux-pane-title look, sits above the WORKSPACES label */
+nav[aria-label="workspaces"] .logo-mark {
+  order: -1;
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  margin: 0 8px 12px;
+  padding: 3px 9px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: var(--accent-bright);
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent) 28%, transparent);
+  border-radius: 5px;
 }
 nav[aria-label="workspaces"]::before {
   content: 'workspaces';
@@ -335,7 +352,9 @@ noscript a { color: var(--link); }
     -webkit-backdrop-filter: blur(8px);
     backdrop-filter: blur(8px);
   }
-  nav[aria-label="workspaces"]::before { display: none; }
+  nav[aria-label="workspaces"] { flex-direction: row; }
+  nav[aria-label="workspaces"]::before,
+  nav[aria-label="workspaces"] .logo-mark { display: none; }
   nav[aria-label="workspaces"] ul {
     flex-direction: row;
     height: 100%;
