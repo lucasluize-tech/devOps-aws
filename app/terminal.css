@@ -136,7 +136,7 @@ nav[aria-label="workspaces"] a {
 }
 /* eza-style leading glyph: folder-ish for sections, violet by default. */
 nav[aria-label="workspaces"] a::before {
-  content: '\2022'; /* • */
+  content: '\2022' / ''; /* • ; empty alt keeps it out of the link's accessible name */
   color: var(--accent);
   opacity: 0.55;
   font-size: 14px;
@@ -303,6 +303,10 @@ nav[aria-label="workspaces"] a[aria-current="page"]::before {
   overflow-x: auto;
   font-size: clamp(10px, 1.15vw, 13px);
   line-height: 1.35;
+  /* Reserve the full block up front: 12 MOTD lines x 1.35 line-height. Font-
+     relative so it is correct before JS runs and stable across the font swap
+     (zero CLS). Keep in sync with MOTD_LINES in app/buffers.js. */
+  min-height: 16.2em;
   color: var(--accent-bright);
   text-shadow: 0 0 16px var(--accent-glow);
 }

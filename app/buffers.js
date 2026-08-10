@@ -85,9 +85,8 @@ function reducedMotion() {
 export function runMotd(el) {
   if (!el) return;
   const finalText = MOTD_LINES.join('\n');
-  el.textContent = finalText; // measure + reserve full block height up front
-  const h = el.offsetHeight;
-  if (h) el.style.minHeight = h + 'px';
+  // Height is reserved by CSS (.motd min-height, font-relative) so it holds from
+  // first paint and survives the web-font swap -> zero CLS. No JS measurement.
 
   let done = false;
   const finish = () => {

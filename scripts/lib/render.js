@@ -6,7 +6,7 @@ const MARKER = '<!-- screenshots -->';
 
 function renderMarkdown(md) {
   const raw = marked.parse(md.replace(MARKER, `<div data-screenshot-slot></div>`));
-  return sanitizeHtml(raw, {
+  const clean = sanitizeHtml(raw, {
     allowedTags: sanitizeHtml.defaults.allowedTags.concat(['img', 'figure', 'figcaption', 'div', 'span']),
     allowedAttributes: {
       a: ['href', 'title', 'rel', 'target'],
@@ -16,6 +16,10 @@ function renderMarkdown(md) {
     allowedSchemes: ['https', 'mailto'],
     allowedSchemesAppliedToAttributes: ['href', 'src'],
   });
+  // Code fences render as horizontally-scrollable <pre>; make them keyboard-
+  // focusable so keyboard users can scroll them (axe scrollable-region-focusable).
+  // Added post-sanitize so the tabindex survives.
+  return clean.replace(/<pre>/g, '<pre tabindex="0">');
 }
 
 function extractScreenshotSlot(html) {

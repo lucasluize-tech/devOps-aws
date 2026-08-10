@@ -259,7 +259,7 @@
   transition: background 0.12s ease, transform 0.12s ease;
 }
 #pane .btn:hover { background: var(--accent-bright); transform: translateY(-1px); }
-#pane .btn::before { content: '$ '; opacity: 0.6; }
+#pane .btn::before { content: '$ ' / ''; opacity: 0.6; }
 
 /* screenshot gallery figures */
 #pane .project-screenshots figure { margin: 1.4em 0; }
