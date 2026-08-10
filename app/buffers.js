@@ -130,47 +130,38 @@ export function runMotd(el) {
 const PICKER_KEYS = ['title', 'excerpt', 'goal', 'tags'];
 
 // initTelescope(el, items, kind): telescope.nvim-style picker inside `el`.
-// Results (left, listbox), preview (right), fuzzy input (bottom), tag chips.
+// Results (left, listbox), preview (right), fuzzy input (bottom), tag dropdown.
 export function initTelescope(el, items, kind) {
   if (!el || !items) return;
   el.classList.add('telescope');
+  const tags = ['all', ...getTagsFromManifest(items)];
+  const tagOptions = tags
+    .map((t) => `<option value="${escapeHtml(t)}">${t === 'all' ? 'all tags' : escapeHtml(t)}</option>`)
+    .join('');
   el.innerHTML = `
 <div class="tl-body">
   <ul class="tl-results" id="tl-listbox" role="listbox" aria-label="${kind} results"></ul>
   <div class="tl-preview" aria-live="polite"></div>
 </div>
-<div class="tl-chips" role="group" aria-label="filter by tag"></div>
 <div class="tl-input">
   <span class="tl-prompt">&gt;</span>
   <input type="text" class="tl-query" role="combobox" aria-controls="tl-listbox"
          aria-expanded="true" autocomplete="off" spellcheck="false"
          aria-label="fuzzy filter ${kind}" placeholder="type to filter…">
+  <select class="tl-tag" aria-label="filter by tag">${tagOptions}</select>
   <span class="tl-count"></span>
 </div>`;
 
   const resultsEl = el.querySelector('.tl-results');
   const previewEl = el.querySelector('.tl-preview');
-  const chipsEl = el.querySelector('.tl-chips');
+  const tagEl = el.querySelector('.tl-tag');
   const inputEl = el.querySelector('.tl-query');
   const countEl = el.querySelector('.tl-count');
 
   const total = items.length;
-  const tags = ['all', ...getTagsFromManifest(items)];
   let activeTag = 'all';
   let current = items.slice();
   let sel = 0;
-
-  // tag chips
-  chipsEl.innerHTML = tags
-    .map((t) => `<button type="button" class="tl-chip" data-tag="${escapeHtml(t)}">${escapeHtml(t)}</button>`)
-    .join('');
-  const markChips = () => {
-    for (const b of chipsEl.querySelectorAll('.tl-chip')) {
-      const on = b.dataset.tag === activeTag;
-      b.classList.toggle('is-active', on);
-      b.setAttribute('aria-pressed', on ? 'true' : 'false');
-    }
-  };
 
   const meta = (item) => {
     if (kind === 'projects') {
@@ -234,18 +225,15 @@ ${tagline ? `<p class="tl-tags">${escapeHtml(tagline)}</p>` : ''}`;
     renderResults();
     go();
   });
-  chipsEl.addEventListener('click', (e) => {
-    const b = e.target.closest('.tl-chip');
-    if (!b) return;
-    activeTag = b.dataset.tag;
-    markChips();
+  tagEl.addEventListener('change', () => {
+    activeTag = tagEl.value;
     refresh();
-    inputEl.focus();
   });
 
-  markChips();
   refresh();
-  inputEl.focus();
+  // preventScroll: on mobile, autofocusing the input otherwise scrolls #pane
+  // down into view (~390px jump). Focus lands here without moving the pane.
+  inputEl.focus({ preventScroll: true });
 }
 
 function escapeHtml(s) {

@@ -223,11 +223,11 @@ function aboutPane() {
   const kv = [
     row('host', 'lucas@devops'),
     row('role', 'Cloud DevOps Engineer'),
-    row('base', 'Edison, NJ - remote-friendly'),
+    row('base', 'Tampa, FL - Remote friendly'),
     row('focus', 'private-origin, CDN-fronted, test-gated infra'),
-    row('uptime', 'shipping since 2024'),
+    row('uptime', 'shipping since 2022'),
     row('skills', `<div class="nf-skills">${skills}</div>`),
-    row('contact', '<a href="mailto:lucasluize@gmail.com">lucasluize@gmail.com</a>'),
+    row('contact', '<a href="mailto:me@lucasluize.com">me@lucasluize.com</a>'),
   ].join('');
   return `<section class="neofetch" aria-label="about">
 <pre class="nf-logo" aria-hidden="true">${esc(logo)}</pre>

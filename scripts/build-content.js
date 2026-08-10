@@ -156,7 +156,7 @@ function main() {
   corePage('contact.html', {
     title: 'Contact - Lucas Luize', bodyClass: 'page-contact', active: 'contact.html',
     description: 'Get in touch with Lucas Luize.',
-    pane: `<h1>Contact</h1><p><a href="mailto:lucasluize@gmail.com">lucasluize@gmail.com</a></p>`,
+    pane: `<h1>Contact</h1><p><a href="mailto:me@lucasluize.com">me@lucasluize.com</a></p>`,
   });
   corePage('404.html', {
     title: 'Not found - Lucas Luize', bodyClass: 'page-404', active: 'index.html',

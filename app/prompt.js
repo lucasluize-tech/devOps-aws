@@ -6,7 +6,7 @@ import { navigate } from './router.js';
 import { initStatus } from './buffers.js';
 import { CONTACT_ENDPOINT } from './config.js';
 
-const CONTACT_EMAIL = 'lucasluize@gmail.com';
+const CONTACT_EMAIL = 'me@lucasluize.com';
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const MAX_MESSAGE_LEN = 2000;
 

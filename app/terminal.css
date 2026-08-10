@@ -360,25 +360,17 @@ nav[aria-label="workspaces"] a[aria-current="page"]::before {
 .tl-preview .tl-meta { margin: 0 0 10px; font-size: 12px; color: var(--secondary); }
 .tl-preview .tl-excerpt { margin: 0 0 10px; color: var(--text); font-size: 13px; }
 .tl-preview .tl-tags { margin: 0; font-size: 12px; color: var(--muted); }
-.tl-chips { display: flex; flex-wrap: wrap; gap: 6px; }
-.tl-chip {
+.tl-tag {
   font: inherit;
   font-size: 12px;
-  padding: 3px 10px;
-  color: var(--muted);
-  background: color-mix(in srgb, var(--surface) 50%, transparent);
-  border: 1px solid var(--border-subtle);
-  border-radius: 20px;
+  padding: 3px 8px;
+  color: var(--text);
+  background: color-mix(in srgb, var(--surface) 60%, transparent);
+  border: 1px solid var(--border);
+  border-radius: 6px;
   cursor: pointer;
-  transition: color 0.12s ease, border-color 0.12s ease;
 }
-.tl-chip:hover { color: var(--text); border-color: var(--accent); }
-.tl-chip.is-active {
-  color: var(--accent-bright);
-  border-color: var(--accent);
-  background: color-mix(in srgb, var(--accent) 14%, transparent);
-}
-.tl-chip:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.tl-tag:focus-visible { outline: none; border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent-glow); }
 .tl-input {
   display: flex;
   align-items: center;

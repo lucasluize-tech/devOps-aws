@@ -63,8 +63,10 @@ test('browser Back restores the previous pane after a pjax nav', async ({ page }
 
 test('telescope narrows results and Enter opens a post', async ({ page }) => {
   await page.goto('/posts.html');
-  const input = page.getByRole('combobox');
-  const options = page.getByRole('option');
+  // Two comboboxes on the page (fuzzy input + tag select); target by name.
+  const input = page.getByRole('combobox', { name: 'fuzzy filter posts' });
+  // Scope to the results listbox: the tag <select>'s <option>s also have role=option.
+  const options = page.getByRole('listbox', { name: 'posts results' }).getByRole('option');
   const total = manifest.posts.length;
   await expect(options).toHaveCount(total);
   await input.fill('terraform');
@@ -74,9 +76,9 @@ test('telescope narrows results and Enter opens a post', async ({ page }) => {
   await expect(page).toHaveURL(/\/posts\/.+\.html$/);
 });
 
-test('telescope tag chip filters results', async ({ page }) => {
+test('telescope tag dropdown filters results', async ({ page }) => {
   await page.goto('/posts.html');
-  const options = page.getByRole('option');
+  const options = page.getByRole('listbox', { name: 'posts results' }).getByRole('option');
   const total = manifest.posts.length;
   await expect(options).toHaveCount(total);
   // Derive a tag that some (not all) posts carry, so filtering must shrink the list.
@@ -84,8 +86,7 @@ test('telescope tag chip filters results', async ({ page }) => {
   for (const p of manifest.posts) for (const t of p.tags || []) counts[t] = (counts[t] || 0) + 1;
   const tag = Object.keys(counts).find((t) => counts[t] > 0 && counts[t] < total);
   expect(tag).toBeTruthy();
-  await page.getByRole('group', { name: 'filter by tag' })
-    .getByRole('button', { name: tag, exact: true }).click();
+  await page.getByRole('combobox', { name: 'filter by tag' }).selectOption(tag);
   await expect.poll(() => options.count()).toBe(counts[tag]);
 });
 
@@ -147,7 +148,7 @@ test('keyboard-only journey: reach posts, open a post, go back', async ({ page }
   await page.keyboard.press('Enter');
   await expect(page).toHaveURL(/\/posts\.html$/);
   // Tab to the telescope input, then Enter opens the first result.
-  const input = page.getByRole('combobox');
+  const input = page.getByRole('combobox', { name: 'fuzzy filter posts' });
   expect(await tabTo(page, input)).toBe(true);
   await page.keyboard.press('Enter');
   await expect(page).toHaveURL(/\/posts\/.+\.html$/);
