@@ -54,7 +54,7 @@ After every change, run in this order:
 ## Don't
 - Don't change e2e test selectors without updating both CSS and the corresponding `tests/e2e/*.test.js` file — critical selectors: `#posts-list .card`, `#pagination-controls`, `.dot.active`, `.pagination-arrows button`, `#search-input`, `h1.post-title`, `.post-content`, `#share-twitter`, `#projects-carousel`, `#projects-carousel .project-card`, `.project-card .category-tag`, `.project-card .status-pill`, `.project-card .tech-chips`, `.project-card .project-title`, `.project-card .project-goal`, `#projects-dots .dot`, `#project-article`, `.project-header`, `.project-pills`, `.project-tech`, `.project-actions`, `.project-content`, `.project-screenshots`
 - Don't change class names used by JS rendering (`.card`, `.badge`, `.muted`, `.post-title`, `.post-meta`, `.post-content`, `.reading-time`, `.badges`) — index.js and post.js generate DOM with these
-- Don't add build tools or frameworks — the site is intentionally plain HTML/CSS/JS for simplicity and S3 static hosting
+- Don't add frameworks or runtime package dependencies — the site runs as plain HTML/CSS/JS. One deterministic content-compile step in CI (`scripts/build-content.mjs` → `dist/`) is the only build; markdown is an authoring format, never parsed in the browser
 - Don't commit secrets — AWS credentials, API tokens, and auth cookies belong in `~/.secrets` (sourced by `.zshrc`, blocked from Claude)
 - Don't use Inter, Space Grotesk, Roboto, or system-ui fonts — the design intentionally avoids generic/overused developer portfolio typography
 - Don't use Canva MCP for social cards — use the HTML/CSS engine at `social-cards/engine.js` instead (brand consistency)

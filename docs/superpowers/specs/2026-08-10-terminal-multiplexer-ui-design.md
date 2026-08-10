@@ -11,11 +11,11 @@ Reimagine devops.lucasluize.com as a terminal multiplexer session (tmux/herdr-st
 ## Decisions (agreed in brainstorming)
 
 1. **Interaction: hybrid.** Everything is clickable/scrollable like a normal site; a real prompt line drives the same navigation for people who type. Nobody is ever required to type.
-2. **Scope: full replacement.** The terminal is the only UI. The data layer stays: `posts/*.md`, `projects/*.md`, both `index.json` registries, and `utils.js` parsing are reused untouched.
+2. **Scope: full replacement.** The terminal is the only UI. Markdown stays the authoring format (`posts/*.md`, `projects/*.md`, registries), but becomes input to a CI content-compile step rather than a browser runtime dependency (see Build and delivery).
 3. **Mobile: adaptive TUI.** Same design language; sidebar becomes a tmux-style bottom tab bar, panes stack full-width, prompt stays but is never required. Reduced blur effects on mobile for performance.
-4. **Entry: fast MOTD, always skippable.** ~1.5s typed login + MOTD with command cheatsheet on the home route. Any key/click/scroll completes it instantly. Deep links (`#/posts/<slug>`) bypass it entirely. Repeat visits in a session skip the animation (sessionStorage).
+4. **Entry: fast MOTD, always skippable.** ~1.5s typed login + MOTD with command cheatsheet on the home route. Any key/click/scroll completes it instantly. Deep links (`/posts/<slug>.html`) bypass it entirely. Repeat visits in a session skip the animation (sessionStorage).
 5. **Reader: medium cosplay.** Real nvim chrome (statusline with mode/filename/position, LazyVim-style pickers, syntax-highlighted code, inline images) but prose stays Bricolage/DM Sans at readable size. No line numbers on paragraphs.
-6. **Architecture: SPA shell + hash router.** `index.html` is the one session; buffers swap inside the pane without reloads. `post.html` and `project.html` become tiny redirect stubs so all previously shared URLs keep working.
+6. **Architecture: pre-rendered pages + pushState shell.** Every post/project gets a real generated HTML page (`/posts/<slug>.html`, `/projects/<slug>.html`) with pre-rendered, sanitized content and unique title/description/OG meta - crawlers and social scrapers see full documents. Each page boots the same terminal shell with its buffer pre-filled. In-session navigation uses `history.pushState` + manifest fetch, so the multiplexer illusion never breaks; a direct load and an in-session navigation produce identical screens. `post.html?slug=X` / `project.html?slug=X` become redirect stubs so all previously shared URLs keep working.
 7. **Contact: interactive wizard → Lambda Function URL + SES (Terraform).** Separate sub-project; the UI POSTs to a configurable endpoint URL with mailto fallback.
 
 ## Visual design
@@ -67,7 +67,7 @@ Favicon, sidebar header, and MOTD ASCII art all derive from the chosen mark.
 ### Components (each a small module, vanilla JS)
 
 - **shell** - renders static chrome: sidebar, pane frame, prompt line, statusline. Owns layout state (active workspace, window tabs).
-- **router** - hash-based: `#/` (MOTD), `#/about`, `#/projects`, `#/projects/<slug>`, `#/posts`, `#/posts/<slug>`, `#/roadmap`, `#/contact`. On change: swap buffer, update sidebar/statusline/pane title. Unknown route → 404 buffer (`command not found` style).
+- **router** - History API over real URLs: `/` (MOTD), `/about.html`, `/projects.html`, `/projects/<slug>.html`, `/posts.html`, `/posts/<slug>.html`, `/roadmap.html`, `/contact.html`. In-session: `pushState` + buffer swap from the manifest, no reload. Direct load: the pre-rendered page hydrates into the shell. Unknown route → real 404 (S3/CloudFront error document, terminal-styled `command not found`), not a soft-200.
 - **buffers** - one renderer per route type:
   - `motd` - typed login + cheatsheet (the fast-skippable sequence).
   - `neofetch` (about) - ASCII logo left, key-value facts right; skills table styled like a systemd unit list.
@@ -76,11 +76,25 @@ Favicon, sidebar header, and MOTD ASCII art all derive from the chosen mark.
   - `roadmap` - phases as systemd targets with OK/ACTIVE states and progress.
   - `contact` - interactive wizard (below).
 - **prompt** - command engine. Small fixed set: `help`, `ls [posts|projects]`, `open <x>` / `cd <x>`, `cat <slug>`, `whoami`, `status`, `contact`, `clear`, arrow-key history. Unknown command → helpful error. Every command maps to a route the mouse can also reach. (Pipes/tab-completion: out of scope, layerable later.)
-- **redirect stubs** - `post.html`/`project.html` keep their filenames and immediately `location.replace('/#/posts/<slug>')` (`/#/projects/<slug>`), preserving every link ever shared.
+- **redirect stubs** - `post.html`/`project.html` keep their filenames and immediately `location.replace('/posts/<slug>.html')` (`/projects/<slug>.html`), preserving every link ever shared.
 
-### Data flow
+### Build and delivery (CI content compile)
 
-Registries and markdown fetch exactly as today → `utils.js` `parseMarkdown` → buffer renderers. No new data formats. `window.*`/`module.exports` dual-export pattern in utils.js unchanged so unit tests keep passing.
+Constraint reframed: **no framework and no runtime package dependencies; one deterministic content-compile step in CI.** The browser never parses markdown or front matter.
+
+`scripts/build-content.mjs` (Node, no framework) runs in CI and locally:
+- validates front matter against the content schema (build fails on violation - validation cannot be dead code)
+- renders markdown → sanitized HTML (marked + sanitizer at build time only)
+- emits `dist/`: per-post and per-project pages with unique canonical URL, title, description, OG/twitter meta; the shell pages; `manifest.json` (posts + projects with metadata, replacing runtime registry fetch-and-parse); `sitemap.xml`; `build-info.json` (commit SHA, build timestamp)
+- gallery placement uses an explicit `<!-- screenshots -->` marker in the markdown, replacing `splitBodyByH2` magic
+
+Pipeline: build `dist/` once → all tests (Playwright, axe, perf budgets, link checker) run against `dist/` → the *tested artifact* is uploaded and the deploy job syncs that exact artifact to S3 (never a rebuild). Deploy uses **GitHub→AWS OIDC** with a least-privilege role (no long-lived keys in secrets), pinned action SHAs, explicit `permissions:` blocks, and Cache-Control headers (HTML `no-cache`, static assets long max-age). Post-deploy: smoke request against devops.lucasluize.com asserting HTTP 200 + the deployed build SHA from `build-info.json`. The Playwright browser cache step is removed (per Playwright CI guidance; the current conditional skips `--with-deps` on cache hit).
+
+The statusline's branch/SHA/deploy-time segments read `build-info.json` - real provenance, never fake data.
+
+### Content model
+
+Front matter gains `featured_order` (drives recruiter-facing ordering - never sort the narrative by date), `lifecycle` (`production | maintained | archived | prototype`, replacing the mixed-dimension `status`), `repo_visibility` (renamed from `visibility`), and provenance labels (`prod | personal | lab | learning`) surfaced as eza-style tags in pickers and skills. Screenshots become `{file, alt, caption}` objects - alt is never derived from caption. Case studies follow an authoring guideline (not an enforced grammar): Context → Constraints → Architecture → Failure Modes & Reliability → Testing/Validation → Outcome → Tradeoffs, with measured evidence preferred over confident prose (`tested RTO: 83s` beats "fails over seamlessly"). CIA analysis only where meaningful. Disqus is removed from project pages (stays on blog posts).
 
 ### Contact wizard + backend
 
@@ -98,7 +112,8 @@ Cost: ~$0/mo (Lambda perpetual free tier, no API Gateway, SES pennies). Abuse: c
 
 ### Error handling
 
-- Fetch failures render as terminal-style errors in the pane (`curl: (7) failed to fetch posts index - retry`) with a retry affordance.
+- Runtime fetching shrinks to the manifest (content is pre-rendered), but what remains is defensive: `response.ok` checked, `Promise.allSettled` where multiple resources load - one broken resource never blanks a working buffer.
+- Fetch failures render as terminal-style errors in the pane (`curl: (7) failed to fetch manifest - retry`) with a retry affordance.
 - JS disabled: `<noscript>` block with plain links to posts (markdown is client-rendered today already; not a regression).
 - Unknown hash → 404 buffer with `help` hint.
 
@@ -114,7 +129,7 @@ For a DevOps/SRE portfolio, the implementation itself must demonstrate the judgm
 | Performance budgets | App JS+CSS ≤ 75KB gzipped; LCP < 2.5s on throttled mobile; zero CLS from the MOTD sequence; wordmark font subset via Google Fonts `text=` parameter. | Playwright perf test reads `performance` entries, fails CI over budget |
 | Deterministic content validation | Front-matter schema test (required fields per post/project), internal slug-link checker, image-alt presence check - all offline, no network. | Jest in CI, blocking deploy |
 | Accessibility | Keyboard-only journey (MOTD → posts → read → contact) as a first-class e2e test; axe-core scan per buffer route; contrast verified against the glassy background. | Playwright + axe-core, CI-blocking |
-| Operational polish | Cache-Control on S3 sync (HTML `no-cache`, hashed/static assets long max-age) - eliminates the stale-asset bug class seen twice; $1 billing alarm on the contact stack; deploy summary in Actions output. | CI workflow + Terraform |
+| Operational polish | Build-once/deploy-tested-artifact pipeline; GitHub→AWS OIDC (no long-lived keys), pinned action SHAs, least-privilege `permissions:`; Cache-Control on S3 sync (HTML `no-cache`, static assets long max-age) - eliminates the stale-asset bug class seen twice; post-deploy smoke check asserting live build SHA; $1 billing alarm on the contact stack. | CI workflow + Terraform |
 
 ## Accessibility
 
@@ -127,8 +142,8 @@ For a DevOps/SRE portfolio, the implementation itself must demonstrate the judgm
 ## Testing
 
 - **Unit (Jest):** unchanged - utils.js untouched. `posts-index-consistency` stays. Add units for the command parser (pure function: input string → route/action).
-- **E2e (Playwright):** rewritten to the new DOM but asserting the same behaviors (per project rule: behavior, not presence): posts load and are readable, telescope search narrows results, tag filter works, post deep link renders content + share links, project picker opens case study, prompt `open posts` navigates, MOTD skips on interaction, old `post.html?slug=X` URL lands on the post buffer, contact wizard validates and falls back without endpoint.
-- Selector inventory in CLAUDE.md gets updated in the same commit that changes them.
+- **E2e (Playwright):** rewritten against `dist/`, asserting behaviors (per project rule: behavior, not presence): posts load and are readable, telescope search narrows results, tag filter works, post deep link renders content + share links, project picker opens case study, prompt `open posts` navigates, MOTD skips on interaction, old `post.html?slug=X` URL lands on the post page, contact wizard validates and falls back without endpoint.
+- **Locator policy:** user-facing locators (`getByRole`, `getByLabel`, text) over CSS selectors; test IDs only for contracts with no semantic handle. Never hardcode content counts (the current `toHaveCount(6)` pattern makes adding project #7 a test-maintenance event) - derive expected counts from the manifest. This replaces the CLAUDE.md protected-selector inventory with a smaller, sturdier contract.
 
 ## Rollout
 
@@ -139,5 +154,7 @@ For a DevOps/SRE portfolio, the implementation itself must demonstrate the judgm
 ## Out of scope (explicitly deferred)
 
 - Full shell engine (pipes, tab completion, man pages) - layerable on the prompt module later.
-- Live CI status in the statusline (would need GitHub API; ship static badge first).
+- Live CI status in the statusline (would need GitHub API; build-info.json provenance ships first).
+- Lighthouse CI (Playwright perf asserts satisfy the budget principle; add LHCI later if the badge is wanted).
+- Extensive visual regression (only a few tight component snapshots: prompt line, one card, statusline).
 - Light theme.
