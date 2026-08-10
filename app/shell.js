@@ -3,11 +3,13 @@
 // - runs the statusline clock (HH:MM:SS, 1s tick)
 // - loads the build SHA into [data-sha]; shows "dev" on any failure, never blank.
 
-function markActiveNav() {
+// pathname defaults to location.pathname; router.js (Task 7) passes the
+// pushState destination explicitly after a pane swap.
+function markActiveNav(pathname) {
   const links = document.querySelectorAll('nav[aria-label="workspaces"] a');
   if (!links.length) return;
   // Normalise "/" -> "/index.html" so the home tab lights up at the root path.
-  let path = location.pathname;
+  let path = pathname || location.pathname;
   if (path === '/' || path === '') path = '/index.html';
   let matched = null;
   for (const a of links) {
@@ -54,10 +56,14 @@ function initShell() {
   loadSha();
 }
 
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', initShell);
-} else {
-  initShell();
+// Guarded so router.js can `import { markActiveNav }` under Jest (node env,
+// no document) without this auto-init running.
+if (typeof document !== 'undefined') {
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initShell);
+  } else {
+    initShell();
+  }
 }
 
-export { initShell };
+export { initShell, markActiveNav };

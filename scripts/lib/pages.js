@@ -83,6 +83,7 @@ ${sidebar(active)}
 ${noscriptLinks(manifest || {})}
 <script>window.__PAGE__ = ${JSON.stringify(pageData || {}).replace(/</g, '\\u003c')};</script>
 <script type="module" src="/app/shell.js"></script>
+<script type="module" src="/app/router.js"></script>
 </body>
 </html>`;
 }

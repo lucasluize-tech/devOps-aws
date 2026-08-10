@@ -173,6 +173,17 @@ nav[aria-label="workspaces"] a[aria-current="page"]::before {
 #pane a { color: var(--link); }
 #pane p { color: var(--text); }
 #pane .muted { color: var(--muted); }
+#pane .pane-error button {
+  font-family: inherit;
+  font-size: inherit;
+  color: var(--secondary);
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 0.2em 0.6em;
+  cursor: pointer;
+}
+#pane .pane-error button:hover { border-color: var(--secondary); }
 #pane img { max-width: 100%; height: auto; }
 #pane pre {
   background: var(--code-bg);
