@@ -184,6 +184,8 @@ ${urls.map((u) => `  <url><loc>${ORIGIN}/${u}</loc></url>`).join('\n')}
   // 8. static assets: app/ (shell, Task 5), raw markdown (noscript), project images
   const appSrc = path.join(ROOT, 'app');
   if (fs.existsSync(appSrc)) fs.cpSync(appSrc, path.join(DIST, 'app'), { recursive: true });
+  const favicon = path.join(ROOT, 'favicon.svg');
+  if (fs.existsSync(favicon)) fs.copyFileSync(favicon, path.join(DIST, 'favicon.svg'));
   for (const p of posts)
     fs.copyFileSync(path.join(ROOT, 'posts', p.file), path.join(DIST, 'posts', p.file));
   for (const p of projects)
