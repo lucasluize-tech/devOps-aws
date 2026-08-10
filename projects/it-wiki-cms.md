@@ -2,9 +2,11 @@
 title: "IT Wiki + CMS"
 slug: "it-wiki-cms"
 category: "Infra"
-status: "in production"
+lifecycle: "production"
+provenance: "prod"
+featured_order: 3
 goal: "78-doc internal knowledge base with browser-based editor, replacing zero documentation"
-visibility: "internal"
+repo_visibility: "private"
 date: "2026-04-29"
 tech_stack:
   - "MkDocs Material"

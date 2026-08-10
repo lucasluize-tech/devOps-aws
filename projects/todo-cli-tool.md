@@ -2,9 +2,11 @@
 title: "todo-cli-tool"
 slug: "todo-cli-tool"
 category: "Dev Tools"
-status: "published"
+lifecycle: "maintained"
+provenance: "personal"
+featured_order: 6
 goal: "Project-aware TODO command-line tool, published to PyPI"
-visibility: "public"
+repo_visibility: "public"
 date: "2026-02-14"
 github: "https://github.com/lucasluize-tech/todo-cli-tool"
 demo: "https://pypi.org/project/todo-cli-tool/"

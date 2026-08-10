@@ -2,9 +2,11 @@
 title: "devops.lucasluize.com"
 slug: "devops-lucasluize-com"
 category: "Infra"
-status: "in production"
+lifecycle: "production"
+provenance: "personal"
+featured_order: 4
 goal: "Static-hosted DevOps blog and portfolio on private S3 behind CloudFront with HTTPS"
-visibility: "public"
+repo_visibility: "public"
 date: "2026-05-28"
 github: "https://github.com/lucasluize-tech/s3-bucket-landing"
 demo: "https://devops.lucasluize.com"

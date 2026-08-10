@@ -2,9 +2,11 @@
 title: "EPL Magazine Tracker"
 slug: "magazine-tracker"
 category: "Apps"
-status: "in production"
+lifecycle: "production"
+provenance: "prod"
+featured_order: 2
 goal: "Internal full-stack app for tracking periodical subscriptions across all branches"
-visibility: "internal"
+repo_visibility: "private"
 date: "2026-03-30"
 tech_stack:
   - "Next.js 16 (App Router)"

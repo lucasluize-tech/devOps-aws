@@ -2,9 +2,11 @@
 title: "Agentic Engagement Specialist"
 slug: "agentic-engagement-specialist"
 category: "Dev Tools"
-status: "maintained"
+lifecycle: "maintained"
+provenance: "personal"
+featured_order: 5
 goal: "Multi-agent Claude pipeline that turns work sessions into published blog posts and social content"
-visibility: "private"
+repo_visibility: "private"
 date: "2026-05-14"
 tech_stack:
   - "Node.js"

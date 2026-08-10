@@ -2,9 +2,11 @@
 title: "Proxmox HA Infrastructure"
 slug: "proxmox-ha-infrastructure"
 category: "Infra"
-status: "in production"
+lifecycle: "production"
+provenance: "prod"
+featured_order: 1
 goal: "CIA-triad-compliant on-prem HA for Edison Public Library services"
-visibility: "internal"
+repo_visibility: "private"
 date: "2026-05-21"
 tech_stack:
   - "Proxmox VE"
