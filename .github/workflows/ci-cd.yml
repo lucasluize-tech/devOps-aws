@@ -62,9 +62,16 @@ jobs:
           --exclude "node_modules/*" \
           --exclude ".git/*" \
           --exclude ".github/*" \
+          --exclude ".claude/*" \
+          --exclude ".agents/*" \
           --exclude "tests/*" \
+          --exclude "test-results/*" \
+          --exclude "playwright-report/*" \
           --exclude "docs/*" \
           --exclude ".gitignore" \
+          --exclude "CLAUDE.md" \
+          --exclude "jest.config.js" \
+          --exclude "playwright.config.js" \
           --exclude "package.json" \
           --exclude "package-lock.json" \
           --exclude "skills-lock.json"
