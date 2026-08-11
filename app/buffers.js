@@ -142,6 +142,7 @@ export function initTelescope(el, items, kind) {
   el.innerHTML = `
 <div class="tl-body">
   <ul class="tl-results" id="tl-listbox" role="listbox" aria-label="${kind} results"></ul>
+  <div class="rz rz-tl" data-resize="tl" role="separator" aria-orientation="vertical" tabindex="0" aria-label="resize results"></div>
   <div class="tl-preview" aria-live="polite"></div>
 </div>
 <div class="tl-input">

@@ -91,7 +91,9 @@ function pageHtml({ title, description, canonical, ogType, bodyClass, pane, page
 <body class="${attr(bodyClass || '')}">
 <div class="workspace">
 ${sidebar(active)}
+<div class="rz rz-side" data-resize="side" role="separator" aria-orientation="vertical" tabindex="0" aria-label="resize sidebar"></div>
 <main id="pane">${pane}</main>
+<div class="rz rz-console" data-resize="console" role="separator" aria-orientation="horizontal" tabindex="0" aria-label="resize console"></div>
 <form data-prompt>
 <div class="scrollback" data-scrollback aria-live="polite" aria-label="command output"></div>
 <label>&gt; <input type="text" name="cmd" autocomplete="off" spellcheck="false" aria-label="command"></label>
@@ -108,6 +110,7 @@ ${noscriptLinks(manifest || {})}
 <script type="module" src="/app/router.js"></script>
 <script type="module" src="/app/buffers.js"></script>
 <script type="module" src="/app/prompt.js"></script>
+<script type="module" src="/app/resize.js"></script>
 </body>
 </html>`;
 }
@@ -126,7 +129,8 @@ function shareLinks(url, title) {
 // Comments aside: emitted hidden on every reader page; app/buffers.js unhides
 // it and lazy-loads giscus only when GISCUS is configured in app/config.js.
 function commentsAside() {
-  return `<aside class="comments" data-giscus hidden aria-label="comments">
+  return `<div class="rz rz-comments" data-resize="comments" role="separator" aria-orientation="vertical" tabindex="0" aria-label="resize comments"></div>
+<aside class="comments" data-giscus hidden aria-label="comments">
 <h2 class="comments-title">comments</h2>
 <p class="comments-cmd muted">$ giscus --thread</p>
 <div class="giscus-slot"></div>

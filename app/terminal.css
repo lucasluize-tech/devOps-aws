@@ -81,10 +81,11 @@ body::before {
   z-index: 1;
   display: grid;
   grid-template:
-    "side main"   1fr
-    "side prompt" auto
-    "status status" auto
-    / 220px minmax(0, 1fr);
+    "side vdiv main"   minmax(0, 1fr)
+    "side vdiv hdiv"   6px
+    "side vdiv prompt" auto
+    "status status status" auto
+    / var(--side-w, 220px) 6px minmax(0, 1fr);
   height: calc(100dvh - 2 * var(--frame-gap));
   margin: var(--frame-gap);
   border: 1px solid var(--border);
@@ -188,6 +189,23 @@ nav[aria-label="workspaces"] a[aria-current="page"]::before {
   color: var(--secondary);
   opacity: 1;
 }
+
+/* ---- Draggable dividers (herdr-style) ------------------------------ */
+.rz {
+  position: relative;
+  z-index: 2;
+  touch-action: none;
+  background: transparent;
+  transition: background 0.12s ease;
+}
+.rz-side { grid-area: vdiv; cursor: col-resize; }
+.rz-console { grid-area: hdiv; cursor: row-resize; }
+.rz:hover, .rz:focus-visible, .rz.is-dragging {
+  background: color-mix(in srgb, var(--accent) 45%, transparent);
+  outline: none;
+}
+/* generous hit area without widening the visual track */
+.rz::before { content: ''; position: absolute; inset: -4px; }
 
 /* ---- Pane (#pane) -------------------------------------------------- */
 #pane {
@@ -353,10 +371,11 @@ nav[aria-label="workspaces"] a[aria-current="page"]::before {
 .telescope { display: flex; flex-direction: column; gap: 12px; }
 .tl-body {
   display: grid;
-  grid-template-columns: minmax(0, 42%) minmax(0, 1fr);
-  gap: 14px;
+  grid-template-columns: minmax(0, var(--tl-w, 42%)) 6px minmax(0, 1fr);
+  gap: 4px;
   min-height: 0;
 }
+.rz-tl { cursor: col-resize; }
 .tl-results {
   list-style: none;
   margin: 0;
@@ -458,7 +477,9 @@ form[data-prompt] {
 }
 /* ---- Scrollback (command echoes + output, above the input) -------- */
 .scrollback {
-  max-height: 220px;
+  /* --console-h set by the console divider (app/resize.js); default caps at 220px */
+  height: var(--console-h, auto);
+  max-height: var(--console-h, 220px);
   overflow-y: auto;
   margin-bottom: 8px;
   font-size: 12px;
@@ -617,6 +638,7 @@ noscript a { color: var(--link); }
     /* leave room for the fixed bottom nav row */
     padding-bottom: 48px;
   }
+  .rz { display: none; }
   nav[aria-label="workspaces"] {
     position: fixed;
     left: 0;

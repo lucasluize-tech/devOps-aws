@@ -18,8 +18,10 @@
 }
 /* two panes only when the comments aside is live (giscus configured) */
 #pane .reader-split:has(.comments:not([hidden])) {
-  grid-template-columns: minmax(0, 1fr) var(--comments-w, 340px);
+  grid-template-columns: minmax(0, 1fr) 6px var(--comments-w, 340px);
 }
+#pane .reader-split > .rz-comments { display: none; cursor: col-resize; }
+#pane .reader-split:has(.comments:not([hidden])) > .rz-comments { display: block; }
 #pane .comments {
   position: sticky;
   top: 0;
