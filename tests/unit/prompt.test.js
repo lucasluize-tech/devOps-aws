@@ -18,7 +18,31 @@ test('ls prints slugs', () => {
 });
 
 test('unknown command', () => {
-  expect(parseCommand('sudo rm -rf /', m).lines[0]).toMatch(/command not found/);
+  expect(parseCommand('frobnicate --now', m).lines[0]).toMatch(/command not found/);
+});
+
+describe('easter eggs', () => {
+  test('sudo is denied, with attitude', () => {
+    expect(parseCommand('sudo rm -rf /', m).lines[0]).toMatch(/not in the sudoers file/);
+  });
+  test('sudo hire lucas grants rainbow permission', () => {
+    const r = parseCommand('sudo hire lucas', m);
+    expect(r.lines[0]).toMatch(/permission granted/);
+    expect(r.cls).toContain('lolcat');
+  });
+  test('rm hits the read-only filesystem', () => {
+    expect(parseCommand('rm -rf /', m).lines[0]).toMatch(/read-only filesystem/);
+  });
+  test('neofetch goes to about', () => {
+    expect(parseCommand('neofetch', m)).toEqual({ kind: 'nav', url: '/about.html' });
+  });
+  test('fortune always prints something', () => {
+    for (let i = 0; i < 10; i++) expect(parseCommand('fortune', m).lines[0].length).toBeGreaterThan(0);
+  });
+  test('man lucas has a manual; man other does not', () => {
+    expect(parseCommand('man lucas', m).lines.join('\n')).toMatch(/LUCAS\(1\)/);
+    expect(parseCommand('man tar', m).lines[0]).toMatch(/No manual entry/);
+  });
 });
 
 test('contact starts wizard; clear clears', () => {

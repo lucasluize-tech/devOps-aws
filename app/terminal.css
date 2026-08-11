@@ -496,8 +496,16 @@ form[data-prompt] label {
   align-items: center;
   gap: 6px;
   width: 100%;
-  color: var(--success);
+  color: var(--muted);
   font-size: 13px;
+}
+/* PS1: lucas@devops:~/path ❯ - host violet, cwd cyan, arrow green */
+form[data-prompt] .ps1 { white-space: nowrap; }
+form[data-prompt] .ps1-host { color: var(--accent-bright); font-weight: 700; }
+form[data-prompt] [data-cwd] { color: var(--cyan); }
+form[data-prompt] .ps1-arrow { color: var(--success); font-weight: 700; }
+@media (max-width: 519px) {
+  form[data-prompt] .ps1-host, form[data-prompt] .ps1-sep { display: none; }
 }
 form[data-prompt] label { cursor: text; }
 form[data-prompt] input {
@@ -564,6 +572,16 @@ footer[role="contentinfo"] [data-progress] {
   border-right: 1px solid var(--border);
 }
 footer[role="contentinfo"] [data-progress]:empty { display: none; }
+/* current path segment (mirrors the prompt cwd) */
+footer[role="contentinfo"] [data-path] {
+  padding: 0 12px;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  color: var(--pink);
+  border-right: 1px solid var(--border);
+}
+footer[role="contentinfo"] [data-path]:empty { display: none; }
 footer[role="contentinfo"] [data-progress]::before {
   content: 'read\00a0'; /* nbsp: a trailing plain space collapses in content */
   color: var(--muted);

@@ -96,10 +96,10 @@ ${sidebar(active)}
 <div class="rz rz-console" data-resize="console" role="separator" aria-orientation="horizontal" tabindex="0" aria-label="resize console"></div>
 <form data-prompt>
 <div class="scrollback" data-scrollback aria-live="polite" aria-label="command output"></div>
-<label>&gt; <input type="text" name="cmd" autocomplete="off" spellcheck="false" aria-label="command"></label>
+<label><span class="ps1"><span class="ps1-host">lucas@devops</span><span class="ps1-sep">:</span><span data-cwd>~</span></span> <span class="ps1-arrow">&#10095;</span> <input type="text" name="cmd" autocomplete="off" spellcheck="false" aria-label="command"></label>
 <input type="hidden" name="website" data-hp>
 </form>
-<footer role="contentinfo"><span data-progress></span><span data-clock></span> <span data-sha></span></footer>
+<footer role="contentinfo"><span data-progress></span><span data-path></span><span data-clock></span> <span data-sha></span></footer>
 </div>
 ${noscriptLinks(manifest || {})}
 <script>window.__PAGE__ = ${JSON.stringify(Object.assign(

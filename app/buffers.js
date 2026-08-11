@@ -76,6 +76,23 @@ const MOTD_LINES = [
   'Browse posts + projects with the picker. Type a command in the prompt below.',
 ];
 
+// Lines 2..6 of MOTD_LINES are the ASCII WELCOME banner - they get the
+// .lolcat rainbow at final render (the one lolcat treat, not rainbow-everything).
+const BANNER_START = 2;
+const BANNER_END = 7;
+
+function renderMotdFinal(el) {
+  el.textContent = '';
+  const span = document.createElement('span');
+  span.className = 'lolcat';
+  span.textContent = MOTD_LINES.slice(BANNER_START, BANNER_END).join('\n');
+  el.append(
+    MOTD_LINES.slice(0, BANNER_START).join('\n') + '\n',
+    span,
+    '\n' + MOTD_LINES.slice(BANNER_END).join('\n')
+  );
+}
+
 function reducedMotion() {
   return typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
 }
@@ -93,7 +110,7 @@ export function runMotd(el) {
   const finish = () => {
     if (done) return;
     done = true;
-    el.textContent = finalText;
+    renderMotdFinal(el);
     try { sessionStorage.setItem('motdDone', '1'); } catch (_) { /* private mode */ }
     teardown();
   };
@@ -107,7 +124,7 @@ export function runMotd(el) {
 
   let skip = false;
   try { skip = !!sessionStorage.getItem('motdDone'); } catch (_) { /* ignore */ }
-  if (skip || reducedMotion()) { el.textContent = finalText; return; }
+  if (skip || reducedMotion()) { renderMotdFinal(el); return; }
 
   el.textContent = '';
   addEventListener('keydown', onInterrupt);
@@ -206,7 +223,10 @@ ${tagline ? `<p class="tl-tags">${escapeHtml(tagline)}</p>` : ''}`;
 
   const go = () => {
     const item = current[sel];
-    if (item && item.url) navigate(item.url);
+    if (!item || !item.url) return;
+    // echo the equivalent command into the scrollback (prompt.js listens)
+    document.dispatchEvent(new CustomEvent('cmd:echo', { detail: { text: `open ${item.slug}` } }));
+    navigate(item.url);
   };
 
   inputEl.addEventListener('input', refresh);

@@ -22,6 +22,15 @@ const WORKSPACES = {
 };
 const WORKSPACE_NAMES = ['index', 'about', 'posts', 'projects', 'roadmap', 'contact'];
 
+const FORTUNES = [
+  'the best infrastructure is the kind nobody notices.',
+  'it works on my machine - so I shipped my machine (a container).',
+  'a backup you have never restored is a rumor, not a backup.',
+  'DNS. It is always DNS.',
+  'automate the boring, keep the interesting.',
+  'uptime is a feature. so is sleep.',
+];
+
 const HELP_LINES = [
   'available commands:',
   '  help                 this list',
@@ -97,7 +106,43 @@ export function parseCommand(input, manifest) {
     }
 
     case 'whoami':
+    case 'neofetch':
       return { kind: 'nav', url: '/about.html' };
+
+    // ---- easter eggs (deliberately absent from `help` - poke around) ----
+    case 'sudo': {
+      if (parts.slice(1).join(' ').toLowerCase() === 'hire lucas') {
+        return { kind: 'print', lines: ['permission granted. welcome aboard.'], cls: 'sb-line lolcat' };
+      }
+      return { kind: 'print', lines: ['lucas is not in the sudoers file. This incident will be reported.'] };
+    }
+    case 'rm':
+      return { kind: 'print', lines: [`rm: cannot remove '${arg || '/'}': read-only filesystem (S3 + CloudFront)`] };
+    case 'fortune':
+      return { kind: 'print', lines: [FORTUNES[Math.floor(Math.random() * FORTUNES.length)]] };
+    case 'uptime':
+      return { kind: 'print', lines: ['up 3 years, 7 shipped projects, uncountable cups of coffee'] };
+    case 'coffee':
+      return { kind: 'print', lines: ['   ( (', '    ) )', '  ........', '  |      |]', '  \\      /', "   `----'", 'brewing...'] };
+    case 'uname':
+      return { kind: 'print', lines: ['Linux devops 6.8.0-lucas #1 SMP PREEMPT x86_64 GNU/Linux'] };
+    case 'man': {
+      if (arg && arg.toLowerCase() === 'lucas') {
+        return {
+          kind: 'print',
+          lines: [
+            'LUCAS(1)                    User Commands                    LUCAS(1)',
+            'NAME',
+            '    lucas - cloud devops engineer',
+            'SYNOPSIS',
+            '    lucas [--automate] [--secure] [--ship] <infrastructure>',
+            'SEE ALSO',
+            '    open projects, open posts, contact',
+          ],
+        };
+      }
+      return { kind: 'print', lines: [`No manual entry for ${arg || '(none)'}`] };
+    }
 
     case 'status':
       return { kind: 'status' };
@@ -282,7 +327,7 @@ export function initPrompt() {
   function act(result) {
     switch (result.kind) {
       case 'nav': navigate(result.url); break;
-      case 'print': appendLines(result.lines); break;
+      case 'print': appendLines(result.lines, result.cls); break;
       case 'clear': clearScrollback(); break;
       case 'status': appendStatus(); break;
       case 'wizard': startWizard(); break;
@@ -303,6 +348,21 @@ export function initPrompt() {
     appendEcho(text);
     const manifest = (window.__PAGE__ && window.__PAGE__.manifest) || { posts: [], projects: [] };
     act(parseCommand(text, manifest));
+  });
+
+  // Click echo: clicking a workspace prints the equivalent command - the
+  // mouse-first way visitors discover the hidden command interface. Runs
+  // after router.js's own click listener (order of addEventListener).
+  document.addEventListener('click', (event) => {
+    if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    const a = event.target.closest && event.target.closest('nav[aria-label="workspaces"] a');
+    if (!a) return;
+    const label = (a.textContent || '').trim();
+    appendEcho(label === 'index' ? 'cd ~' : `cd ${label}`);
+  });
+  // Telescope picks echo `open <slug>` (buffers.js dispatches, no import cycle).
+  document.addEventListener('cmd:echo', (event) => {
+    if (event.detail && event.detail.text) appendEcho(event.detail.text);
   });
 
   input.addEventListener('keydown', (event) => {

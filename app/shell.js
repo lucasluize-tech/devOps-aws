@@ -3,6 +3,21 @@
 // - runs the statusline clock (HH:MM:SS, 1s tick)
 // - loads the build SHA into [data-sha]; shows "dev" on any failure, never blank.
 
+// pathToCwd: pathname -> shell-style cwd for the prompt + statusline.
+// '/' and '/index.html' -> '~'; '/posts.html' -> '~/posts';
+// '/posts/x.html' -> '~/posts/x'. Pure - unit-tested.
+function pathToCwd(pathname) {
+  let p = (pathname || '/').replace(/\.html$/, '');
+  if (p === '/' || p === '/index') return '~';
+  return '~' + p.replace(/\/$/, '');
+}
+
+// updateCwd: reflect the current path in the prompt label + statusline.
+function updateCwd(pathname) {
+  const cwd = pathToCwd(pathname || location.pathname);
+  for (const el of document.querySelectorAll('[data-cwd], [data-path]')) el.textContent = cwd;
+}
+
 // pathname defaults to location.pathname; router.js (Task 7) passes the
 // pushState destination explicitly after a pane swap.
 function markActiveNav(pathname) {
@@ -74,9 +89,15 @@ function initCodeCopy() {
 
 function initShell() {
   markActiveNav();
+  updateCwd();
   startClock();
   loadSha();
   initCodeCopy();
+  // keep prompt cwd + statusline path in step with pjax navigation
+  document.addEventListener('pane:swapped', (event) => {
+    try { updateCwd(new URL(event.detail.url, location.origin).pathname); }
+    catch (_) { updateCwd(); }
+  });
 }
 
 // Guarded so router.js can `import { markActiveNav }` under Jest (node env,
@@ -89,4 +110,8 @@ if (typeof document !== 'undefined') {
   }
 }
 
-export { initShell, markActiveNav };
+export { initShell, markActiveNav, pathToCwd };
+
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = { initShell, markActiveNav, pathToCwd };
+}
