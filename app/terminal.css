@@ -15,7 +15,7 @@
   --secondary-glow: rgba(249, 115, 22, 0.10);
   --border: #2a2833;
   --border-subtle: #1f1d26;
-  --link: #c4b5fd;
+  --link: #67e8f9; /* cyan: links/info, per the semantic ANSI palette */
   --code-bg: #14121a;
   --success: #34d399;
   /* semantic ANSI-ish accents (btop/lazygit energy, not hacker green) */
@@ -164,6 +164,13 @@ nav[aria-label="workspaces"] a::before {
   font-size: 14px;
   line-height: 1;
 }
+/* per-section glyph hues: index violet, about cyan, posts pink,
+   projects green, roadmap yellow, contact orange */
+nav[aria-label="workspaces"] li:nth-child(2) a::before { color: var(--cyan); }
+nav[aria-label="workspaces"] li:nth-child(3) a::before { color: var(--pink); }
+nav[aria-label="workspaces"] li:nth-child(4) a::before { color: var(--success); }
+nav[aria-label="workspaces"] li:nth-child(5) a::before { color: var(--yellow); }
+nav[aria-label="workspaces"] li:nth-child(6) a::before { color: var(--secondary); }
 nav[aria-label="workspaces"] a:hover {
   background: color-mix(in srgb, var(--accent) 8%, transparent);
   color: var(--text);
@@ -223,6 +230,11 @@ nav[aria-label="workspaces"] a[aria-current="page"]::before {
   color: var(--accent-bright);
   background: color-mix(in srgb, var(--accent) 12%, transparent);
   border-radius: 4px;
+}
+/* post tags read pink; tech chips stay violet */
+#pane .badge {
+  color: var(--pink);
+  background: color-mix(in srgb, var(--pink) 12%, transparent);
 }
 /* list cards (index/posts/projects) */
 #pane .card, #pane .project-card {
@@ -416,7 +428,7 @@ nav[aria-label="workspaces"] a[aria-current="page"]::before {
   caret-color: var(--accent);
 }
 .tl-query::placeholder { color: var(--muted); }
-.tl-count { color: var(--muted); font-size: 12px; }
+.tl-count { color: var(--yellow); font-size: 12px; }
 @media (max-width: 640px) {
   .tl-body { grid-template-columns: minmax(0, 1fr); }
   .tl-results { max-height: 34vh; }
@@ -523,7 +535,7 @@ footer[role="contentinfo"] [data-progress] {
   height: 100%;
   display: flex;
   align-items: center;
-  color: var(--accent-bright);
+  color: var(--cyan);
   border-right: 1px solid var(--border);
 }
 footer[role="contentinfo"] [data-progress]:empty { display: none; }
@@ -554,6 +566,15 @@ footer[role="contentinfo"] [data-clock] {
   color: var(--bg);
   background: var(--accent-bright);
   font-weight: 700;
+}
+
+/* ---- lolcat: static rainbow gradient text (the treat, used sparingly) */
+.lolcat {
+  background: linear-gradient(90deg, var(--pink), var(--secondary), var(--yellow), var(--success), var(--cyan), var(--accent));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  text-shadow: none;
 }
 
 /* ---- noscript fallback -------------------------------------------- */

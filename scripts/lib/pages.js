@@ -144,7 +144,7 @@ function projectPane({ title, category, lifecycle, provenance, techStack, goal, 
   return `<article class="project-content">
 <header class="project-header">
 <h1 class="project-title">${esc(title)}</h1>
-<div class="project-pills">${pill('category-tag', category)}${pill('status-pill', lifecycle)}${pill('provenance-pill', provenance)}</div>
+<div class="project-pills">${pill('category-tag', category)}${pill(`status-pill status-${esc(lifecycle)}`, lifecycle)}${pill('provenance-pill', provenance)}</div>
 <div class="project-tech">${tech}</div>
 <p class="project-goal">${esc(goal)}</p>
 <div class="project-actions">${actions}</div>
