@@ -48,9 +48,10 @@ function noscriptLinks(manifest) {
 }
 
 function sidebar(active) {
-  const items = NAV.map(([href, label]) => {
+  const items = NAV.map(([href, label], i) => {
     const cur = href === active ? ' aria-current="page"' : '';
-    return `<li><a href="/${attr(href)}"${cur}>${esc(label)}</a></li>`;
+    // tmux-style index number; aria-hidden keeps the link's accessible name clean
+    return `<li><a href="/${attr(href)}"${cur}><span class="ws-num" aria-hidden="true">${i}</span>${esc(label)}</a></li>`;
   }).join('');
   return `<nav aria-label="workspaces"><span class="logo-mark" aria-label="lucasluize devops">&gt;_</span><ul>${items}</ul></nav>`;
 }
@@ -59,7 +60,7 @@ function sidebar(active) {
 //   title, description, canonical (path e.g. "posts/foo.html"), ogType, bodyClass,
 //   pane (pre-rendered HTML string), pageData (serialized to window.__PAGE__),
 //   manifest (for the noscript block), active (nav href to mark current).
-function pageHtml({ title, description, canonical, ogType, bodyClass, pane, pageData, manifest, active }) {
+function pageHtml({ title, description, canonical, ogType, bodyClass, pane, pageData, manifest, active, branch }) {
   const canonicalUrl = `${ORIGIN}/${canonical}`;
   const font = 'https://fonts.googleapis.com/css2?family=Saira+Stencil+One&display=swap';
   const chromeFont = 'https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap';
@@ -99,7 +100,7 @@ ${sidebar(active)}
 <label><span class="ps1"><span class="ps1-host">lucas@devops</span><span class="ps1-sep">:</span><span data-cwd>~</span></span> <span class="ps1-arrow">&#10095;</span> <input type="text" name="cmd" autocomplete="off" spellcheck="false" aria-label="command"></label>
 <input type="hidden" name="website" data-hp>
 </form>
-<footer role="contentinfo"><span data-progress></span><span data-path></span><span data-clock></span> <span data-sha></span></footer>
+<footer role="contentinfo"><span data-progress></span><span data-path></span><span data-branch>${esc(branch || '')}</span><span class="sl-enc">utf-8</span><span data-sha></span><span data-clock></span></footer>
 </div>
 ${noscriptLinks(manifest || {})}
 <script>window.__PAGE__ = ${JSON.stringify(Object.assign(
@@ -183,6 +184,57 @@ function postsListPane(posts) {
 // build time; JS reserves its height before typing (zero CLS).
 function motdBlock() {
   return `<pre class="motd" aria-label="message of the day"></pre>`;
+}
+
+// ---- Index landing panes (2026-08-11 landing spec) -----------------------
+// Hierarchy: identity -> status snapshot -> featured projects -> latest
+// writing. Dense and scan-friendly; projects get the richer treatment
+// (running systems), posts read as filesystem rows (documentation).
+
+function introPane() {
+  return `<section class="intro">${motdBlock()}
+<h1>Lucas Luize</h1>
+<p class="intro-role">Cloud DevOps Engineer</p>
+<p class="intro-domains">Infrastructure · Linux · Automation · Networking</p>
+<p class="intro-human">I build and automate infrastructure, troubleshoot the weird edge cases, and write down what I learn.</p>
+</section>`;
+}
+
+function statusSnapshot() {
+  const row = (k, v) => `<div class="snap-row"><span class="snap-key">${esc(k)}</span><span class="snap-val">${v}</span></div>`;
+  return `<section class="snapshot" aria-label="status">
+<h2 class="snapshot-title">status</h2>
+${row('role', 'Cloud DevOps Engineer')}
+${row('focus', 'infrastructure · automation · networking · linux')}
+${row('stack', 'AWS · Terraform · Proxmox · Tailscale · GitHub Actions')}
+${row('status', '<span class="snap-dot" aria-hidden="true">●</span> building — homelab automation + secure cloud infrastructure')}
+</section>`;
+}
+
+function featuredProjectsPane(projects) {
+  const cards = (projects || []).slice(0, 3).map((p) => `<a class="feat-card" href="/projects/${attr(p.slug)}.html">
+<span class="feat-head"><span class="feat-name">${esc(p.title)}</span><span class="feat-status status-${esc(p.lifecycle)}">● ${esc(p.lifecycle)}</span></span>
+<span class="feat-goal">${esc(p.goal)}</span>
+<span class="feat-tech">${(p.tech_stack || []).slice(0, 5).map((t) => `<span class="tech-chip">${esc(t)}</span>`).join('')}</span>
+</a>`).join('');
+  return `<section class="featured" aria-label="featured projects">
+<h2 class="sec-label">Projects</h2>
+<p class="ls-cmd muted">$ ls ./projects --featured</p>
+${cards}
+<p class="view-all"><a href="/projects.html">view all projects →</a></p>
+</section>`;
+}
+
+function latestPostsPane(posts) {
+  const rows = (posts || []).slice(0, 4).map((p) => `<li><a class="post-row" href="/posts/${attr(p.slug)}.html">
+<span class="pr-date">${esc(String(p.date).slice(5))}</span><span class="pr-tag">${esc((p.tags || [])[0] || '')}</span><span class="pr-time">${p.readingTime}m</span><span class="pr-title">${esc(p.title)}</span>
+</a></li>`).join('');
+  return `<section class="latest" aria-label="latest writing">
+<h2 class="sec-label">Writing</h2>
+<p class="ls-cmd muted">$ ls ./posts --latest</p>
+<ul class="post-rows">${rows}</ul>
+<p class="view-all"><a href="/posts.html">view all writing →</a></p>
+</section>`;
 }
 
 // Picker pane (posts/projects): heading + empty telescope container that
@@ -282,4 +334,5 @@ module.exports = {
   ORIGIN, NAV, esc,
   pageHtml, postPane, projectPane, postsListPane, projectsListPane, galleryHtml,
   aboutPane, roadmapPane, motdBlock, pickerPane,
+  introPane, statusSnapshot, featuredProjectsPane, latestPostsPane,
 };

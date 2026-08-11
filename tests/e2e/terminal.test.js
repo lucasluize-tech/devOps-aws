@@ -8,7 +8,7 @@ test.beforeAll(async ({ request }) => {
   manifest = await (await request.get('/manifest.json')).json();
 });
 
-const MOTD_FINAL = 'Browse posts + projects with the picker.';
+const MOTD_FINAL = 'click a workspace or use the shell below.';
 
 function nav(page) {
   return page.getByRole('navigation', { name: 'workspaces' });

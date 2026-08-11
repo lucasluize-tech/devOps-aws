@@ -357,8 +357,10 @@ export function initPrompt() {
     if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
     const a = event.target.closest && event.target.closest('nav[aria-label="workspaces"] a');
     if (!a) return;
-    const label = (a.textContent || '').trim();
-    appendEcho(label === 'index' ? 'cd ~' : `cd ${label}`);
+    // Derive the name from the href, not textContent - the link also carries
+    // a ws-num span ("3projects" is not a command).
+    const name = (a.getAttribute('href') || '').replace(/^\//, '').replace(/\.html$/, '');
+    appendEcho(!name || name === 'index' ? 'cd ~' : `cd ${name}`);
   });
   // Telescope picks echo `open <slug>` (buffers.js dispatches, no import cycle).
   document.addEventListener('cmd:echo', (event) => {

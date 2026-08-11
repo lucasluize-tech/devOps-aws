@@ -157,6 +157,13 @@ nav[aria-label="workspaces"] a {
   border-left: 2px solid transparent;
   transition: background 0.12s ease, color 0.12s ease;
 }
+/* tmux-style workspace numbers */
+nav[aria-label="workspaces"] .ws-num {
+  color: var(--muted);
+  opacity: 0.7;
+  font-size: 11px;
+}
+nav[aria-label="workspaces"] a[aria-current="page"] .ws-num { color: var(--accent-bright); opacity: 1; }
 /* eza-style leading glyph: folder-ish for sections, violet by default. */
 nav[aria-label="workspaces"] a::before {
   content: '\2022' / ''; /* • ; empty alt keeps it out of the link's accessible name */
@@ -359,12 +366,100 @@ nav[aria-label="workspaces"] a[aria-current="page"]::before {
   overflow-x: auto;
   font-size: clamp(10px, 1.15vw, 13px);
   line-height: 1.35;
-  /* Reserve the full block up front: 12 MOTD lines x 1.35 line-height. Font-
+  /* Reserve the full block up front: 14 MOTD lines x 1.35 line-height. Font-
      relative so it is correct before JS runs and stable across the font swap
      (zero CLS). Keep in sync with MOTD_LINES in app/buffers.js. */
-  min-height: 16.2em;
+  min-height: 18.9em;
   color: var(--accent-bright);
   text-shadow: 0 0 16px var(--accent-glow);
+}
+
+/* ---- Index landing: identity / snapshot / featured / latest -------- */
+.intro h1 { margin: 0 0 2px; }
+.intro-role { margin: 0; color: var(--text-bright); font-weight: 700; }
+.intro-domains { margin: 0 0 10px; color: var(--accent-bright); font-size: 13px; }
+.intro-human { margin: 0; color: var(--text); max-width: 62ch; }
+
+.snapshot {
+  margin: 20px 0 4px;
+  padding: 12px 16px;
+  max-width: 640px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--surface) 35%, transparent);
+}
+.snapshot-title {
+  margin: 0 0 8px;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.snap-row { display: flex; gap: 12px; padding: 2px 0; font-size: 13px; }
+.snap-key { flex: 0 0 56px; color: var(--accent); font-weight: 700; }
+.snap-val { color: var(--text); min-width: 0; }
+.snap-dot { color: var(--success); }
+
+.sec-label {
+  margin: 28px 0 2px;
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent-bright);
+}
+.ls-cmd { font-size: 12px; margin: 0 0 10px; }
+.view-all { margin: 10px 0 0; font-size: 13px; }
+.view-all a { color: var(--link); text-decoration: none; }
+.view-all a:hover { color: var(--accent-bright); }
+
+/* featured projects: running systems get the richer treatment */
+.feat-card {
+  display: block;
+  padding: 12px 16px;
+  margin: 8px 0;
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  text-decoration: none;
+  color: var(--text);
+  background: color-mix(in srgb, var(--surface) 45%, transparent);
+  transition: border-color 0.12s ease;
+}
+.feat-card:hover { border-color: var(--accent); }
+.feat-head { display: flex; justify-content: space-between; gap: 10px; align-items: baseline; }
+.feat-name { color: var(--text-bright); font-weight: 700; }
+.feat-status { font-size: 11px; letter-spacing: 0.04em; white-space: nowrap; --lc: var(--secondary); color: var(--lc); }
+.feat-status.status-production { --lc: var(--success); }
+.feat-status.status-maintained { --lc: var(--yellow); }
+.feat-status.status-prototype { --lc: var(--cyan); }
+.feat-status.status-archived { --lc: var(--muted); }
+.feat-goal {
+  display: block;
+  margin: 4px 0 8px;
+  font-size: 13px;
+  color: color-mix(in srgb, var(--text) 72%, var(--muted));
+}
+
+/* latest writing: posts read as filesystem rows */
+.post-rows { list-style: none; margin: 0; padding: 0; }
+.post-row {
+  display: grid;
+  grid-template-columns: 3.2em 7em 2.8em minmax(0, 1fr);
+  gap: 10px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  text-decoration: none;
+  font-size: 13px;
+  align-items: baseline;
+}
+.post-row:hover { background: color-mix(in srgb, var(--accent) 8%, transparent); }
+.pr-date { color: var(--muted); }
+.pr-tag { color: var(--pink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pr-time { color: var(--yellow); text-align: right; }
+.pr-title { color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.post-row:hover .pr-title { color: var(--accent-bright); }
+@media (max-width: 640px) {
+  .post-row { grid-template-columns: 3.2em minmax(0, 1fr) 2.8em; }
+  .pr-title { grid-column: 1 / -1; white-space: normal; }
 }
 
 /* ---- Telescope fuzzy picker (posts/projects) ---------------------- */
@@ -586,9 +681,26 @@ footer[role="contentinfo"] [data-progress]::before {
   content: 'read\00a0'; /* nbsp: a trailing plain space collapses in content */
   color: var(--muted);
 }
-/* flexible spacer pushes sha + clock right */
-footer[role="contentinfo"] [data-sha] {
+/* build branch segment (empty -> hidden) */
+footer[role="contentinfo"] [data-branch] {
+  padding: 0 12px;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  color: var(--secondary);
+  border-right: 1px solid var(--border);
+}
+footer[role="contentinfo"] [data-branch]:empty { display: none; }
+/* right side: encoding · sha · clock. The spacer lives on the first right segment. */
+footer[role="contentinfo"] .sl-enc {
   margin-left: auto;
+  padding: 0 12px;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  color: var(--muted);
+}
+footer[role="contentinfo"] [data-sha] {
   padding: 0 12px;
   height: 100%;
   display: flex;
@@ -597,7 +709,7 @@ footer[role="contentinfo"] [data-sha] {
   background: color-mix(in srgb, var(--secondary) 12%, transparent);
 }
 footer[role="contentinfo"] [data-sha]::before {
-  content: '\26A1'; /* lightning */
+  content: '\25CF'; /* status dot */
   margin-right: 5px;
   opacity: 0.8;
 }

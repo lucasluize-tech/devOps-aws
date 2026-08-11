@@ -61,6 +61,9 @@ export function fuzzyMatch(query, items, keys) {
 
 // ---- MOTD login buffer ---------------------------------------------------
 
+// Identity first, specifics later: whoami states the role, uname -a states the
+// range, help teaches the interface. Keep line count in sync with the .motd
+// min-height in terminal.css (lines x 1.35 line-height).
 const MOTD_LINES = [
   'Last login: session start on ttys001',
   '',
@@ -70,10 +73,12 @@ const MOTD_LINES = [
   '    \\ V  V / | |___| |__| |__| |_| | |  | | |___',
   '     \\_/\\_/  |_____|_____\\____\\___/|_|  |_|_____|',
   '',
-  '> whoami',
-  'lucas — cloud devops engineer. private-origin infra, CDN, test-gated pipelines.',
-  '> motd',
-  'Browse posts + projects with the picker. Type a command in the prompt below.',
+  '❯ whoami',
+  'lucas — cloud devops engineer',
+  '❯ uname -a',
+  'aws · terraform · linux · networking · automation · ci/cd',
+  '❯ help',
+  'click a workspace or use the shell below. try `projects`, `posts`, or `about`.',
 ];
 
 // Lines 2..6 of MOTD_LINES are the ASCII WELCOME banner - they get the

@@ -11,8 +11,20 @@ const { validatePost, validateProject } = require('./lib/schema');
 const { renderMarkdown, extractScreenshotSlot, stripLeadingH1, initHighlighter } = require('./lib/render');
 const {
   ORIGIN, pageHtml, postPane, projectPane, postsListPane, projectsListPane, galleryHtml,
-  aboutPane, roadmapPane, motdBlock, pickerPane,
+  aboutPane, roadmapPane, pickerPane,
+  introPane, statusSnapshot, featuredProjectsPane, latestPostsPane,
 } = require('./lib/pages');
+
+// Branch for the statusline segment: CI provides GITHUB_REF_NAME; local
+// builds ask git; anything else leaves the segment empty (CSS hides it).
+function currentBranch() {
+  if (process.env.GITHUB_REF_NAME) return process.env.GITHUB_REF_NAME;
+  try {
+    return require('child_process')
+      .execSync('git rev-parse --abbrev-ref HEAD', { stdio: ['ignore', 'pipe', 'ignore'] })
+      .toString().trim();
+  } catch (_) { return ''; }
+}
 
 const ROOT = path.resolve(__dirname, '..');
 const DIST = path.join(ROOT, 'dist');
@@ -55,7 +67,7 @@ async function main() {
     process.exit(1);
   }
 
-  const build = { sha: process.env.GITHUB_SHA || 'dev', time: new Date().toISOString() };
+  const build = { sha: process.env.GITHUB_SHA || 'dev', time: new Date().toISOString(), branch: currentBranch() };
 
   // 3. render post bodies + build manifest entries + emit per-post pages
   const postManifest = posts.map((p) => {
@@ -103,7 +115,7 @@ async function main() {
     });
     write(url, pageHtml({
       title: p.data.title, description: p.data.excerpt, canonical: url, ogType: 'article',
-      bodyClass: 'page-post', pane, manifest, active: 'posts.html',
+      bodyClass: 'page-post', pane, manifest, active: 'posts.html', branch: build.branch,
       pageData: { type: 'post', slug: p.slug, title: p.data.title },
     }));
   }
@@ -117,14 +129,14 @@ async function main() {
     });
     write(url, pageHtml({
       title: p.data.title, description: p.data.goal, canonical: url, ogType: 'article',
-      bodyClass: 'page-project', pane, manifest, active: 'projects.html',
+      bodyClass: 'page-project', pane, manifest, active: 'projects.html', branch: build.branch,
       pageData: { type: 'project', slug: p.slug, title: p.data.title },
     }));
   }
 
   // 5. core pages
   const corePage = (file, { title, description, pane, active, bodyClass, data }) => write(file, pageHtml({
-    title, description, canonical: file, ogType: 'website', bodyClass,
+    title, description, canonical: file, ogType: 'website', bodyClass, branch: build.branch,
     pane, manifest, active, pageData: Object.assign({ type: 'page', page: file }, data || {}),
   }));
 
@@ -132,7 +144,7 @@ async function main() {
     title: 'Lucas Luize - DevOps Engineer', bodyClass: 'page-index', active: 'index.html',
     description: 'Cloud DevOps portfolio, blog, and projects by Lucas Luize.',
     data: { kind: 'index' },
-    pane: `<section class="intro">${motdBlock()}<h1>Lucas Luize</h1><p class="muted">Cloud DevOps engineer. Infrastructure, automation, and the writing behind it.</p></section>${postsListPane(manifestPosts)}`,
+    pane: introPane() + statusSnapshot() + featuredProjectsPane(manifestProjects) + latestPostsPane(manifestPosts),
   });
   corePage('posts.html', {
     title: 'Posts - Lucas Luize', bodyClass: 'page-posts', active: 'posts.html',
