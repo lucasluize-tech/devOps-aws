@@ -3,6 +3,7 @@
 // are unit-tested; the DOM buffers (runMotd/initTelescope/initStatus/reading
 // progress) are guarded so requiring this under Node never touches document.
 import { navigate } from './router.js';
+import { GISCUS } from './config.js';
 
 // ---- Pure helpers (FLAT manifest shape) ---------------------------------
 
@@ -329,6 +330,40 @@ export function initReadingProgress() {
   return readingProgressCleanup;
 }
 
+// ---- Comments (giscus) ---------------------------------------------------
+
+// initComments(): unhide the reader comments aside and lazy-load giscus when
+// it scrolls into view. No-op when GISCUS.repo is unconfigured - the aside
+// stays hidden and the reader keeps its full width.
+function initComments() {
+  const aside = document.querySelector('#pane [data-giscus]');
+  if (!aside || !GISCUS || !GISCUS.repo) return;
+  aside.hidden = false;
+  const slot = aside.querySelector('.giscus-slot') || aside;
+  const load = () => {
+    const s = document.createElement('script');
+    s.src = 'https://giscus.app/client.js';
+    s.async = true;
+    s.crossOrigin = 'anonymous';
+    const data = {
+      repo: GISCUS.repo, 'repo-id': GISCUS.repoId, category: GISCUS.category,
+      'category-id': GISCUS.categoryId, mapping: 'pathname', strict: '0',
+      'reactions-enabled': '1', 'emit-metadata': '0', 'input-position': 'top',
+      theme: 'transparent_dark', lang: 'en', loading: 'lazy',
+    };
+    for (const [k, v] of Object.entries(data)) s.setAttribute('data-' + k, String(v));
+    slot.appendChild(s);
+  };
+  if (typeof IntersectionObserver === 'function') {
+    const io = new IntersectionObserver((entries) => {
+      if (entries.some((e) => e.isIntersecting)) { io.disconnect(); load(); }
+    });
+    io.observe(aside);
+  } else {
+    load();
+  }
+}
+
 // ---- Boot dispatch -------------------------------------------------------
 
 // bootBuffers(): dispatch by what's present in #pane, not by stale globals
@@ -354,6 +389,7 @@ export function bootBuffers() {
 
   if (pane.querySelector('.post-content, .project-content')) {
     initReadingProgress();
+    initComments();
   } else if (readingProgressCleanup) {
     // Navigated from a reader page to a non-reader page - drop the stale listener.
     readingProgressCleanup();

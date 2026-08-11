@@ -123,15 +123,26 @@ function shareLinks(url, title) {
 </div>`;
 }
 
+// Comments aside: emitted hidden on every reader page; app/buffers.js unhides
+// it and lazy-loads giscus only when GISCUS is configured in app/config.js.
+function commentsAside() {
+  return `<aside class="comments" data-giscus hidden aria-label="comments">
+<h2 class="comments-title">comments</h2>
+<p class="comments-cmd muted">$ giscus --thread</p>
+<div class="giscus-slot"></div>
+</aside>`;
+}
+
 function postPane({ title, readingTime, tags, bodyHtml, canonicalUrl }) {
   const tagHtml = (tags || []).map((t) => `<span class="badge">${esc(t)}</span>`).join('');
-  return `<article class="post-content">
+  return `<div class="reader-split"><article class="post-content">
 <h1 class="post-title">${esc(title)}</h1>
 <p class="post-meta"><span class="reading-time">${readingTime} min read</span></p>
 <div class="badges">${tagHtml}</div>
 ${bodyHtml}
 ${shareLinks(canonicalUrl, title)}
-</article>`;
+</article>
+${commentsAside()}</div>`;
 }
 
 function projectPane({ title, category, lifecycle, provenance, techStack, goal, github, demo, bodyHtml }) {
@@ -141,7 +152,7 @@ function projectPane({ title, category, lifecycle, provenance, techStack, goal, 
     github ? `<a class="btn" href="${attr(github)}" rel="noopener">GitHub</a>` : '',
     demo ? `<a class="btn" href="${attr(demo)}" rel="noopener">Live demo</a>` : '',
   ].join('');
-  return `<article class="project-content">
+  return `<div class="reader-split"><article class="project-content">
 <header class="project-header">
 <h1 class="project-title">${esc(title)}</h1>
 <div class="project-pills">${pill('category-tag', category)}${pill(`status-pill status-${esc(lifecycle)}`, lifecycle)}${pill('provenance-pill', provenance)}</div>
@@ -150,7 +161,8 @@ function projectPane({ title, category, lifecycle, provenance, techStack, goal, 
 <div class="project-actions">${actions}</div>
 </header>
 ${bodyHtml}
-</article>`;
+</article>
+${commentsAside()}</div>`;
 }
 
 // Simple list panes for the collection pages (index/posts/projects).

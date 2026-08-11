@@ -9,6 +9,39 @@
   --read-measure: 68ch;
 }
 
+/* ---- Reader split: article | comments aside ---------------------------- */
+#pane .reader-split {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: clamp(16px, 3vw, 32px);
+  align-items: start;
+}
+/* two panes only when the comments aside is live (giscus configured) */
+#pane .reader-split:has(.comments:not([hidden])) {
+  grid-template-columns: minmax(0, 1fr) var(--comments-w, 340px);
+}
+#pane .comments {
+  position: sticky;
+  top: 0;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px 16px;
+  background: color-mix(in srgb, var(--surface) 35%, transparent);
+}
+#pane .comments-title {
+  margin: 0 0 2px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.85rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--cyan);
+}
+#pane .comments-cmd { font-size: 11px; margin: 0 0 12px; }
+@media (max-width: 1023px) {
+  #pane .reader-split:has(.comments:not([hidden])) { grid-template-columns: minmax(0, 1fr); }
+  #pane .comments { position: static; }
+}
+
 /* ---- Prose column ------------------------------------------------------ */
 #pane .post-content,
 #pane .project-content { max-width: var(--read-measure); }
