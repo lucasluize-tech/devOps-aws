@@ -8,7 +8,7 @@ const path = require('path');
 
 const { parseMarkdown, calculateReadingTime } = require('../utils');
 const { validatePost, validateProject } = require('./lib/schema');
-const { renderMarkdown, extractScreenshotSlot, stripLeadingH1 } = require('./lib/render');
+const { renderMarkdown, extractScreenshotSlot, stripLeadingH1, initHighlighter } = require('./lib/render');
 const {
   ORIGIN, pageHtml, postPane, projectPane, postsListPane, projectsListPane, galleryHtml,
   aboutPane, roadmapPane, motdBlock, pickerPane,
@@ -31,7 +31,10 @@ function readMd(dir) {
     });
 }
 
-function main() {
+async function main() {
+  // 0. shiki (ESM-only, hence async init) - code fences highlight at build time
+  await initHighlighter();
+
   // 1. clean + mkdir
   fs.rmSync(DIST, { recursive: true, force: true });
   fs.mkdirSync(path.join(DIST, 'posts'), { recursive: true });
@@ -200,4 +203,4 @@ ${urls.map((u) => `  <url><loc>${ORIGIN}/${u}</loc></url>`).join('\n')}
   console.log(`Built dist/: ${manifestPosts.length} posts, ${manifestProjects.length} projects, sha=${build.sha}`);
 }
 
-main();
+main().catch((err) => { console.error(err); process.exit(1); });

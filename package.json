@@ -23,7 +23,8 @@
     "marked": "^18.0.9",
     "node-fetch": "^3.3.2",
     "playwright": "^1.57.0",
-    "sanitize-html": "^2.17.6"
+    "sanitize-html": "^2.17.6",
+    "shiki": "^4.4.3"
   },
   "dependencies": {
     "@playwright/test": "^1.57.0",

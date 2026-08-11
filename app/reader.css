@@ -125,15 +125,61 @@
   border-radius: 4px;
   color: var(--accent-bright);
 }
-/* fenced blocks: overrides terminal.css #pane pre with a left accent + lang label */
-#pane .post-content pre, #pane .project-content pre {
-  position: relative;
+/* fenced blocks render as mini terminal windows: .code-window wraps a
+   title bar (language + copy button) and the shiki-highlighted <pre>. */
+#pane .code-window {
   margin: 1.4em 0;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--code-bg);
+}
+#pane .code-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 5px 12px;
+  background: color-mix(in srgb, var(--bg-elevated) 80%, transparent);
+  border-bottom: 1px solid var(--border-subtle);
+}
+/* traffic-light dots before the language name, herdr-style */
+#pane .code-lang {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--cyan);
+}
+#pane .code-lang::before {
+  content: '\25CF \25CF \25CF  ';
+  font-size: 8px;
+  letter-spacing: 2px;
+  background: linear-gradient(90deg, var(--red), var(--yellow), var(--success));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+#pane .code-copy {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  padding: 2px 10px;
+  color: var(--muted);
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: color 0.12s ease, border-color 0.12s ease;
+}
+#pane .code-copy:hover { color: var(--cyan); border-color: var(--cyan); }
+#pane .code-copy.copied { color: var(--success); border-color: var(--success); }
+#pane .code-window pre,
+#pane .post-content pre, #pane .project-content pre {
+  margin: 0;
   padding: 1em 1.1em;
   background: var(--code-bg);
-  border: 1px solid var(--border-subtle);
-  border-left: 3px solid var(--accent);
-  border-radius: 8px;
+  border: 0;
+  border-radius: 0;
   overflow-x: auto;
   line-height: 1.55;
 }
@@ -141,24 +187,7 @@
   padding: 0;
   background: none;
   border: 0;
-  color: var(--text);
   font-size: 0.85rem;
-}
-/* CSS-only language label from marked's class="language-xxx" (no JS highlight) */
-#pane pre > code[class*="language-"]::before {
-  content: attr(class);
-  position: absolute;
-  top: 0;
-  right: 0;
-  padding: 2px 8px;
-  font-size: 10px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--muted);
-  background: color-mix(in srgb, var(--accent) 10%, transparent);
-  border-radius: 0 8px 0 6px;
-  /* strip the "language-" prefix visually is not possible in pure CSS;
-     keep the full token - it reads fine as e.g. "language-bash" */
 }
 
 /* ---- Meta row + tags (above the article) ------------------------------ */

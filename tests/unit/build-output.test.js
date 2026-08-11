@@ -48,6 +48,18 @@ test('picker pages embed their manifest items + kind in window.__PAGE__', () => 
   expect(projects).toContain('"kind":"projects"');
   for (const p of m.projects) expect(projects).toContain(`"slug":"${p.slug}"`);
 });
+test('code fences are shiki-highlighted inside code-windows', () => {
+  const m = JSON.parse(fs.readFileSync('dist/manifest.json', 'utf8'));
+  // find a post whose page actually has a fence, then assert real token spans
+  const withCode = m.posts
+    .map((p) => fs.readFileSync(`dist/posts/${p.slug}.html`, 'utf8'))
+    .find((html) => html.includes('class="code-window"'));
+  expect(withCode).toBeDefined();
+  expect(withCode).toContain('class="code-lang"');
+  expect(withCode).toContain('class="code-copy"');
+  expect(withCode).toMatch(/class="shiki language-\w+ lucas-terminal"/);
+  expect(withCode).toMatch(/<span style="color:#[0-9a-fA-F]{6}/);
+});
 test('index pane carries the MOTD container', () => {
   expect(fs.readFileSync('dist/index.html', 'utf8')).toContain('class="motd"');
 });

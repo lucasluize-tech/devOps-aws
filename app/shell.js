@@ -50,10 +50,33 @@ async function loadSha() {
   el.textContent = sha;
 }
 
+// One delegated listener wires every .code-copy button (present and future -
+// pjax swaps replace pane content, delegation doesn't care).
+function initCodeCopy() {
+  document.addEventListener('click', async (event) => {
+    const btn = event.target.closest && event.target.closest('.code-copy');
+    if (!btn) return;
+    const pre = btn.closest('.code-window')?.querySelector('pre');
+    if (!pre) return;
+    try {
+      await navigator.clipboard.writeText(pre.textContent.replace(/\n$/, ''));
+      btn.textContent = 'copied!';
+      btn.classList.add('copied');
+    } catch (_) {
+      btn.textContent = 'failed';
+    }
+    setTimeout(() => {
+      btn.textContent = 'copy';
+      btn.classList.remove('copied');
+    }, 1500);
+  });
+}
+
 function initShell() {
   markActiveNav();
   startClock();
   loadSha();
+  initCodeCopy();
 }
 
 // Guarded so router.js can `import { markActiveNav }` under Jest (node env,

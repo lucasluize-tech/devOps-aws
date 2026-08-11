@@ -252,6 +252,10 @@ nav[aria-label="workspaces"] a[aria-current="page"]::before {
   border-color: var(--accent);
   transform: translateY(-1px);
 }
+/* card excerpts read as body copy, not chrome - keep them legible */
+#pane .card .muted, #pane .project-card .project-goal {
+  color: color-mix(in srgb, var(--text) 72%, var(--muted));
+}
 
 /* ---- About: neofetch layout --------------------------------------- */
 .neofetch {

@@ -12,6 +12,14 @@ test('strips script tags and event handlers', () => {
 test('keeps code blocks with language class', () => {
   expect(renderMarkdown('```bash\nls\n```')).toMatch(/class="[^"]*language-bash/);
 });
+test('fences render inside a code-window with lang bar + copy button', () => {
+  const out = renderMarkdown('```bash\nls\n```');
+  expect(out).toContain('class="code-window"');
+  expect(out).toContain('class="code-lang"');
+  expect(out).toContain('class="code-copy"');
+});
+// NOTE: the shiki path is asserted in build-output.test.js against real dist
+// output - Jest+babel can't dynamic-import the ESM-only shiki package here.
 test('screenshot marker splits content', () => {
   const html = renderMarkdown('before\n\n<!-- screenshots -->\n\nafter');
   const { before, after } = extractScreenshotSlot(html);
