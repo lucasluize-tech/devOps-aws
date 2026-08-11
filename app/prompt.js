@@ -204,6 +204,16 @@ export function initPrompt() {
   let histIdx = -1;
   let wizard = null;
 
+  // Keep the input exactly as wide as its content so the blinking block
+  // cursor (label::after) sits right after the typed text. Programmatic
+  // value changes (history recall, submit clear) call this explicitly
+  // because they don't fire 'input'.
+  const sizeInput = () => {
+    input.style.width = Math.max(1, input.value.length + 1) + 'ch';
+  };
+  input.addEventListener('input', sizeInput);
+  sizeInput();
+
   function startWizard() {
     wizard = { step: 'name', data: {}, start: Date.now() };
     appendLines(['starting contact wizard - Esc to cancel', 'name:']);
@@ -284,6 +294,7 @@ export function initPrompt() {
     event.preventDefault();
     const raw = input.value;
     input.value = '';
+    sizeInput();
     histIdx = -1;
     if (wizard) { stepWizard(raw); return; }
     const text = raw.trim();
@@ -305,12 +316,14 @@ export function initPrompt() {
       event.preventDefault();
       histIdx = histIdx < 0 ? history.length - 1 : Math.max(0, histIdx - 1);
       input.value = history[histIdx];
+      sizeInput();
     } else if (event.key === 'ArrowDown') {
       if (histIdx < 0) return;
       event.preventDefault();
       histIdx += 1;
       if (histIdx >= history.length) { histIdx = -1; input.value = ''; }
       else input.value = history[histIdx];
+      sizeInput();
     }
   });
 }

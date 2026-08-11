@@ -18,6 +18,28 @@
   --link: #c4b5fd;
   --code-bg: #14121a;
   --success: #34d399;
+  /* semantic ANSI-ish accents (btop/lazygit energy, not hacker green) */
+  --cyan: #67e8f9;
+  --pink: #f472b6;
+  --yellow: #fbbf24;
+  --red: #f87171;
+}
+
+/* ---- Scrollbars: thin, violet->orange->yellow gradient thumb -------- */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-corner { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, var(--accent), var(--secondary), var(--yellow));
+  border-radius: 999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(135deg, var(--accent-bright), var(--secondary), var(--yellow));
+}
+/* Firefox can't gradient thumbs; thin solid violet. Gated so Chromium keeps
+   the gradient (scrollbar-color would override ::-webkit-scrollbar there). */
+@supports not selector(::-webkit-scrollbar) {
+  html { scrollbar-width: thin; scrollbar-color: var(--accent) transparent; }
 }
 
 * { box-sizing: border-box; }
@@ -47,7 +69,7 @@ body::before {
   font-size: clamp(3rem, 11vw, 9rem);
   line-height: 1.05;
   letter-spacing: -0.03em;
-  color: color-mix(in srgb, var(--accent) 20%, transparent);
+  color: color-mix(in srgb, var(--accent) 30%, transparent);
   z-index: 0;
   pointer-events: none;
   user-select: none;
@@ -440,9 +462,13 @@ form[data-prompt] label {
   color: var(--success);
   font-size: 13px;
 }
+form[data-prompt] label { cursor: text; }
 form[data-prompt] input {
-  flex: 1;
-  min-width: 0;
+  /* Sized to content by JS (ch units, exact in mono) so the block cursor
+     after it rides the end of the typed text like a real terminal. */
+  width: 1ch;
+  min-width: 1ch;
+  max-width: calc(100% - 12ch);
   background: transparent;
   border: 0;
   outline: none;
@@ -502,7 +528,7 @@ footer[role="contentinfo"] [data-progress] {
 }
 footer[role="contentinfo"] [data-progress]:empty { display: none; }
 footer[role="contentinfo"] [data-progress]::before {
-  content: 'read ';
+  content: 'read\00a0'; /* nbsp: a trailing plain space collapses in content */
   color: var(--muted);
 }
 /* flexible spacer pushes sha + clock right */
