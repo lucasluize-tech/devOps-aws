@@ -52,6 +52,7 @@ function containerFor(el, cfg) {
 function apply(el, cfg, name, px) {
   const c = containerFor(el, cfg);
   if (c) c.style.setProperty(cfg.cssVar, px + 'px');
+  el.setAttribute('aria-valuenow', String(px));
   store(name, px);
 }
 
@@ -64,13 +65,19 @@ function currentSize(el, cfg) {
 }
 
 // restoreSizes: re-applies persisted sizes to whatever containers exist right
-// now. Runs at boot and after every pjax swap (in-pane dividers are rebuilt).
+// now, and completes each separator's ARIA contract (focusable separators
+// require aria-valuenow/min/max). Runs at boot and after every pjax swap
+// (in-pane dividers are rebuilt).
 export function restoreSizes() {
   for (const [name, cfg] of Object.entries(RESIZERS)) {
-    const px = stored(name);
-    if (px == null) continue;
     const el = document.querySelector(`[data-resize="${name}"]`);
     if (!el) continue;
+    el.setAttribute('aria-valuemin', String(cfg.min));
+    el.setAttribute('aria-valuemax', String(cfg.max));
+    const px = stored(name);
+    const now = px == null ? currentSize(el, cfg) : px;
+    el.setAttribute('aria-valuenow', String(Math.round(now == null ? cfg.min : Math.min(cfg.max, Math.max(cfg.min, now)))));
+    if (px == null) continue;
     const c = containerFor(el, cfg);
     if (c) c.style.setProperty(cfg.cssVar, Math.min(cfg.max, Math.max(cfg.min, px)) + 'px');
   }

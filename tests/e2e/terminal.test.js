@@ -105,14 +105,14 @@ test('post.html?slug=X redirects to the reader page', async ({ page }) => {
   await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
 });
 
-test('prompt: "open posts" navigates and "sudo x" prints command-not-found', async ({ page }) => {
+test('prompt: "open posts" navigates and an unknown command prints command-not-found', async ({ page }) => {
   await page.goto('/index.html');
   const cmd = page.getByRole('textbox', { name: 'command', exact: true });
   await cmd.fill('open posts');
   await cmd.press('Enter');
   await expect(page).toHaveURL(/\/posts\.html$/);
   // Prompt is chrome (survives pjax); the same input keeps working.
-  await cmd.fill('sudo x');
+  await cmd.fill('frobnicate --now');
   await cmd.press('Enter');
   await expect(page.getByText(/command not found/)).toBeVisible();
 });

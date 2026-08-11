@@ -1,6 +1,9 @@
 module.exports = {
   testDir: 'tests/e2e',
   testMatch: '**/*.test.js',
+  // Default worker count thrashes the single python http.server (page loads
+  // time out, drag/typing tests flake). 2 workers is fast (~16s) and green.
+  workers: 2,
   use: {
     baseURL: 'http://localhost:8000',
   },
