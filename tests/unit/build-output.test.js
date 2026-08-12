@@ -22,6 +22,17 @@ test('post pages carry unique meta and pre-rendered content', () => {
   expect(html).toContain(`rel="canonical" href="https://devops.lucasluize.com/posts/${p.slug}.html"`);
   expect(html).toMatch(/<main id="pane"[\s\S]*<h1/);
 });
+test('about page has the neofetch header, man page, and honest skill tags', () => {
+  const html = fs.readFileSync('dist/about.html', 'utf8');
+  expect(html).toContain('$ man lucas');
+  expect(html).toContain('LUCAS(1)');
+  expect(html).toContain('Edison Public Library');
+  expect(html).toContain('https://github.com/lucasluize-tech');
+  expect(html).toContain('https://linkedin.com/in/lucasluize');
+  // Terraform is roadmap, not prod - keep the provenance tag honest
+  expect(html).toMatch(/Terraform<span class="prov prov-learning"/);
+  expect(html).not.toMatch(/Terraform<span class="prov prov-prod"/);
+});
 test('projects in manifest are ordered by featured_order', () => {
   const m = JSON.parse(fs.readFileSync('dist/manifest.json', 'utf8'));
   const orders = m.projects.map(p => p.featured_order);

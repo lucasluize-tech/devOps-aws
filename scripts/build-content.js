@@ -8,7 +8,7 @@ const path = require('path');
 
 const { parseMarkdown, calculateReadingTime } = require('../utils');
 const { validatePost, validateProject } = require('./lib/schema');
-const { renderMarkdown, extractScreenshotSlot, stripLeadingH1, initHighlighter } = require('./lib/render');
+const { renderMarkdown, extractScreenshotSlot, stripLeadingH1, slugifyHeading, initHighlighter } = require('./lib/render');
 const {
   ORIGIN, pageHtml, postPane, projectPane, postsListPane, projectsListPane, galleryHtml,
   aboutPane, roadmapPane, pickerPane,
@@ -73,9 +73,14 @@ async function main() {
   const postManifest = posts.map((p) => {
     const bodyHtml = stripLeadingH1(renderMarkdown(p.content));
     const readingTime = calculateReadingTime(p.content);
+    // h2 section titles feed the telescope preview's CONTENTS block; ids
+    // match the anchor ids renderMarkdown stamps on the post's h2s.
+    const headings = (p.content.match(/^##\s+(.+)$/gm) || [])
+      .map((h) => h.replace(/^##\s+/, '').replace(/`/g, '').trim())
+      .map((t) => ({ t, id: slugifyHeading(t) }));
     const url = `posts/${p.slug}.html`;
     const canonicalUrl = `${ORIGIN}/${url}`;
-    return { p, bodyHtml, readingTime, url, canonicalUrl };
+    return { p, bodyHtml, readingTime, headings, url, canonicalUrl };
   });
 
   // 4. render project bodies (inject gallery at screenshot slot)
@@ -90,9 +95,9 @@ async function main() {
 
   // manifest arrays (sorted)
   const manifestPosts = postManifest
-    .map(({ p, readingTime, url }) => ({
+    .map(({ p, readingTime, headings, url }) => ({
       slug: p.slug, title: p.data.title, excerpt: p.data.excerpt, date: p.data.date,
-      tags: p.data.tags || [], readingTime, url,
+      tags: p.data.tags || [], readingTime, headings, url,
     }))
     .sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0)); // date DESC
 
@@ -150,13 +155,13 @@ async function main() {
     title: 'Posts - Lucas Luize', bodyClass: 'page-posts', active: 'posts.html',
     description: 'Technical writing on DevOps, cloud infrastructure, and automation.',
     data: { kind: 'posts', items: manifestPosts },
-    pane: pickerPane('Posts', 'posts', postsListPane(manifestPosts)),
+    pane: pickerPane('posts', postsListPane(manifestPosts)),
   });
   corePage('projects.html', {
     title: 'Projects - Lucas Luize', bodyClass: 'page-projects', active: 'projects.html',
     description: 'Infrastructure and automation projects by Lucas Luize.',
     data: { kind: 'projects', items: manifestProjects },
-    pane: pickerPane('Projects', 'projects', projectsListPane(manifestProjects)),
+    pane: pickerPane('projects', projectsListPane(manifestProjects)),
   });
   corePage('about.html', {
     title: 'About - Lucas Luize', bodyClass: 'page-about', active: 'about.html',

@@ -104,6 +104,7 @@ ${sidebar(active)}
 <form data-prompt>
 <div class="scrollback" data-scrollback aria-live="polite" aria-label="command output"></div>
 <label><span class="ps1"><span class="ps1-host">lucas@devops</span><span class="ps1-sep">:</span><span data-cwd>~</span></span> <span class="ps1-arrow">&#10095;</span> <input type="text" name="cmd" autocomplete="off" spellcheck="false" aria-label="command"></label>
+<span class="prompt-hint" aria-hidden="true">tab completes · ctrl+/ focuses · try 'help'</span>
 <input type="hidden" name="website" data-hp>
 </form>
 <footer role="contentinfo"><span data-progress></span><span data-path></span><span data-branch>${esc(branch || '')}</span><span class="sl-enc">utf-8</span><span data-sha></span><span data-clock></span></footer>
@@ -144,9 +145,15 @@ function commentsAside() {
 </aside>`;
 }
 
+// Reader back link: the terminal-native "cd .." out of a post/project.
+function readerBack(section) {
+  return `<p class="reader-back"><a href="/${attr(section)}.html">← cd ../${esc(section)}</a></p>`;
+}
+
 function postPane({ title, readingTime, tags, bodyHtml, canonicalUrl }) {
   const tagHtml = (tags || []).map((t) => `<span class="badge">${esc(t)}</span>`).join('');
   return `<div class="reader-split"><article class="post-content">
+${readerBack('posts')}
 <h1 class="post-title">${esc(title)}</h1>
 <p class="post-meta"><span class="reading-time">${readingTime} min read</span></p>
 <div class="badges">${tagHtml}</div>
@@ -164,6 +171,7 @@ function projectPane({ title, category, lifecycle, provenance, techStack, goal, 
     demo ? `<a class="btn" href="${attr(demo)}" rel="noopener">Live demo</a>` : '',
   ].join('');
   return `<div class="reader-split"><article class="project-content">
+${readerBack('projects')}
 <header class="project-header">
 <h1 class="project-title">${esc(title)}</h1>
 <div class="project-pills">${pill(`category-tag cat-${catSlug(category)}`, category)}${pill(`status-pill status-${esc(lifecycle)}`, lifecycle)}${pill('provenance-pill', provenance)}</div>
@@ -237,10 +245,27 @@ ${cards}
 </section>`;
 }
 
+// tagColor: deterministic tag -> palette bucket for topic columns.
+// Keep in sync with the runtime copy in app/buffers.js.
+function tagColor(tag) {
+  let h = 0;
+  for (let i = 0; i < tag.length; i++) h = (h * 31 + tag.charCodeAt(i)) >>> 0;
+  return h % 5;
+}
+
+// "2026-07-02" -> "07-02-26" (same format as the telescope list)
+function fmtDate(date) {
+  const [y, m, d] = String(date || '').split('-');
+  return y && m && d ? `${m}-${d}-${y.slice(2)}` : String(date || '');
+}
+
 function latestPostsPane(posts) {
-  const rows = (posts || []).slice(0, 4).map((p) => `<li><a class="post-row" href="/posts/${attr(p.slug)}.html">
-<span class="pr-date">${esc(String(p.date).slice(5))}</span><span class="pr-tag">${esc((p.tags || [])[0] || '')}</span><span class="pr-time">${p.readingTime}m</span><span class="pr-title">${esc(p.title)}</span>
-</a></li>`).join('');
+  const rows = (posts || []).slice(0, 4).map((p) => {
+    const topic = (p.tags || [])[0] || '';
+    return `<li><a class="post-row" href="/posts/${attr(p.slug)}.html">
+<span class="pr-date">${esc(fmtDate(p.date))}</span><span class="pr-tag tlo-c${tagColor(topic)}">${esc(topic)}</span><span class="pr-time">${p.readingTime}m</span><span class="pr-title">${esc(p.title)}</span>
+</a></li>`;
+  }).join('');
   return `<section class="latest" aria-label="latest writing">
 <h2 class="sec-label">Writing</h2>
 <p class="ls-cmd muted">$ ls ./posts --latest</p>
@@ -250,11 +275,11 @@ function latestPostsPane(posts) {
 </section>`;
 }
 
-// Picker pane (posts/projects): heading + empty telescope container that
-// initTelescope() fills, plus a pre-rendered .tl-fallback list that stays for
-// no-JS visitors (JS hides it once the telescope boots).
-function pickerPane(heading, kind, listHtml) {
-  return `<h1>${esc(heading)}</h1>
+// Picker pane (posts/projects): path-style header + empty telescope container
+// that initTelescope() fills, plus a pre-rendered .tl-fallback list that stays
+// for no-JS visitors (JS hides it once the telescope boots).
+function pickerPane(kind, listHtml) {
+  return `<h1 class="tl-h1"><span class="tl-h1-tilde" aria-hidden="true">~/</span>${esc(kind)}</h1>
 <div data-telescope data-kind="${attr(kind)}"></div>
 <div class="tl-fallback">${listHtml}</div>`;
 }
@@ -281,38 +306,107 @@ ${s.caption ? `<figcaption>${esc(s.caption)}</figcaption>` : ''}
 // About pane: neofetch layout - ASCII >_ logo left, key/value column right.
 // Skills carry provenance labels [prod]/[lab]/[personal] matching the schema.
 function aboutPane() {
-  const logo = [
-    '        __         ',
-    '   ___ / /_        ',
-    '  / _ \\/ __/       ',
-    ' /  __/ /_         ',
-    ' \\___/\\__/  _      ',
-    '     >_    (_)     ',
+  // Tux hard at work, rainbow via .lolcat; pipeline stages colored per-span.
+  const tux = [
+    '      .--.',
+    '     |o_o |',
+    '     |:_/ |',
+    '    //   \\ \\',
+    '   (|     | )',
+    '  /\'\\_   _/`\\',
+    '  \\___)=(___/',
+    '  ____________',
+    ' | >_ ship it |',
+    ' |____________|',
   ].join('\n');
+  const pipeline = [
+    '<span class="pl-code">code</span>',
+    '<span class="pl-build">build</span>',
+    '<span class="pl-test">test</span>',
+    '<span class="pl-deploy">deploy</span>',
+  ].join('<span class="pl-arr"> -> </span>');
+  const logoBlock = `<span class="nf-tux lolcat">${esc(tux)}</span>\n\n<span class="nf-pipeline">${pipeline}</span>`;
   const row = (k, v) => `<div class="nf-row"><span class="nf-key">${esc(k)}</span><span class="nf-val">${v}</span></div>`;
   const skill = (name, prov) => `<span class="nf-skill">${esc(name)}<span class="prov prov-${esc(prov)}">[${esc(prov)}]</span></span>`;
   const skills = [
     skill('AWS (S3/CloudFront/ACM)', 'prod'),
-    skill('Terraform', 'prod'),
     skill('GitHub Actions CI/CD', 'prod'),
-    skill('Proxmox VE / LXC', 'lab'),
-    skill('Tailscale', 'lab'),
-    skill('Bash / dotfiles', 'personal'),
-    skill('Docker', 'lab'),
+    skill('Proxmox VE / LXC', 'prod'),
+    skill('Docker', 'prod'),
+    skill('Tailscale', 'prod'),
+    skill('Python / Bash', 'prod'),
+    skill('Terraform', 'learning'),
     skill('Kubernetes / EKS', 'learning'),
   ].join('');
+  const links = [
+    '<a href="https://github.com/lucasluize-tech" rel="noopener">github</a>',
+    '<a href="https://linkedin.com/in/lucasluize" rel="noopener">linkedin</a>',
+    '<a href="mailto:me@lucasluize.com">email</a>',
+  ].join('<span class="nf-linksep" aria-hidden="true"> · </span>');
   const kv = [
     row('host', 'lucas@devops'),
     row('role', 'Cloud DevOps Engineer'),
     row('base', 'Tampa, FL - Remote friendly'),
     row('focus', 'private-origin, CDN-fronted, test-gated infra'),
-    row('uptime', 'shipping since 2022'),
+    row('uptime', 'shipping since 2020'),
     row('skills', `<div class="nf-skills">${skills}</div>`),
-    row('contact', '<a href="mailto:me@lucasluize.com">me@lucasluize.com</a>'),
+    row('links', `<span class="nf-links">${links}</span>`),
   ].join('');
   return `<section class="neofetch" aria-label="about">
-<pre class="nf-logo" aria-hidden="true">${esc(logo)}</pre>
+<pre class="nf-logo" aria-hidden="true">${logoBlock}</pre>
 <div class="nf-info"><h1 class="nf-title">lucas@devops</h1><hr class="nf-sep">${kv}</div>
+</section>
+${manPane()}`;
+}
+
+// Man-page pane rendered under the neofetch header (`man lucas` in the
+// prompt navigates here). Facts sourced from the master resume - keep in
+// sync with ~/projects/lucas/job-search/docs/master-resume.md.
+function manPane() {
+  const xref = (name, url) => `<a href="${attr(url)}">${esc(name)}(1)</a>`;
+  const seeAlso = [
+    xref('projects', '/projects.html'),
+    xref('posts', '/posts.html'),
+    xref('roadmap', '/roadmap.html'),
+    xref('contact', '/contact.html'),
+  ].join(', ');
+  return `<section class="man" aria-label="man lucas">
+<p class="man-cmd muted">$ man lucas</p>
+<div class="man-head" aria-hidden="true"><span>LUCAS(1)</span><span>User Commands</span><span>LUCAS(1)</span></div>
+<h2 class="man-sec">NAME</h2>
+<p class="man-body">lucas - cloud devops engineer</p>
+<h2 class="man-sec">SYNOPSIS</h2>
+<p class="man-body"><code>lucas [--infra] [--automation] [--networking] [--docs]</code></p>
+<h2 class="man-sec">DESCRIPTION</h2>
+<p class="man-body">Builds and automates infrastructure, troubleshoots weird edge cases,
+and documents what he learns. Has owned technology end-to-end since 2020 -
+from bootstrapping a small business's entire web, email, and network stack
+solo to running the systems a multi-branch enterprise depends on.</p>
+<p class="man-body">Likes systems that are boring to operate: documented, observable,
+reproducible, and gated behind tests before they ship.</p>
+<h2 class="man-sec">EXPERIENCE</h2>
+<div class="man-job">
+<p class="man-job-head"><span class="man-job-title">IT Support Specialist &amp; Systems Administrator, Edison Public Library</span><span class="man-job-when">2025 - present</span></p>
+<p class="man-job-desc">One of three engineers running enterprise infrastructure across all
+branches: Proxmox HA with scripted failover and failback, Grafana
+observability, GitOps deploys, zero-trust remote access via Tailscale,
+and a 78-doc internal wiki built where none existed.</p>
+</div>
+<div class="man-job">
+<p class="man-job-head"><span class="man-job-title">Technology Consultant, Pinard Nursery</span><span class="man-job-when">2020 - present</span></p>
+<p class="man-job-desc">Sole owner of a small business's entire stack - web, email, DNS,
+networking, and physical security - from procurement through maintenance,
+without an IT budget or team.</p>
+</div>
+<h2 class="man-sec">CERTIFICATIONS</h2>
+<p class="man-body">CompTIA Security+ / Network+ / A+ / IT Operations Specialist<br>
+AWS Certified Cloud Practitioner / LPI Linux Essentials<br>
+B.S. Cloud &amp; Network Engineering, WGU (in progress)</p>
+<h2 class="man-sec">LANGUAGES</h2>
+<p class="man-body">English (fluent) / Portuguese (native) / Spanish (intermediate)</p>
+<h2 class="man-sec">SEE ALSO</h2>
+<p class="man-body man-xref">${seeAlso}</p>
+<div class="man-foot" aria-hidden="true"><span>lucas 1.0</span><span>User Commands</span><span>LUCAS(1)</span></div>
 </section>`;
 }
 

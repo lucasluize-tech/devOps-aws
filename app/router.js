@@ -56,6 +56,13 @@ async function swapTo(url, push) {
   // must not overwrite it with the fetch-error UI, so these steps run
   // outside the fetch try/catch.
   document.title = doc.title;
+  // Adopt stylesheets the destination page carries that this one doesn't
+  // (reader pages ship reader.css + reading fonts only in their own head).
+  const have = new Set(Array.from(document.head.querySelectorAll('link'), (l) => l.getAttribute('href')));
+  for (const link of doc.querySelectorAll('head link[rel="stylesheet"], head link[rel="preconnect"]')) {
+    const href = link.getAttribute('href');
+    if (href && !have.has(href)) document.head.appendChild(link.cloneNode());
+  }
   // Refresh window.__PAGE__ from the fetched page so buffers (telescope items,
   // page kind) read the new page's data, then let them re-boot into the pane.
   const m = html.match(/window\.__PAGE__ = (.*);<\/script>/);
@@ -64,8 +71,23 @@ async function swapTo(url, push) {
   try { markActiveNav(new URL(url, location.origin).pathname); } catch (_) { /* non-fatal */ }
   document.dispatchEvent(new CustomEvent('pane:swapped', { detail: { url } }));
 
+  // Deep link with a #hash: land on that section instead of the top.
+  const hash = new URL(url, location.origin).hash.slice(1);
+  const target = hash ? pane.querySelector(`#${CSS.escape(hash)}`) : null;
+  if (target) {
+    if (!target.hasAttribute('tabindex')) target.setAttribute('tabindex', '-1');
+    target.focus({ preventScroll: true });
+    target.scrollIntoView();
+    return;
+  }
+  // Focus the new h1 for screen readers - unless an input already holds
+  // focus (the prompt after a typed command, or the telescope's filter,
+  // which claims focus during pane:swapped). Stealing focus from a field
+  // mid-flow is worse than skipping the announcement.
+  const ae = document.activeElement;
+  const fieldFocused = ae && ae.matches && ae.matches('input, textarea, select');
   const h1 = pane.querySelector('h1');
-  if (h1) {
+  if (h1 && !fieldFocused) {
     if (!h1.hasAttribute('tabindex')) h1.setAttribute('tabindex', '-1');
     h1.focus();
   }

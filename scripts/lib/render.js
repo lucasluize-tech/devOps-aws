@@ -59,7 +59,7 @@ function codeRenderer({ text, lang }) {
     const cls = language ? ` class="language-${language}"` : '';
     inner = `<pre><code${cls}>${escapeCode(text)}\n</code></pre>`;
   }
-  return `<div class="code-window"><div class="code-bar"><span class="code-lang">${language || 'text'}</span><button class="code-copy" type="button">copy</button></div>${inner}</div>\n`;
+  return `<div class="code-window"><div class="code-bar"><span class="code-lang">${language || 'text'}</span><button class="code-copy" type="button" aria-label="copy" title="copy">📋</button></div>${inner}</div>\n`;
 }
 
 const md = new Marked({ renderer: { code: codeRenderer } });
@@ -74,8 +74,9 @@ function renderMarkdown(input) {
       code: ['class'],
       pre: ['class', 'style'],
       span: ['class', 'style'],
-      button: ['class', 'type'],
+      button: ['class', 'type', 'aria-label', 'title'],
       div: ['data-screenshot-slot', 'class'],
+      h2: ['id'],
     },
     // shiki emits inline token styles; allow only color-ish declarations.
     allowedStyles: {
@@ -93,7 +94,20 @@ function renderMarkdown(input) {
   // focusable so keyboard users can scroll them (axe scrollable-region-focusable).
   // Added post-sanitize so the tabindex survives. \b variant also catches
   // shiki's attributed <pre class=... style=...>.
-  return clean.replace(/<pre\b(?![^>]*tabindex)/g, '<pre tabindex="0"');
+  return clean
+    .replace(/<pre\b(?![^>]*tabindex)/g, '<pre tabindex="0"')
+    // anchor ids on h2s so the telescope preview's CONTENTS can deep-link
+    .replace(/<h2>([\s\S]*?)<\/h2>/g, (m, inner) => `<h2 id="${slugifyHeading(inner)}">${inner}</h2>`);
+}
+
+// slugifyHeading: shared by the h2-id pass above and build-content.js's
+// manifest headings, so preview TOC hrefs always match the rendered ids.
+function slugifyHeading(text) {
+  return String(text)
+    .replace(/<[^>]*>/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
 }
 
 function extractScreenshotSlot(html) {
@@ -108,4 +122,4 @@ function stripLeadingH1(html) {
   return html.replace(/^\s*<h1\b[^>]*>[\s\S]*?<\/h1>\s*/i, '');
 }
 
-module.exports = { renderMarkdown, extractScreenshotSlot, stripLeadingH1, initHighlighter, MARKER };
+module.exports = { renderMarkdown, extractScreenshotSlot, stripLeadingH1, slugifyHeading, initHighlighter, MARKER };

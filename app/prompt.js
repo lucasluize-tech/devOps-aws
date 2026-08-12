@@ -14,6 +14,7 @@ const MAX_MESSAGE_LEN = 2000;
 const WORKSPACES = {
   index: '/index.html',
   home: '/index.html',
+  '~': '/index.html',
   about: '/about.html',
   posts: '/posts.html',
   projects: '/projects.html',
@@ -36,12 +37,14 @@ const HELP_LINES = [
   '  help                 this list',
   '  ls [posts|projects]  list workspaces, or slugs in a section',
   '  open <x>, cd <x>     go to a workspace or a post/project slug',
+  '  cd .. / cd -         up one level / back (history)',
   '  cat <slug>           open a post or project by slug',
   '  whoami               about page',
   '  status               session telemetry',
   '  contact              start the contact wizard',
   '  eggs                 fun things to try',
   '  clear                clear this scrollback',
+  '  tab                  autocomplete commands and slugs',
   '  ctrl+/               focus this prompt from anywhere',
 ];
 
@@ -87,8 +90,9 @@ function lsSection(list, label) {
 }
 
 // parseCommand: pure. `input` is the raw prompt text, `manifest` is
-// { posts: [{slug,title}], projects: [{slug,title}] }.
-export function parseCommand(input, manifest) {
+// { posts: [{slug,title}], projects: [{slug,title}] }, `path` is the current
+// pathname (needed only by `cd ..`).
+export function parseCommand(input, manifest, path) {
   const m = manifest || {};
   const parts = String(input || '').trim().split(/\s+/).filter(Boolean);
   const cmd = (parts[0] || '').toLowerCase();
@@ -111,6 +115,12 @@ export function parseCommand(input, manifest) {
 
     case 'open':
     case 'cd': {
+      if (arg === '-') return { kind: 'back' };
+      if (arg === '..') {
+        // reader page -> its section; anywhere else -> home
+        const parent = /^\/(posts|projects)\/.+/.exec(path || '');
+        return { kind: 'nav', url: parent ? `/${parent[1]}.html` : '/index.html' };
+      }
       const url = resolveTarget(arg, m);
       if (url) return { kind: 'nav', url };
       return { kind: 'print', lines: [`${cmd}: ${arg}: No such file or directory - try 'help'`] };
@@ -154,20 +164,8 @@ export function parseCommand(input, manifest) {
     case 'uname':
       return { kind: 'print', lines: ['Linux devops 6.8.0-lucas #1 SMP PREEMPT x86_64 GNU/Linux'] };
     case 'man': {
-      if (arg && arg.toLowerCase() === 'lucas') {
-        return {
-          kind: 'print',
-          lines: [
-            'LUCAS(1)                    User Commands                    LUCAS(1)',
-            'NAME',
-            '    lucas - cloud devops engineer',
-            'SYNOPSIS',
-            '    lucas [--automate] [--secure] [--ship] <infrastructure>',
-            'SEE ALSO',
-            '    open projects, open posts, contact',
-          ],
-        };
-      }
+      // `man lucas` opens the about page - the man page lives there now.
+      if (arg && arg.toLowerCase() === 'lucas') return { kind: 'nav', url: '/about.html' };
       return { kind: 'print', lines: [`No manual entry for ${arg || '(none)'}`] };
     }
 
@@ -183,6 +181,50 @@ export function parseCommand(input, manifest) {
     default:
       return { kind: 'print', lines: [`bash: ${cmd}: command not found - try 'help'`] };
   }
+}
+
+// ---- tab completion (pure, unit-testable) --------------------------------
+
+// Commands worth completing: the advertised set (eggs stay discoverable).
+const COMPLETABLE = ['cat', 'cd', 'clear', 'contact', 'eggs', 'help', 'ls', 'man', 'open', 'status', 'whoami'];
+
+function argPool(cmd, manifest) {
+  const m = manifest || {};
+  const slugs = [...(m.posts || []), ...(m.projects || [])].map((it) => it.slug);
+  switch (cmd) {
+    case 'open':
+    case 'cd': return [...WORKSPACE_NAMES, '..', ...slugs];
+    case 'cat': return slugs;
+    case 'ls': return ['posts', 'projects'];
+    case 'man': return ['lucas'];
+    default: return [];
+  }
+}
+
+function longestCommonPrefix(list) {
+  return list.reduce((acc, s) => {
+    let i = 0;
+    while (i < acc.length && i < s.length && acc[i] === s[i]) i++;
+    return acc.slice(0, i);
+  });
+}
+
+// completeCommand(input, manifest) -> null (nothing to do),
+// { value } (input replaced), or { candidates } (ambiguous, bash-style list).
+export function completeCommand(input, manifest) {
+  const text = String(input || '');
+  if (!text.trim()) return null;
+  const parts = text.split(/\s+/).filter(Boolean);
+  const completingCmd = parts.length === 1 && !text.endsWith(' ');
+  const prefix = text.endsWith(' ') ? '' : parts[parts.length - 1].toLowerCase();
+  const pool = completingCmd ? COMPLETABLE : argPool((parts[0] || '').toLowerCase(), manifest);
+  const matches = pool.filter((c) => c.startsWith(prefix)).sort();
+  if (!matches.length) return null;
+  const head = text.slice(0, text.length - prefix.length);
+  if (matches.length === 1) return { value: head + matches[0] + (completingCmd ? ' ' : '') };
+  const lcp = longestCommonPrefix(matches);
+  if (lcp.length > prefix.length) return { value: head + lcp };
+  return { candidates: matches };
 }
 
 // ---- DOM wiring (not unit-tested here; Task 10 covers this end-to-end) ---
@@ -354,6 +396,7 @@ export function initPrompt() {
   function act(result) {
     switch (result.kind) {
       case 'nav': navigate(result.url); break;
+      case 'back': history.back(); break;
       case 'print': appendLines(result.lines, result.cls); break;
       case 'clear': clearScrollback(); break;
       case 'status': appendStatus(); break;
@@ -374,7 +417,7 @@ export function initPrompt() {
     history.push(text);
     appendEcho(text);
     const manifest = (window.__PAGE__ && window.__PAGE__.manifest) || { posts: [], projects: [] };
-    act(parseCommand(text, manifest));
+    act(parseCommand(text, manifest, location.pathname));
   });
 
   // Ctrl+/ focuses the prompt from anywhere (advertised in `help`).
@@ -400,16 +443,19 @@ export function initPrompt() {
     input.focus({ preventScroll: true });
   }
 
-  // Click echo: clicking a workspace prints the equivalent command - the
-  // mouse-first way visitors discover the hidden command interface. Runs
-  // after router.js's own click listener (order of addEventListener).
+  // Click echo: clicking any internal navigation prints the equivalent
+  // command - the mouse-first way visitors discover the hidden command
+  // interface. Runs after router.js's own click listener (listener order).
   document.addEventListener('click', (event) => {
     if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
-    const a = event.target.closest && event.target.closest('nav[aria-label="workspaces"] a');
-    if (!a) return;
-    // Derive the name from the href, not textContent - the link also carries
-    // a ws-num span ("3projects" is not a command).
-    const name = (a.getAttribute('href') || '').replace(/^\//, '').replace(/\.html$/, '');
+    const a = event.target.closest && event.target.closest('a');
+    if (!a || a.target === '_blank') return;
+    const href = a.getAttribute('href') || '';
+    if (!href.startsWith('/') || href.startsWith('//')) return; // internal only
+    const path = href.split('#')[0];
+    const reader = /^\/(posts|projects)\/(.+)\.html$/.exec(path);
+    if (reader) { appendEcho(`open ${reader[2]}`); return; }
+    const name = path.replace(/^\//, '').replace(/\.html$/, '');
     appendEcho(!name || name === 'index' ? 'cd ~' : `cd ${name}`);
   });
   // Telescope picks echo `open <slug>` (buffers.js dispatches, no import cycle).
@@ -421,6 +467,17 @@ export function initPrompt() {
     if (wizard && event.key === 'Escape') {
       event.preventDefault();
       cancelWizard();
+      return;
+    }
+    // Tab completes commands and slugs (empty input keeps Tab's normal focus
+    // move; browsers reserve ctrl+tab, so plain Tab is the terminal way).
+    if (event.key === 'Tab' && !event.ctrlKey && !wizard && input.value.trim()) {
+      event.preventDefault();
+      const manifest = (window.__PAGE__ && window.__PAGE__.manifest) || { posts: [], projects: [] };
+      const r = completeCommand(input.value, manifest);
+      if (!r) return;
+      if (r.value) { input.value = r.value; sizeInput(); }
+      else if (r.candidates) appendLine(r.candidates.join('   '), 'sb-line');
       return;
     }
     if (event.key === 'ArrowUp') {
@@ -449,5 +506,5 @@ if (typeof document !== 'undefined') {
 }
 
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { parseCommand, initPrompt };
+  module.exports = { parseCommand, completeCommand, initPrompt };
 }

@@ -33,8 +33,9 @@ function markActiveNav(pathname) {
   }
   // Fallback: keep the build-time aria-current if nothing matched (e.g. post pages).
   if (!matched) return;
-  for (const a of links) a.removeAttribute('aria-current');
+  for (const a of links) { a.removeAttribute('aria-current'); a.removeAttribute('title'); }
   matched.setAttribute('aria-current', 'page');
+  matched.setAttribute('title', 'active workspace');
 }
 
 function startClock() {
@@ -73,15 +74,21 @@ function initCodeCopy() {
     if (!btn) return;
     const pre = btn.closest('.code-window')?.querySelector('pre');
     if (!pre) return;
+    // Keep aria-label in sync with the visual state: the emoji glyph has no
+    // accessible name of its own.
+    const setState = (text, label) => {
+      btn.textContent = text;
+      btn.setAttribute('aria-label', label);
+    };
     try {
       await navigator.clipboard.writeText(pre.textContent.replace(/\n$/, ''));
-      btn.textContent = 'copied!';
+      setState('✓', 'copied!');
       btn.classList.add('copied');
     } catch (_) {
-      btn.textContent = 'failed';
+      setState('✗', 'failed');
     }
     setTimeout(() => {
-      btn.textContent = 'copy';
+      setState('📋', 'copy');
       btn.classList.remove('copied');
     }, 1500);
   });

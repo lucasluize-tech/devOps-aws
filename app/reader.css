@@ -67,6 +67,11 @@
 #pane .post-content,
 #pane .project-content { color: var(--text); }
 
+/* ---- Back link (terminal-native `cd ..` out of the reader) ------------- */
+#pane .reader-back { margin: 0 0 14px; font-size: 12px; font-family: 'JetBrains Mono', monospace; }
+#pane .reader-back a { color: var(--muted); text-decoration: none; }
+#pane .reader-back a:hover { color: var(--cyan); }
+
 /* ---- Headings ---------------------------------------------------------- */
 #pane .post-content h1, #pane .project-content h1,
 #pane .post-content h2, #pane .project-content h2,

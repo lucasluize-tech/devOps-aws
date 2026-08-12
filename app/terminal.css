@@ -196,6 +196,13 @@ nav[aria-label="workspaces"] a[aria-current="page"]::before {
   color: var(--secondary);
   opacity: 1;
 }
+/* tmux marks the active window with a trailing * - so do we */
+nav[aria-label="workspaces"] a[aria-current="page"]::after {
+  content: '*' / '';
+  margin-left: auto;
+  color: var(--secondary);
+  font-weight: 700;
+}
 
 /* ---- Draggable dividers (herdr-style) ------------------------------ */
 .rz {
@@ -296,6 +303,14 @@ nav[aria-label="workspaces"] a[aria-current="page"]::before {
   line-height: 1.15;
   text-shadow: 0 0 18px var(--accent-glow);
 }
+/* inline-block so the lolcat gradient paints the penguin as one shape */
+.nf-tux { display: inline-block; }
+.nf-pipeline { font-size: 11px; font-weight: 700; letter-spacing: 0.02em; }
+.nf-pipeline .pl-arr { color: var(--muted); font-weight: 400; }
+.nf-pipeline .pl-code { color: var(--cyan); }
+.nf-pipeline .pl-build { color: var(--yellow); }
+.nf-pipeline .pl-test { color: var(--pink); }
+.nf-pipeline .pl-deploy { color: var(--success); }
 .nf-info { min-width: 0; flex: 1; }
 .nf-title {
   margin: 0 0 4px !important;
@@ -327,6 +342,65 @@ nav[aria-label="workspaces"] a[aria-current="page"]::before {
 .prov-lab { color: var(--accent-bright); }
 .prov-personal { color: var(--secondary); }
 .prov-learning { color: var(--muted); }
+.nf-links a { color: var(--link); }
+.nf-linksep { color: var(--muted); }
+
+/* Mobile: stack logo above info, keys above values, skills as full rows */
+@media (max-width: 640px) {
+  .neofetch { flex-direction: column; gap: 16px; }
+  .nf-row { flex-direction: column; gap: 1px; }
+  .nf-key { flex: none; }
+  .nf-skills { flex-direction: column; gap: 3px; width: 100%; }
+  .nf-skill {
+    justify-content: space-between;
+    width: 100%;
+    padding: 2px 0;
+    background: none;
+    border: 0;
+    border-radius: 0;
+    font-size: 13px;
+  }
+}
+
+/* ---- About: man page (below the neofetch header) ------------------- */
+.man { margin-top: 40px; max-width: 76ch; font-size: 13px; }
+.man-cmd { font-size: 12px; margin: 0 0 14px; }
+.man-head, .man-foot {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  color: var(--muted);
+  font-size: 12px;
+  letter-spacing: 0.04em;
+}
+.man-head { margin-bottom: 14px; }
+.man-foot { margin-top: 26px; }
+.man-sec {
+  font-size: 13px;
+  font-family: inherit;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: var(--accent-bright);
+  margin: 18px 0 6px;
+}
+.man-body, .man-job { padding-left: 3ch; margin: 0 0 10px; line-height: 1.6; }
+.man-body code { color: var(--secondary); }
+.man-job { margin-bottom: 14px; }
+.man-job-head {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 2px 14px;
+  margin: 0 0 3px;
+}
+.man-job-title { color: var(--text-bright); font-weight: 700; }
+.man-job-when { color: var(--muted); }
+.man-job-desc { margin: 0; line-height: 1.6; }
+.man-xref a { color: var(--link); }
+@media (max-width: 640px) {
+  .man-body, .man-job { padding-left: 1.5ch; }
+  .man-head span:nth-child(2), .man-foot span:nth-child(2) { display: none; }
+}
 
 /* ---- Roadmap: systemd unit list ----------------------------------- */
 .systemd h1 { margin-bottom: 0.2em; }
@@ -486,7 +560,7 @@ body.tour-prompt form[data-prompt] {
 /* latest writing: posts read as filesystem rows */
 .post-rows-head {
   display: grid;
-  grid-template-columns: 3.2em 7em 2.8em minmax(0, 1fr); /* keep in sync with .post-row */
+  grid-template-columns: 8.5ch 7em 2.8em minmax(0, 1fr); /* keep in sync with .post-row */
   gap: 10px;
   padding: 0 10px 4px;
   font-size: 11px;
@@ -499,7 +573,7 @@ body.tour-prompt form[data-prompt] {
 .post-rows { list-style: none; margin: 0; padding: 0; }
 .post-row {
   display: grid;
-  grid-template-columns: 3.2em 7em 2.8em minmax(0, 1fr);
+  grid-template-columns: 8.5ch 7em 2.8em minmax(0, 1fr);
   gap: 10px;
   padding: 6px 10px;
   border-radius: 6px;
@@ -509,7 +583,7 @@ body.tour-prompt form[data-prompt] {
 }
 .post-row:hover { background: color-mix(in srgb, var(--accent) 8%, transparent); }
 .pr-date { color: var(--muted); }
-.pr-tag { color: var(--pink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pr-tag { color: var(--tlo-c, var(--pink)); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .pr-time { color: var(--yellow); text-align: right; }
 .pr-title { color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .post-row:hover .pr-title { color: var(--accent-bright); }
@@ -519,7 +593,20 @@ body.tour-prompt form[data-prompt] {
 }
 
 /* ---- Telescope fuzzy picker (posts/projects) ---------------------- */
+/* page title above the browser: a path, not a webpage heading */
+#pane .tl-h1 {
+  font-size: 14px;
+  margin: 0 0 12px;
+  font-weight: 700;
+  color: var(--pink);
+  letter-spacing: 0.02em;
+}
+#pane .tl-h1 .tl-h1-tilde { color: var(--muted); font-weight: 400; }
+
 .telescope { display: flex; flex-direction: column; gap: 12px; }
+/* shared column template: header row + option rows stay aligned */
+.tl-posts { --tl-grid: 12px 64px 80px 30px minmax(0, 1fr); }
+.tl-projects { --tl-grid: 12px 76px 86px minmax(0, 1fr); }
 .tl-body {
   display: grid;
   grid-template-columns: minmax(0, var(--tl-w, 42%)) 6px minmax(0, 1fr);
@@ -527,34 +614,70 @@ body.tour-prompt form[data-prompt] {
   min-height: 0;
 }
 .rz-tl { cursor: col-resize; }
+.tl-list {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--surface) 35%, transparent);
+}
+.tl-cols {
+  display: grid;
+  grid-template-columns: var(--tl-grid);
+  gap: 8px;
+  padding: 8px 10px 5px 16px;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  border-bottom: 1px solid var(--border-subtle);
+}
+.tl-cols > span { color: var(--muted); }
 .tl-results {
   list-style: none;
   margin: 0;
   padding: 6px;
   max-height: 52vh;
   overflow: auto;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  background: color-mix(in srgb, var(--surface) 35%, transparent);
 }
-.tl-results:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.tl-results:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; border-radius: 8px; }
 .tl-option {
-  padding: 7px 10px;
+  display: grid;
+  grid-template-columns: var(--tl-grid);
+  gap: 8px;
+  align-items: baseline;
+  padding: 6px 10px;
   border-radius: 5px;
-  border-left: 2px solid transparent;
   color: var(--text);
   cursor: pointer;
   font-size: 13px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
+.tl-option > span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .tl-option:hover { background: color-mix(in srgb, var(--accent) 8%, transparent); }
-.tl-option.is-selected {
-  background: color-mix(in srgb, var(--accent) 16%, transparent);
-  border-left-color: var(--accent);
-  color: var(--accent-bright);
-}
+.tl-option.is-selected { background: color-mix(in srgb, var(--accent) 16%, transparent); }
+.tlo-mark { color: var(--accent-bright); visibility: hidden; }
+.is-selected .tlo-mark { visibility: visible; }
+.tlo-date { color: var(--muted); }
+/* selected row's tinted background needs brighter metadata for AA contrast */
+.is-selected .tlo-date { color: var(--text); }
+.tlo-read { color: var(--yellow); text-align: right; }
+.tl-projects .tlo-read { text-align: left; }
+.tlo-title { color: var(--text); }
+.is-selected .tlo-title { color: var(--accent-bright); }
+/* topic/category color: project categories reuse the site-wide .cat-* system
+   (--cat); post tags fall back to a deterministic hash bucket (--tlo-c) */
+.tlo-cat { color: var(--cat, var(--tlo-c, var(--secondary))); }
+.tlo-c0 { --tlo-c: var(--cyan); }
+.tlo-c1 { --tlo-c: var(--pink); }
+.tlo-c2 { --tlo-c: var(--yellow); }
+.tlo-c3 { --tlo-c: var(--success); }
+.tlo-c4 { --tlo-c: var(--secondary); }
+/* project lifecycle states mirror the landing page's status colors */
+.tl-option .st-production { color: var(--success); }
+.tl-option .st-maintained { color: var(--yellow); }
+.tl-option .st-prototype { color: var(--cyan); }
+.tl-option .st-archived { color: var(--muted); }
 .tl-empty { padding: 7px 10px; color: var(--muted); font-size: 13px; }
 .tl-preview {
   border: 1px solid var(--border);
@@ -563,11 +686,53 @@ body.tour-prompt form[data-prompt] {
   background: color-mix(in srgb, var(--surface) 35%, transparent);
   overflow: auto;
   min-height: 0;
+  max-height: calc(52vh + 25px); /* match list column height, scroll the rest */
 }
 .tl-preview h3 { margin: 0 0 6px; color: var(--text-bright); font-size: 1.05rem; }
-.tl-preview .tl-meta { margin: 0 0 10px; font-size: 12px; color: var(--secondary); }
-.tl-preview .tl-excerpt { margin: 0 0 10px; color: var(--text); font-size: 13px; }
+.tl-preview h3::before { content: '# '; color: var(--accent); }
+.tl-preview .tl-meta { margin: 0 0 4px; font-size: 12px; color: var(--secondary); }
+.tl-preview .tl-excerpt { margin: 10px 0 0; color: var(--text); font-size: 13px; line-height: 1.55; }
 .tl-preview .tl-tags { margin: 0; font-size: 12px; color: var(--muted); }
+.tlp-file { margin: 0 0 10px; font-size: 11px; color: var(--muted); }
+.tlp-label {
+  margin: 0 0 4px;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.tlp-toc { margin: 14px 0 0; }
+.tlp-toc ol { list-style: none; margin: 0; padding: 0; }
+.tlp-toc li {
+  font-size: 12.5px;
+  padding: 2px 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+/* toc entries are deep links into the post; body text stays text-colored,
+   only the number reads as the link affordance */
+.tl-preview .tlp-toc a { color: var(--text); text-decoration: none; }
+.tl-preview .tlp-toc a:hover { color: var(--accent-bright); }
+.tl-preview .tlp-toc a:hover .tlp-n { text-decoration: underline; }
+.tlp-n { color: var(--cyan); margin-right: 8px; }
+.tlp-open { margin: 14px 0 0; text-align: right; font-size: 12px; }
+.tlp-open a { color: var(--link); }
+.tl-sort {
+  font: inherit;
+  font-size: 12px;
+  padding: 3px 8px;
+  color: var(--cyan);
+  background: color-mix(in srgb, var(--surface) 60%, transparent);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.tl-sort:focus-visible { outline: none; border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent-glow); }
+.tl-keys { font-size: 11px; color: var(--muted); white-space: pre; overflow: hidden; }
+.tl-keys b { color: var(--accent-bright); font-weight: 700; }
+@media (hover: none) { .tl-keys { display: none; } }
 .tl-tag {
   font: inherit;
   font-size: 12px;
@@ -606,6 +771,13 @@ body.tour-prompt form[data-prompt] {
 @media (max-width: 640px) {
   .tl-body { grid-template-columns: minmax(0, 1fr); }
   .tl-results { max-height: 34vh; }
+  .tl-preview { max-height: 38vh; }
+  /* narrow list: title only, the preview carries the metadata */
+  .tl-posts, .tl-projects { --tl-grid: 12px minmax(0, 1fr); }
+  .tl-cols, .tlo-date, .tlo-cat, .tlo-read { display: none; }
+  /* filter bar wraps: query keeps the first row, controls drop below */
+  .tl-input { flex-wrap: wrap; }
+  .tl-query { flex: 1 1 12ch; }
 }
 
 /* ---- Status telemetry buffer -------------------------------------- */
@@ -688,6 +860,20 @@ form[data-prompt] label::after {
   animation: term-blink 1.1s steps(1) infinite;
 }
 @keyframes term-blink { 50% { opacity: 0; } }
+/* idle legend at the right of the prompt line; fades while typing */
+form[data-prompt] { position: relative; }
+.prompt-hint {
+  position: absolute;
+  right: 14px;
+  bottom: 10px;
+  font-size: 11px;
+  color: var(--muted);
+  pointer-events: none;
+  user-select: none;
+  transition: opacity 0.15s ease;
+}
+form[data-prompt]:focus-within .prompt-hint { opacity: 0; }
+@media (max-width: 767px) { .prompt-hint { display: none; } }
 
 /* ---- Statusline (footer[role="contentinfo"]) ---------------------- */
 footer[role="contentinfo"] {
@@ -701,6 +887,7 @@ footer[role="contentinfo"] {
   background: color-mix(in srgb, var(--bg-elevated) 85%, transparent);
   border-top: 1px solid var(--border);
   overflow: hidden;
+  white-space: nowrap; /* segments truncate like tmux, never wrap mid-word */
 }
 /* session/workspace label segment */
 footer[role="contentinfo"]::before {
@@ -825,6 +1012,9 @@ noscript a { color: var(--link); }
     padding-bottom: 48px;
   }
   .rz { display: none; }
+  /* statusline: drop low-value segments so branch + clock stay visible */
+  footer[role="contentinfo"] .sl-enc,
+  footer[role="contentinfo"] [data-sha] { display: none; }
   nav[aria-label="workspaces"] {
     position: fixed;
     left: 0;

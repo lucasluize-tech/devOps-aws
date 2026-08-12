@@ -37,6 +37,27 @@ test('dragging the sidebar divider resizes the sidebar and persists', async ({ p
   expect(Math.abs(persisted - after)).toBeLessThan(4);
 });
 
+test('telescope vim keys: esc unlocks j/k, s flips sort, / refocuses filter', async ({ page }) => {
+  await page.goto('/posts.html');
+  const listbox = page.getByRole('listbox', { name: 'posts results' });
+  const options = listbox.getByRole('option');
+  const firstTitle = await options.first().textContent();
+  // focus starts in the fuzzy input; Escape hands it to the list
+  await page.keyboard.press('Escape');
+  await expect(listbox).toBeFocused();
+  await page.keyboard.press('j');
+  await expect(options.nth(1)).toHaveAttribute('aria-selected', 'true');
+  await page.keyboard.press('k');
+  await expect(options.first()).toHaveAttribute('aria-selected', 'true');
+  // s reverses the sort: a different post now heads the list
+  await page.keyboard.press('s');
+  await expect(page.getByRole('button', { name: 'toggle sort order' })).toHaveText('sort:oldest');
+  await expect(options.first()).not.toHaveText(firstTitle);
+  // / returns focus to the filter input
+  await page.keyboard.press('/');
+  await expect(page.getByRole('combobox', { name: 'fuzzy filter posts' })).toBeFocused();
+});
+
 test('keyboard on the telescope divider widens the results pane', async ({ page }) => {
   await page.goto('/posts.html');
   const results = page.getByRole('listbox', { name: 'posts results' });
@@ -78,8 +99,8 @@ test('prompt cwd follows navigation (prompt + statusline)', async ({ page }) => 
   await page.getByRole('navigation', { name: 'workspaces' })
     .getByRole('link', { name: 'projects', exact: true }).click();
   await expect(page).toHaveURL(/\/projects\.html$/);
-  // prompt label + statusline path both show the new cwd
-  await expect(page.getByText('~/projects', { exact: true })).toHaveCount(2);
+  // prompt label + statusline path + picker pane title all show the new cwd
+  await expect(page.getByText('~/projects', { exact: true })).toHaveCount(3);
   // and the click echoed its command into the scrollback
   await expect(page.getByText('> cd projects', { exact: true })).toBeVisible();
 });

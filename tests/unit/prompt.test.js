@@ -1,5 +1,5 @@
 // tests/unit/prompt.test.js - pure parseCommand() logic (no DOM needed).
-const { parseCommand } = require('../../app/prompt.js');
+const { parseCommand, completeCommand } = require('../../app/prompt.js');
 
 const m = {
   posts: [{ slug: 'proxmox-lab', title: 'P' }],
@@ -11,6 +11,36 @@ test('nav commands', () => {
   expect(parseCommand('cd projects', m)).toEqual({ kind: 'nav', url: '/projects.html' });
   expect(parseCommand('cat proxmox-lab', m)).toEqual({ kind: 'nav', url: '/posts/proxmox-lab.html' });
   expect(parseCommand('whoami', m)).toEqual({ kind: 'nav', url: '/about.html' });
+});
+
+test('cd .. goes up one level; cd - goes back; cd ~ goes home', () => {
+  expect(parseCommand('cd ..', m, '/posts/proxmox-lab.html')).toEqual({ kind: 'nav', url: '/posts.html' });
+  expect(parseCommand('cd ..', m, '/projects/ha-proxmox.html')).toEqual({ kind: 'nav', url: '/projects.html' });
+  expect(parseCommand('cd ..', m, '/about.html')).toEqual({ kind: 'nav', url: '/index.html' });
+  expect(parseCommand('cd -', m)).toEqual({ kind: 'back' });
+  expect(parseCommand('cd ~', m)).toEqual({ kind: 'nav', url: '/index.html' });
+});
+
+describe('completeCommand (tab)', () => {
+  test('completes a unique command with a trailing space', () => {
+    expect(completeCommand('op', m)).toEqual({ value: 'open ' });
+  });
+  test('extends ambiguous input to the longest common prefix', () => {
+    expect(completeCommand('c', m).candidates).toEqual(['cat', 'cd', 'clear', 'contact']);
+  });
+  test('completes slugs and workspaces after open/cd/cat', () => {
+    expect(completeCommand('open prox', m)).toEqual({ value: 'open proxmox-lab' });
+    expect(completeCommand('cat ha-', m)).toEqual({ value: 'cat ha-proxmox' });
+    expect(completeCommand('cd ro', m)).toEqual({ value: 'cd roadmap' });
+  });
+  test('extends an empty arg to the common prefix, then lists candidates', () => {
+    expect(completeCommand('ls ', m)).toEqual({ value: 'ls p' });
+    expect(completeCommand('ls p', m).candidates).toEqual(['posts', 'projects']);
+  });
+  test('returns null with no matches or empty input', () => {
+    expect(completeCommand('zz', m)).toBeNull();
+    expect(completeCommand('  ', m)).toBeNull();
+  });
 });
 
 test('ls prints slugs', () => {
@@ -53,8 +83,8 @@ describe('easter eggs', () => {
     expect(parseCommand('coffee', m).cls).toContain('lolcat');
     expect(parseCommand('cmatrix', m).lines[0]).toMatch(/neo/);
   });
-  test('man lucas has a manual; man other does not', () => {
-    expect(parseCommand('man lucas', m).lines.join('\n')).toMatch(/LUCAS\(1\)/);
+  test('man lucas opens the about page; man other does not', () => {
+    expect(parseCommand('man lucas', m)).toEqual({ kind: 'nav', url: '/about.html' });
     expect(parseCommand('man tar', m).lines[0]).toMatch(/No manual entry/);
   });
 });

@@ -227,75 +227,124 @@ export function runMotd(el) {
 
 const PICKER_KEYS = ['title', 'excerpt', 'goal', 'tags'];
 
-// initTelescope(el, items, kind): telescope.nvim-style picker inside `el`.
-// Results (left, listbox), preview (right), fuzzy input (bottom), tag dropdown.
+// Deterministic tag -> palette color bucket for the list's topic column.
+// Keep in sync with the build-time copy in scripts/lib/pages.js.
+function tagColor(tag) {
+  let h = 0;
+  for (let i = 0; i < tag.length; i++) h = (h * 31 + tag.charCodeAt(i)) >>> 0;
+  return h % 5;
+}
+
+// "2026-07-02" -> "07-02-26"
+function fmtDate(date) {
+  const [y, m, d] = String(date || '').split('-');
+  return y && m && d ? `${m}-${d}-${y.slice(2)}` : String(date || '');
+}
+
+// initTelescope(el, items, kind): yazi/fzf-style content browser inside `el`.
+// eza-like column list (left, listbox), Glow-like preview (right), fuzzy
+// input + tag/sort controls (bottom), keyboard hints strip. j/k etc. work
+// once focus leaves the input (Escape); '/' returns to it.
 export function initTelescope(el, items, kind) {
   if (!el || !items) return;
-  el.classList.add('telescope');
+  const isPosts = kind === 'posts';
+  el.classList.add('telescope', isPosts ? 'tl-posts' : 'tl-projects');
   const tags = ['all', ...getTagsFromManifest(items)];
   const tagOptions = tags
     .map((t) => `<option value="${escapeHtml(t)}">${t === 'all' ? 'all tags' : escapeHtml(t)}</option>`)
     .join('');
+  const cols = isPosts
+    ? '<span class="tlo-mark"></span><span class="tlo-date">date</span><span class="tlo-cat">topic</span><span class="tlo-read">read</span><span class="tlo-title">title</span>'
+    : '<span class="tlo-mark"></span><span class="tlo-cat">category</span><span class="tlo-read">state</span><span class="tlo-title">title</span>';
   el.innerHTML = `
 <div class="tl-body">
-  <ul class="tl-results" id="tl-listbox" role="listbox" aria-label="${kind} results"></ul>
+  <div class="tl-list">
+    <div class="tl-cols" aria-hidden="true">${cols}</div>
+    <ul class="tl-results" id="tl-listbox" role="listbox" tabindex="0" aria-label="${kind} results"></ul>
+  </div>
   <div class="rz rz-tl" data-resize="tl" role="separator" aria-orientation="vertical" tabindex="0" aria-label="resize results"></div>
   <div class="tl-preview" aria-live="polite"></div>
 </div>
 <div class="tl-input">
-  <span class="tl-prompt">&gt;</span>
+  <span class="tl-prompt">/</span>
   <input type="text" class="tl-query" role="combobox" aria-controls="tl-listbox"
          aria-expanded="true" autocomplete="off" spellcheck="false"
          aria-label="fuzzy filter ${kind}" placeholder="type to filter…">
   <select class="tl-tag" aria-label="filter by tag">${tagOptions}</select>
+  <button type="button" class="tl-sort" aria-label="toggle sort order"></button>
   <span class="tl-count"></span>
-</div>`;
+</div>
+<div class="tl-keys" aria-hidden="true"><b>j/k</b> move  <b>↵</b> open  <b>/</b> filter  <b>t/T</b> tag  <b>s</b> sort  <b>esc</b> list</div>`;
 
   const resultsEl = el.querySelector('.tl-results');
   const previewEl = el.querySelector('.tl-preview');
   const tagEl = el.querySelector('.tl-tag');
   const inputEl = el.querySelector('.tl-query');
   const countEl = el.querySelector('.tl-count');
+  const sortEl = el.querySelector('.tl-sort');
 
   const total = items.length;
+  const sortLabels = isPosts ? ['sort:newest', 'sort:oldest'] : ['sort:featured', 'sort:reversed'];
   let activeTag = 'all';
+  let sortFlipped = false;
   let current = items.slice();
   let sel = 0;
+  sortEl.textContent = sortLabels[0];
 
   const meta = (item) => {
-    if (kind === 'projects') {
+    if (!isPosts) {
       return [item.category, item.lifecycle, item.provenance].filter(Boolean).join(' · ');
     }
-    return [item.date, item.readingTime ? item.readingTime + ' min' : '']
+    return [item.date, item.readingTime ? item.readingTime + ' min read' : '']
       .filter(Boolean).join(' · ');
   };
 
   const renderPreview = () => {
     const item = current[sel];
     if (!item) { previewEl.innerHTML = '<p class="muted">no matches</p>'; return; }
-    const tagline = (item.tags || item.tech_stack || []).join(' ');
-    previewEl.innerHTML = `<h3>${escapeHtml(item.title)}</h3>
+    const tagline = (item.tags || item.tech_stack || []).join(' · ');
+    const base = item.url ? `/${String(item.url).replace(/^\//, '')}` : '';
+    const toc = (item.headings || []).slice(0, 8)
+      .map((h, i) => `<li><a href="${base}#${escapeHtml(h.id)}"><span class="tlp-n">${String(i + 1).padStart(2, '0')}</span>${escapeHtml(h.t)}</a></li>`)
+      .join('');
+    previewEl.innerHTML = `<p class="tlp-file">${escapeHtml(item.slug)}.md</p>
+<h3>${escapeHtml(item.title)}</h3>
 <p class="tl-meta">${escapeHtml(meta(item))}</p>
+${tagline ? `<p class="tl-tags">${escapeHtml(tagline)}</p>` : ''}
 <p class="tl-excerpt">${escapeHtml(item.excerpt || item.goal || '')}</p>
-${tagline ? `<p class="tl-tags">${escapeHtml(tagline)}</p>` : ''}`;
+${toc ? `<div class="tlp-toc"><p class="tlp-label">contents</p><ol>${toc}</ol></div>` : ''}
+${base ? `<p class="tlp-open"><a href="${base}">open ↵</a></p>` : ''}`;
+  };
+
+  const rowCells = (it) => {
+    const title = `<span class="tlo-title">${escapeHtml(it.title)}</span>`;
+    const mark = '<span class="tlo-mark" aria-hidden="true">▸</span>';
+    if (!isPosts) {
+      const catCls = `cat-${String(it.category || '').toLowerCase().replace(/\s+/g, '-')}`;
+      return `${mark}<span class="tlo-cat ${catCls}">${escapeHtml(it.category || '')}</span><span class="tlo-read st-${escapeHtml(it.lifecycle || '')}">${escapeHtml(it.lifecycle || '')}</span>${title}`;
+    }
+    const topic = (it.tags || [])[0] || '';
+    return `${mark}<span class="tlo-date">${escapeHtml(fmtDate(it.date))}</span><span class="tlo-cat tlo-c${tagColor(topic)}">${escapeHtml(topic)}</span><span class="tlo-read">${it.readingTime ? it.readingTime + 'm' : ''}</span>${title}`;
   };
 
   const renderResults = () => {
     resultsEl.innerHTML = current
       .map((it, i) => `<li class="tl-option${i === sel ? ' is-selected' : ''}" role="option"
-        id="tl-opt-${i}" aria-selected="${i === sel}" data-i="${i}">${escapeHtml(it.title)}</li>`)
+        id="tl-opt-${i}" aria-selected="${i === sel}" data-i="${i}">${rowCells(it)}</li>`)
       .join('') || '<li class="tl-empty" role="option" aria-selected="false">no matches</li>';
-    countEl.textContent = `[${current.length}/${total}]`;
-    // Combobox pattern: activedescendant lives on the focused input, not the
-    // listbox, so screen readers announce selection changes as arrows move.
-    inputEl.setAttribute('aria-activedescendant', current.length ? `tl-opt-${sel}` : '');
+    countEl.textContent = `${current.length}/${total}`;
+    // Combobox pattern: activedescendant lives on the focused element (input
+    // or listbox), so screen readers announce selection changes as keys move.
+    const active = current.length ? `tl-opt-${sel}` : '';
+    inputEl.setAttribute('aria-activedescendant', active);
+    resultsEl.setAttribute('aria-activedescendant', active);
     const selEl = resultsEl.querySelector('.is-selected');
     if (selEl) selEl.scrollIntoView({ block: 'nearest' });
     renderPreview();
   };
 
   const refresh = () => {
-    const base = filterByTag(items, activeTag);
+    const base = filterByTag(sortFlipped ? items.slice().reverse() : items, activeTag);
     current = fuzzyMatch(inputEl.value, base, PICKER_KEYS);
     sel = 0;
     renderResults();
@@ -309,6 +358,12 @@ ${tagline ? `<p class="tl-tags">${escapeHtml(tagline)}</p>` : ''}`;
     navigate(item.url);
   };
 
+  const toggleSort = () => {
+    sortFlipped = !sortFlipped;
+    sortEl.textContent = sortLabels[+sortFlipped];
+    refresh();
+  };
+
   inputEl.addEventListener('input', refresh);
   const move = (d) => {
     if (!current.length) return;
@@ -319,6 +374,25 @@ ${tagline ? `<p class="tl-tags">${escapeHtml(tagline)}</p>` : ''}`;
     if (e.key === 'ArrowDown') { e.preventDefault(); move(1); }
     else if (e.key === 'ArrowUp') { e.preventDefault(); move(-1); }
     else if (e.key === 'Enter') { e.preventDefault(); go(); }
+    else if (e.key === 'Escape') { e.preventDefault(); resultsEl.focus({ preventScroll: true }); }
+  });
+  // vim-style keys anywhere in the browser once focus leaves the input
+  el.addEventListener('keydown', (e) => {
+    if (e.target === inputEl || e.target === tagEl || e.target.closest('.rz')) return;
+    const k = e.key;
+    if (k === 'j' || k === 'ArrowDown') { e.preventDefault(); move(1); }
+    else if (k === 'k' || k === 'ArrowUp') { e.preventDefault(); move(-1); }
+    else if (k === 'Enter') { e.preventDefault(); go(); }
+    else if (k === '/') { e.preventDefault(); inputEl.focus({ preventScroll: true }); }
+    else if (k === 't' || k === 'T') {
+      // t cycles forward, T backward - passing a tag is not a dead end
+      e.preventDefault();
+      const n = tagEl.options.length;
+      tagEl.selectedIndex = (tagEl.selectedIndex + (k === 't' ? 1 : n - 1)) % n;
+      tagEl.dispatchEvent(new Event('change'));
+    } else if (k === 's') { e.preventDefault(); toggleSort(); }
+    else if (k === 'g') { e.preventDefault(); sel = 0; renderResults(); }
+    else if (k === 'G') { e.preventDefault(); sel = Math.max(0, current.length - 1); renderResults(); }
   });
   resultsEl.addEventListener('click', (e) => {
     const li = e.target.closest('.tl-option');
@@ -331,6 +405,7 @@ ${tagline ? `<p class="tl-tags">${escapeHtml(tagline)}</p>` : ''}`;
     activeTag = tagEl.value;
     refresh();
   });
+  sortEl.addEventListener('click', toggleSort);
 
   refresh();
   // preventScroll: on mobile, autofocusing the input otherwise scrolls #pane
