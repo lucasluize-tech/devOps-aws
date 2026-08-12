@@ -12,7 +12,7 @@ const { renderMarkdown, extractScreenshotSlot, stripLeadingH1, initHighlighter }
 const {
   ORIGIN, pageHtml, postPane, projectPane, postsListPane, projectsListPane, galleryHtml,
   aboutPane, roadmapPane, pickerPane,
-  introPane, statusSnapshot, featuredProjectsPane, latestPostsPane,
+  introPane, featuredProjectsPane, latestPostsPane,
 } = require('./lib/pages');
 
 // Branch for the statusline segment: CI provides GITHUB_REF_NAME; local
@@ -144,7 +144,7 @@ async function main() {
     title: 'Lucas Luize - DevOps Engineer', bodyClass: 'page-index', active: 'index.html',
     description: 'Cloud DevOps portfolio, blog, and projects by Lucas Luize.',
     data: { kind: 'index' },
-    pane: introPane() + statusSnapshot() + featuredProjectsPane(manifestProjects) + latestPostsPane(manifestPosts),
+    pane: introPane() + featuredProjectsPane(manifestProjects) + latestPostsPane(manifestPosts),
   });
   corePage('posts.html', {
     title: 'Posts - Lucas Luize', bodyClass: 'page-posts', active: 'posts.html',

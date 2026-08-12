@@ -191,29 +191,35 @@ function motdBlock() {
 // writing. Dense and scan-friendly; projects get the richer treatment
 // (running systems), posts read as filesystem rows (documentation).
 
+// Two-pane hero (~60/40): identity left, SESSION panel right - two tmux
+// panes. The panel carries only what the identity column doesn't (no
+// role/focus duplication).
 function introPane() {
   return `<section class="intro">${motdBlock()}
+<div class="hero">
+<div class="hero-id">
 <h1>Lucas Luize</h1>
 <p class="intro-role">Cloud DevOps Engineer</p>
-<p class="intro-domains">Infrastructure · Linux · Automation · Networking</p>
 <p class="intro-human">I build and automate infrastructure, troubleshoot the weird edge cases, and write down what I learn.</p>
+</div>
+${sessionPanel()}
+</div>
 </section>`;
 }
 
-function statusSnapshot() {
+function sessionPanel() {
   const row = (k, v) => `<div class="snap-row"><span class="snap-key">${esc(k)}</span><span class="snap-val">${v}</span></div>`;
-  return `<section class="snapshot" aria-label="status">
-<h2 class="snapshot-title">status</h2>
-${row('role', 'Cloud DevOps Engineer')}
-${row('focus', 'infrastructure · automation · networking · linux')}
-${row('stack', 'AWS · Terraform · Proxmox · Tailscale · GitHub Actions')}
-${row('status', '<span class="snap-dot" aria-hidden="true">●</span> building — homelab automation + secure cloud infrastructure')}
+  return `<section class="snapshot" aria-label="session">
+<h2 class="snapshot-title">session</h2>
+${row('stack', 'AWS · Terraform · Linux · Proxmox · Tailscale')}
+${row('focus', 'infra automation · networking · reliability')}
+${row('current', '<span class="snap-dot" aria-hidden="true">●</span> building secure cloud + homelab infrastructure')}
 </section>`;
 }
 
 function featuredProjectsPane(projects) {
   const cards = (projects || []).slice(0, 3).map((p) => `<a class="feat-card" href="/projects/${attr(p.slug)}.html">
-<span class="feat-head"><span class="feat-name">${esc(p.title)}</span><span class="feat-status status-${esc(p.lifecycle)}">● ${esc(p.lifecycle)}</span></span>
+<span class="feat-head"><span class="feat-name"><span class="feat-cat">[${esc(String(p.category || '').toUpperCase())}]</span> ${esc(p.title)}</span><span class="feat-status status-${esc(p.lifecycle)}">● ${esc(p.lifecycle)}</span></span>
 <span class="feat-goal">${esc(p.goal)}</span>
 <span class="feat-tech">${(p.tech_stack || []).slice(0, 5).map((t) => `<span class="tech-chip">${esc(t)}</span>`).join('')}</span>
 </a>`).join('');
@@ -232,6 +238,7 @@ function latestPostsPane(posts) {
   return `<section class="latest" aria-label="latest writing">
 <h2 class="sec-label">Writing</h2>
 <p class="ls-cmd muted">$ ls ./posts --latest</p>
+<div class="post-rows-head" aria-hidden="true"><span>date</span><span>topic</span><span>read</span><span>title</span></div>
 <ul class="post-rows">${rows}</ul>
 <p class="view-all"><a href="/posts.html">view all writing →</a></p>
 </section>`;
@@ -334,5 +341,5 @@ module.exports = {
   ORIGIN, NAV, esc,
   pageHtml, postPane, projectPane, postsListPane, projectsListPane, galleryHtml,
   aboutPane, roadmapPane, motdBlock, pickerPane,
-  introPane, statusSnapshot, featuredProjectsPane, latestPostsPane,
+  introPane, featuredProjectsPane, latestPostsPane,
 };

@@ -75,7 +75,7 @@ const MOTD_LINES = [
   '',
   '❯ whoami',
   'lucas — cloud devops engineer',
-  '❯ uname -a',
+  '❯ printf "$STACK"',
   'aws · terraform · linux · networking · automation · ci/cd',
   '❯ help',
   'click a workspace or use the shell below. try `projects`, `posts`, or `about`.',
