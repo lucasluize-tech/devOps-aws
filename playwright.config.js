@@ -1,9 +1,12 @@
 module.exports = {
   testDir: 'tests/e2e',
   testMatch: '**/*.test.js',
-  // Default worker count thrashes the single python http.server (page loads
-  // time out, drag/typing tests flake). 2 workers is fast (~16s) and green.
-  workers: 2,
+  // One worker: this suite runs on a shared dev box (load avg can sit >10 with
+  // other sessions running). Parallel workers starve the axe scans + CPU-
+  // throttled perf tests into 30s+ timeouts. Serial is ~1min and deterministic.
+  workers: 1,
+  // Headroom for axe on shiki-dense reader DOMs under host load (slow != broken).
+  timeout: 60_000,
   use: {
     baseURL: 'http://localhost:8000',
   },

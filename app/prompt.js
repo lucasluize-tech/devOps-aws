@@ -40,7 +40,28 @@ const HELP_LINES = [
   '  whoami               about page',
   '  status               session telemetry',
   '  contact              start the contact wizard',
+  '  eggs                 fun things to try',
   '  clear                clear this scrollback',
+  '  ctrl+/               focus this prompt from anywhere',
+];
+
+const EGG_LINES = [
+  'fun things to try:',
+  '  sudo hire lucas      fortune      coffee',
+  '  rm -rf /             man lucas    uname -a',
+  '  sl                   cmatrix      neofetch',
+  'more hatching soon.',
+];
+
+const TRAIN_LINES = [
+  '      ====        ________ ',
+  '  _D _|  |_______/        \\__I_I_____===__|____',
+  '   |(_)---  |   H\\________/ |   |        =|___ _',
+  '   /     |  |   H  |  |     |   |         ||_| |',
+  '  |      |  |   H  |__------------------| [___] ',
+  '  | ________|___H__/__|_____/[][]~\\_______|     ',
+  '  |/ |   |-----------I_____I [][] []  D   |=====',
+  'choo choo. (sl: you meant ls, but enjoy the ride)',
 ];
 
 function findSlug(list, slug) {
@@ -122,8 +143,14 @@ export function parseCommand(input, manifest) {
       return { kind: 'print', lines: [FORTUNES[Math.floor(Math.random() * FORTUNES.length)]] };
     case 'uptime':
       return { kind: 'print', lines: ['up 3 years, 7 shipped projects, uncountable cups of coffee'] };
+    case 'eggs':
+      return { kind: 'print', lines: EGG_LINES.slice() };
     case 'coffee':
-      return { kind: 'print', lines: ['   ( (', '    ) )', '  ........', '  |      |]', '  \\      /', "   `----'", 'brewing...'] };
+      return { kind: 'print', cls: 'sb-line lolcat', lines: ['   ( (', '    ) )', '  ........', '  |      |]', '  \\      /', "   `----'", 'brewing...'] };
+    case 'sl':
+      return { kind: 'print', cls: 'sb-line lolcat', lines: TRAIN_LINES.slice() };
+    case 'cmatrix':
+      return { kind: 'print', cls: 'sb-line sb-ok', lines: ['wake up, neo...', 'this terminal only rains sixteen colors. try `sl` instead.'] };
     case 'uname':
       return { kind: 'print', lines: ['Linux devops 6.8.0-lucas #1 SMP PREEMPT x86_64 GNU/Linux'] };
     case 'man': {
@@ -349,6 +376,29 @@ export function initPrompt() {
     const manifest = (window.__PAGE__ && window.__PAGE__.manifest) || { posts: [], projects: [] };
     act(parseCommand(text, manifest));
   });
+
+  // Ctrl+/ focuses the prompt from anywhere (advertised in `help`).
+  document.addEventListener('keydown', (event) => {
+    if (event.ctrlKey && !event.metaKey && !event.altKey && event.key === '/') {
+      event.preventDefault();
+      input.focus({ preventScroll: true });
+    }
+  });
+
+  // Tour handoff (buffers.js): print the tip + hand focus to the prompt.
+  document.addEventListener('prompt:tip', (event) => {
+    if (event.detail && event.detail.text) appendLine(event.detail.text, 'sb-line sb-ok');
+    input.focus({ preventScroll: true });
+  });
+
+  // Autofocus on landing (desktop only - mobile would pop the keyboard), but
+  // never steal focus from a buffer that claimed it first (telescope query).
+  if (
+    typeof matchMedia === 'function' && matchMedia('(min-width: 768px)').matches &&
+    (!document.activeElement || document.activeElement === document.body)
+  ) {
+    input.focus({ preventScroll: true });
+  }
 
   // Click echo: clicking a workspace prints the equivalent command - the
   // mouse-first way visitors discover the hidden command interface. Runs

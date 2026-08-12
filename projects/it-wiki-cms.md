@@ -1,7 +1,7 @@
 ---
 title: "IT Wiki + CMS"
 slug: "it-wiki-cms"
-category: "Infra"
+category: "Docs"
 lifecycle: "production"
 provenance: "prod"
 featured_order: 3

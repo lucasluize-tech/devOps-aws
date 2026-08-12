@@ -86,41 +86,106 @@ const MOTD_LINES = [
 const BANNER_START = 2;
 const BANNER_END = 7;
 
+// First-visit boot theatre, typed before the MOTD (~0.6s, skipped on repeat
+// visits and reduced-motion alongside the MOTD itself).
+const BOOT_LINES = [
+  '❯ ssh lucas@devops.lucasluize.com',
+  'connecting... ok',
+  'authenticating... ok',
+  'starting zsh...',
+];
+
+// Final MOTD render: rainbow banner block + green ❯ prompt glyphs (matching
+// the real prompt below). The banner span is inline-block with tight
+// line-height so the ASCII rows actually touch.
 function renderMotdFinal(el) {
   el.textContent = '';
-  const span = document.createElement('span');
-  span.className = 'lolcat';
-  span.textContent = MOTD_LINES.slice(BANNER_START, BANNER_END).join('\n');
-  el.append(
-    MOTD_LINES.slice(0, BANNER_START).join('\n') + '\n',
-    span,
-    '\n' + MOTD_LINES.slice(BANNER_END).join('\n')
-  );
+  const frag = document.createDocumentFragment();
+  const prose = (lines) => {
+    lines.forEach((line, i) => {
+      if (i) frag.append('\n');
+      if (line.startsWith('❯')) {
+        const ps = document.createElement('span');
+        ps.className = 'motd-ps';
+        ps.textContent = '❯';
+        frag.append(ps, line.slice(1));
+      } else {
+        frag.append(line);
+      }
+    });
+  };
+  prose(MOTD_LINES.slice(0, BANNER_START));
+  frag.append('\n');
+  const banner = document.createElement('span');
+  banner.className = 'lolcat motd-banner';
+  banner.textContent = MOTD_LINES.slice(BANNER_START, BANNER_END).join('\n');
+  frag.append(banner, '\n');
+  prose(MOTD_LINES.slice(BANNER_END));
+  el.append(frag);
+}
+
+// ---- First-visit tour: spotlight nav, then the prompt, then a tip --------
+
+function markTourDone() {
+  try { sessionStorage.setItem('tourDone', '1'); } catch (_) { /* private mode */ }
+}
+
+// runTour(): two quick focus-lens beats (sidebar, then prompt - everything
+// else blurs) ending with a durable tip line in the scrollback + prompt focus.
+// Any interaction cancels it; runs once per session; skipped on reduced-motion.
+function runTour() {
+  let seen = false;
+  try { seen = !!sessionStorage.getItem('tourDone'); } catch (_) { /* ignore */ }
+  if (seen || reducedMotion()) return;
+  markTourDone();
+  const body = document.body;
+  const timers = [];
+  const cleanup = () => {
+    body.classList.remove('tour-nav', 'tour-prompt');
+    for (const t of timers) clearTimeout(t);
+    removeEventListener('keydown', cleanup);
+    removeEventListener('pointerdown', cleanup);
+  };
+  addEventListener('keydown', cleanup);
+  addEventListener('pointerdown', cleanup);
+  body.classList.add('tour-nav');
+  timers.push(setTimeout(() => {
+    body.classList.remove('tour-nav');
+    body.classList.add('tour-prompt');
+  }, 1100));
+  timers.push(setTimeout(() => {
+    cleanup();
+    document.dispatchEvent(new CustomEvent('prompt:tip', {
+      detail: { text: 'tip: ctrl+/ focuses the prompt - try `help` or `eggs`.' },
+    }));
+  }, 2400));
 }
 
 function reducedMotion() {
   return typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
 }
 
-// runMotd(el): types MOTD into `el` over ~1.3s with rAF batching. Any input
-// completes instantly; sessionStorage.motdDone skips; reduced-motion renders
-// final state at once. Zero CLS: reserve final height before typing.
+// runMotd(el): first visit types a short ssh boot sequence (~0.6s), clears,
+// then types the MOTD (~1.3s), then runs the one-time tour. Any input
+// completes instantly (and skips the tour - the visitor is already driving);
+// sessionStorage.motdDone skips; reduced-motion renders final state at once.
+// Zero CLS: height is reserved by CSS (.motd min-height, font-relative).
 export function runMotd(el) {
   if (!el) return;
   const finalText = MOTD_LINES.join('\n');
-  // Height is reserved by CSS (.motd min-height, font-relative) so it holds from
-  // first paint and survives the web-font swap -> zero CLS. No JS measurement.
 
   let done = false;
-  const finish = () => {
+  const finish = (interrupted) => {
     if (done) return;
     done = true;
     renderMotdFinal(el);
     try { sessionStorage.setItem('motdDone', '1'); } catch (_) { /* private mode */ }
     teardown();
+    if (interrupted) markTourDone();
+    else runTour();
   };
 
-  const onInterrupt = () => finish();
+  const onInterrupt = () => finish(true);
   const teardown = () => {
     removeEventListener('keydown', onInterrupt);
     removeEventListener('click', onInterrupt);
@@ -136,16 +201,26 @@ export function runMotd(el) {
   addEventListener('click', onInterrupt);
   addEventListener('scroll', onInterrupt, { passive: true });
 
-  const CHARS_PER_FRAME = Math.max(2, Math.ceil(finalText.length / 78)); // ~1.3s @60fps
-  let pos = 0;
-  const step = () => {
-    if (done) return;
-    pos = Math.min(finalText.length, pos + CHARS_PER_FRAME);
-    el.textContent = finalText.slice(0, pos);
-    if (pos >= finalText.length) return finish();
+  // rAF typing stepper: `frames` budgets the duration (~frames/60 seconds).
+  const typeInto = (text, frames, cb) => {
+    const cpf = Math.max(1, Math.ceil(text.length / frames));
+    let pos = 0;
+    const step = () => {
+      if (done) return;
+      pos = Math.min(text.length, pos + cpf);
+      el.textContent = text.slice(0, pos);
+      if (pos >= text.length) { if (cb) cb(); return; }
+      requestAnimationFrame(step);
+    };
     requestAnimationFrame(step);
   };
-  requestAnimationFrame(step);
+
+  typeInto(BOOT_LINES.join('\n'), 36, () => {
+    setTimeout(() => {
+      if (done) return;
+      typeInto(finalText, 78, () => finish(false));
+    }, 250);
+  });
 }
 
 // ---- Telescope fuzzy picker ---------------------------------------------

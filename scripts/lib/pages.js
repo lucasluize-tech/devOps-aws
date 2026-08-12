@@ -21,6 +21,12 @@ function esc(s) {
 
 function attr(s) { return esc(s); }
 
+// catSlug: category -> CSS modifier ('Dev Tools' -> 'dev-tools') so each
+// project type gets its own semantic color (terminal.css .cat-*).
+function catSlug(c) {
+  return String(c || '').toLowerCase().replace(/[^a-z0-9]+/g, '-');
+}
+
 // compactSlugs: {slug,title} only - the prompt engine (app/prompt.js) needs
 // no other fields to resolve `open`/`cat`/`ls`. Keeps window.__PAGE__ small
 // on every page (not just the posts/projects pickers, which already embed
@@ -160,7 +166,7 @@ function projectPane({ title, category, lifecycle, provenance, techStack, goal, 
   return `<div class="reader-split"><article class="project-content">
 <header class="project-header">
 <h1 class="project-title">${esc(title)}</h1>
-<div class="project-pills">${pill('category-tag', category)}${pill(`status-pill status-${esc(lifecycle)}`, lifecycle)}${pill('provenance-pill', provenance)}</div>
+<div class="project-pills">${pill(`category-tag cat-${catSlug(category)}`, category)}${pill(`status-pill status-${esc(lifecycle)}`, lifecycle)}${pill('provenance-pill', provenance)}</div>
 <div class="project-tech">${tech}</div>
 <p class="project-goal">${esc(goal)}</p>
 <div class="project-actions">${actions}</div>
@@ -219,7 +225,7 @@ ${row('current', '<span class="snap-dot" aria-hidden="true">●</span> building 
 
 function featuredProjectsPane(projects) {
   const cards = (projects || []).slice(0, 3).map((p) => `<a class="feat-card" href="/projects/${attr(p.slug)}.html">
-<span class="feat-head"><span class="feat-name"><span class="feat-cat">[${esc(String(p.category || '').toUpperCase())}]</span> ${esc(p.title)}</span><span class="feat-status status-${esc(p.lifecycle)}">● ${esc(p.lifecycle)}</span></span>
+<span class="feat-head"><span class="feat-name"><span class="feat-cat cat-${catSlug(p.category)}">[${esc(String(p.category || '').toUpperCase())}]</span> ${esc(p.title)}</span><span class="feat-status status-${esc(p.lifecycle)}">● ${esc(p.lifecycle)}</span></span>
 <span class="feat-goal">${esc(p.goal)}</span>
 <span class="feat-tech">${(p.tech_stack || []).slice(0, 5).map((t) => `<span class="tech-chip">${esc(t)}</span>`).join('')}</span>
 </a>`).join('');

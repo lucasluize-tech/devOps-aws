@@ -39,6 +39,20 @@ describe('easter eggs', () => {
   test('fortune always prints something', () => {
     for (let i = 0; i < 10; i++) expect(parseCommand('fortune', m).lines[0].length).toBeGreaterThan(0);
   });
+  test('eggs lists the fun commands', () => {
+    const out = parseCommand('eggs', m).lines.join('\n');
+    for (const c of ['sudo hire lucas', 'fortune', 'coffee', 'sl', 'cmatrix']) expect(out).toContain(c);
+  });
+  test('help advertises eggs and ctrl+/', () => {
+    const out = parseCommand('help', m).lines.join('\n');
+    expect(out).toContain('eggs');
+    expect(out).toContain('ctrl+/');
+  });
+  test('sl and coffee ride the rainbow; cmatrix knows neo', () => {
+    expect(parseCommand('sl', m).cls).toContain('lolcat');
+    expect(parseCommand('coffee', m).cls).toContain('lolcat');
+    expect(parseCommand('cmatrix', m).lines[0]).toMatch(/neo/);
+  });
   test('man lucas has a manual; man other does not', () => {
     expect(parseCommand('man lucas', m).lines.join('\n')).toMatch(/LUCAS\(1\)/);
     expect(parseCommand('man tar', m).lines[0]).toMatch(/No manual entry/);
