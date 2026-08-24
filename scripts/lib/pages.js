@@ -196,8 +196,10 @@ function postsListPane(posts) {
 
 // MOTD block for the index pane: runMotd() types into this <pre>. Empty at
 // build time; JS reserves its height before typing (zero CLS).
-function motdBlock() {
-  return `<pre class="motd" aria-label="message of the day"></pre>`;
+// buildTime (ISO) doubles as "last pushed to production": every master push
+// rebuilds and deploys, so the two timestamps are the same event.
+function motdBlock(buildTime) {
+  return `<pre class="motd" aria-label="message of the day"${buildTime ? ` data-build-time="${attr(buildTime)}"` : ''}></pre>`;
 }
 
 // ---- Index landing panes (2026-08-11 landing spec) -----------------------
@@ -208,8 +210,8 @@ function motdBlock() {
 // Two-pane hero (~60/40): identity left, SESSION panel right - two tmux
 // panes. The panel carries only what the identity column doesn't (no
 // role/focus duplication).
-function introPane() {
-  return `<section class="intro">${motdBlock()}
+function introPane(buildTime) {
+  return `<section class="intro">${motdBlock(buildTime)}
 <div class="hero">
 <div class="hero-id">
 <h1>Lucas Luize</h1>

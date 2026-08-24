@@ -65,7 +65,7 @@ export function fuzzyMatch(query, items, keys) {
 // range, help teaches the interface. Keep line count in sync with the .motd
 // min-height in terminal.css (lines x 1.35 line-height).
 const MOTD_LINES = [
-  'Last login: session start on ttys001',
+  'last session: pushed to production',
   '',
   '  __        _____ _     ____ ___  __  __ _____',
   "  \\ \\      / / ____| |   / ___/ _ \\|  \\/  | ____|",
@@ -98,7 +98,20 @@ const BOOT_LINES = [
 // Final MOTD render: rainbow banner block + green ❯ prompt glyphs (matching
 // the real prompt below). The banner span is inline-block with tight
 // line-height so the ASCII rows actually touch.
-function renderMotdFinal(el) {
+// "last session" = the build timestamp stamped on the motd element at build
+// time; the CI build and the production deploy are the same push, so this
+// reads as "last time this site shipped". Falls back to the bare line.
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+function motdLines(el) {
+  const d = new Date((el && el.dataset && el.dataset.buildTime) || NaN);
+  if (isNaN(d)) return MOTD_LINES;
+  const p = (n) => String(n).padStart(2, '0');
+  const lines = MOTD_LINES.slice();
+  lines[0] = `last session: pushed to production ${MONTHS[d.getUTCMonth()]} ${d.getUTCDate()} ${d.getUTCFullYear()}, ${p(d.getUTCHours())}:${p(d.getUTCMinutes())} UTC`;
+  return lines;
+}
+
+function renderMotdFinal(el, motd) {
   el.textContent = '';
   const frag = document.createDocumentFragment();
   const prose = (lines) => {
@@ -114,13 +127,13 @@ function renderMotdFinal(el) {
       }
     });
   };
-  prose(MOTD_LINES.slice(0, BANNER_START));
+  prose(motd.slice(0, BANNER_START));
   frag.append('\n');
   const banner = document.createElement('span');
   banner.className = 'lolcat motd-banner';
-  banner.textContent = MOTD_LINES.slice(BANNER_START, BANNER_END).join('\n');
+  banner.textContent = motd.slice(BANNER_START, BANNER_END).join('\n');
   frag.append(banner, '\n');
-  prose(MOTD_LINES.slice(BANNER_END));
+  prose(motd.slice(BANNER_END));
   el.append(frag);
 }
 
@@ -172,13 +185,14 @@ function reducedMotion() {
 // Zero CLS: height is reserved by CSS (.motd min-height, font-relative).
 export function runMotd(el) {
   if (!el) return;
-  const finalText = MOTD_LINES.join('\n');
+  const motd = motdLines(el);
+  const finalText = motd.join('\n');
 
   let done = false;
   const finish = (interrupted) => {
     if (done) return;
     done = true;
-    renderMotdFinal(el);
+    renderMotdFinal(el, motd);
     try { sessionStorage.setItem('motdDone', '1'); } catch (_) { /* private mode */ }
     teardown();
     if (interrupted) markTourDone();
@@ -194,7 +208,7 @@ export function runMotd(el) {
 
   let skip = false;
   try { skip = !!sessionStorage.getItem('motdDone'); } catch (_) { /* ignore */ }
-  if (skip || reducedMotion()) { renderMotdFinal(el); return; }
+  if (skip || reducedMotion()) { renderMotdFinal(el, motd); return; }
 
   el.textContent = '';
   addEventListener('keydown', onInterrupt);

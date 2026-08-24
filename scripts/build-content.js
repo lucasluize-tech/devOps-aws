@@ -151,7 +151,7 @@ async function main() {
     title: 'Lucas Luize - DevOps Engineer', bodyClass: 'page-index', active: 'index.html',
     description: 'Cloud DevOps portfolio, blog, and projects by Lucas Luize.',
     data: { kind: 'index' },
-    pane: introPane() + featuredProjectsPane(manifestProjects) + latestPostsPane(manifestPosts),
+    pane: introPane(build.time) + featuredProjectsPane(manifestProjects) + latestPostsPane(manifestPosts),
   });
   corePage('posts.html', {
     title: 'Posts - Lucas Luize', bodyClass: 'page-posts', active: 'posts.html',
