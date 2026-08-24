@@ -274,7 +274,7 @@ export function initTelescope(el, items, kind) {
   <button type="button" class="tl-sort" aria-label="toggle sort order"></button>
   <span class="tl-count"></span>
 </div>
-<div class="tl-keys" aria-hidden="true"><b>j/k</b> move  <b>↵</b> open  <b>/</b> filter  <b>t/T</b> tag  <b>s</b> sort  <b>esc</b> list</div>`;
+<div class="tl-keys" aria-hidden="true"><b>j/k</b> move  <b>↵</b> open  <b>/</b> filter  <b>t/T</b> tag  <b>s</b> sort${isPosts ? '' : '  <b>h/l</b> image'}  <b>esc</b> list</div>`;
 
   const resultsEl = el.querySelector('.tl-results');
   const previewEl = el.querySelector('.tl-preview');
@@ -289,21 +289,55 @@ export function initTelescope(el, items, kind) {
   let sortFlipped = false;
   let current = items.slice();
   let sel = 0;
+  let shot = 0;      // screenshot index within the selected project
+  let shotKey = '';  // slug the index belongs to; selection change resets it
   sortEl.textContent = sortLabels[0];
 
-  const meta = (item) => {
-    if (!isPosts) {
-      return [item.category, item.lifecycle, item.provenance].filter(Boolean).join(' · ');
-    }
-    return [item.date, item.readingTime ? item.readingTime + ' min read' : '']
-      .filter(Boolean).join(' · ');
+  // posts-only; the projects preview renders its own status block instead
+  const meta = (item) => [item.date, item.readingTime ? item.readingTime + ' min read' : '']
+    .filter(Boolean).join(' · ');
+
+  // Projects preview: the built artifact first (yazi image pane with h/l
+  // cycling), then a btop-style status block. Posts = read, projects = inspect.
+  const projectPreview = (item, base) => {
+    if (item.slug !== shotKey) { shotKey = item.slug; shot = 0; }
+    const shots = item.screenshots || [];
+    const s = shots[shot];
+    const nav = shots.length > 1
+      ? '<button type="button" class="tlp-nav tlp-prev" aria-label="previous screenshot">‹</button><button type="button" class="tlp-nav tlp-next" aria-label="next screenshot">›</button>'
+      : '';
+    const shotHtml = s ? `<figure class="tlp-shotbox">
+<img src="/projects/images/${escapeHtml(item.slug)}/${escapeHtml(s.file)}" alt="${escapeHtml(s.alt || '')}" loading="lazy">${nav}
+<figcaption class="tlp-shotmeta"><span class="tlp-shotn">${shot + 1}/${shots.length}</span>${escapeHtml(s.caption || s.file)}</figcaption>
+</figure>` : '';
+    const catCls = `cat-${String(item.category || '').toLowerCase().replace(/\s+/g, '-')}`;
+    const rows = [
+      ['state', `<span class="st-${escapeHtml(item.lifecycle || '')}">● ${escapeHtml(item.lifecycle || '')}</span>`],
+      ['category', `<span class="tlo-cat ${catCls}">${escapeHtml(item.category || '')}</span>`],
+      ['source', escapeHtml(item.provenance || '')],
+      ['repo', escapeHtml(item.repo_visibility || '')],
+    ].filter(([, v]) => v);
+    const links = [
+      base ? `<a href="${base}">case study ↵</a>` : '',
+      item.github ? `<a href="${escapeHtml(item.github)}" target="_blank" rel="noopener">github ↗</a>` : '',
+      item.demo ? `<a href="${escapeHtml(item.demo)}" target="_blank" rel="noopener">demo ↗</a>` : '',
+    ].filter(Boolean).join('');
+    return `<p class="tlp-file">${escapeHtml(item.slug)}/</p>
+${shotHtml}
+<h3>${escapeHtml(item.title)}</h3>
+<div class="tlp-status">${rows.map(([k, v]) => `<span class="tlp-k">${k}</span><span class="tlp-v">${v}</span>`).join('')}</div>
+<p class="tl-excerpt">${escapeHtml(item.goal || '')}</p>
+<p class="tlp-label tlp-stack-label">stack</p>
+<div class="tlp-stack">${(item.tech_stack || []).map((t) => `<span>${escapeHtml(t)}</span>`).join('')}</div>
+<p class="tlp-links">${links}</p>`;
   };
 
   const renderPreview = () => {
     const item = current[sel];
     if (!item) { previewEl.innerHTML = '<p class="muted">no matches</p>'; return; }
-    const tagline = (item.tags || item.tech_stack || []).join(' · ');
     const base = item.url ? `/${String(item.url).replace(/^\//, '')}` : '';
+    if (!isPosts) { previewEl.innerHTML = projectPreview(item, base); return; }
+    const tagline = (item.tags || []).join(' · ');
     const toc = (item.headings || []).slice(0, 8)
       .map((h, i) => `<li><a href="${base}#${escapeHtml(h.id)}"><span class="tlp-n">${String(i + 1).padStart(2, '0')}</span>${escapeHtml(h.t)}</a></li>`)
       .join('');
@@ -364,6 +398,13 @@ ${base ? `<p class="tlp-open"><a href="${base}">open ↵</a></p>` : ''}`;
     refresh();
   };
 
+  const cycleShot = (d) => {
+    const shots = (current[sel] && current[sel].screenshots) || [];
+    if (shots.length < 2) return;
+    shot = (shot + d + shots.length) % shots.length;
+    renderPreview();
+  };
+
   inputEl.addEventListener('input', refresh);
   const move = (d) => {
     if (!current.length) return;
@@ -393,6 +434,13 @@ ${base ? `<p class="tlp-open"><a href="${base}">open ↵</a></p>` : ''}`;
     } else if (k === 's') { e.preventDefault(); toggleSort(); }
     else if (k === 'g') { e.preventDefault(); sel = 0; renderResults(); }
     else if (k === 'G') { e.preventDefault(); sel = Math.max(0, current.length - 1); renderResults(); }
+    else if (!isPosts && (k === 'h' || k === 'ArrowLeft')) { e.preventDefault(); cycleShot(-1); }
+    else if (!isPosts && (k === 'l' || k === 'ArrowRight')) { e.preventDefault(); cycleShot(1); }
+  });
+  // mouse fallback for the h/l screenshot cycling
+  previewEl.addEventListener('click', (e) => {
+    const b = e.target.closest('.tlp-nav');
+    if (b) cycleShot(b.classList.contains('tlp-next') ? 1 : -1);
   });
   resultsEl.addEventListener('click', (e) => {
     const li = e.target.closest('.tl-option');

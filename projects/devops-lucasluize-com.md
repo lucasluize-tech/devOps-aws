@@ -19,7 +19,13 @@ tech_stack:
   - "GitHub Actions"
   - "Jest"
   - "Playwright"
-screenshots: []
+screenshots:
+  - file: "landing.png"
+    alt: "devops.lucasluize.com landing page - tmux-style terminal session with identity header and featured projects"
+    caption: "landing.png - tmux session home"
+  - file: "posts-browser.png"
+    alt: "Posts workspace - yazi/fzf-style content browser with fuzzy filter and glow preview"
+    caption: "posts-browser.png - yazi-style posts workspace"
 ---
 
 ## Why

@@ -105,7 +105,9 @@ async function main() {
     .map(({ p, url }) => ({
       slug: p.slug, title: p.data.title, goal: p.data.goal, category: p.data.category,
       lifecycle: p.data.lifecycle, featured_order: p.data.featured_order,
-      provenance: p.data.provenance, tech_stack: p.data.tech_stack, url,
+      provenance: p.data.provenance, tech_stack: p.data.tech_stack,
+      repo_visibility: p.data.repo_visibility, github: p.data.github, demo: p.data.demo,
+      screenshots: p.data.screenshots || [], url,
     }))
     .sort((a, b) => a.featured_order - b.featured_order); // featured_order ASC
 

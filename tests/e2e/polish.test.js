@@ -112,3 +112,28 @@ test('code fences are syntax-highlighted (shiki token spans)', async ({ page }) 
   );
   expect(tokenCount).toBeGreaterThan(0);
 });
+
+test('projects preview: h/l and nav buttons cycle the screenshot', async ({ page }) => {
+  const proj = manifest.projects.find((p) => (p.screenshots || []).length >= 2);
+  test.skip(!proj, 'needs a project with 2+ screenshots');
+  await page.goto('/projects.html');
+  await page.getByRole('combobox', { name: 'fuzzy filter projects' }).fill(proj.title);
+  await expect(page.getByRole('img', { name: proj.screenshots[0].alt })).toBeVisible();
+  // h/l work once focus leaves the input; l advances, wrap included
+  await page.keyboard.press('Escape');
+  await page.keyboard.press('l');
+  await expect(page.getByRole('img', { name: proj.screenshots[1].alt })).toBeVisible();
+  // mouse fallback: prev button returns to the first artifact
+  await page.getByRole('button', { name: 'previous screenshot' }).click();
+  await expect(page.getByRole('img', { name: proj.screenshots[0].alt })).toBeVisible();
+});
+
+test('projects preview: status block, stack, and links come from the manifest', async ({ page }) => {
+  await page.goto('/projects.html');
+  // first (featured) project is selected on load; its operational state shows
+  const proj = manifest.projects[0];
+  await expect(page.getByText('● ' + proj.lifecycle, { exact: true })).toBeVisible();
+  await expect(page.getByText(proj.tech_stack[0], { exact: true })).toBeVisible();
+  const open = page.getByRole('link', { name: 'case study ↵' });
+  await expect(open).toHaveAttribute('href', '/' + proj.url);
+});

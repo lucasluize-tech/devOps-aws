@@ -674,10 +674,10 @@ body.tour-prompt form[data-prompt] {
 .tlo-c3 { --tlo-c: var(--success); }
 .tlo-c4 { --tlo-c: var(--secondary); }
 /* project lifecycle states mirror the landing page's status colors */
-.tl-option .st-production { color: var(--success); }
-.tl-option .st-maintained { color: var(--yellow); }
-.tl-option .st-prototype { color: var(--cyan); }
-.tl-option .st-archived { color: var(--muted); }
+.tl-option .st-production, .tlp-status .st-production { color: var(--success); }
+.tl-option .st-maintained, .tlp-status .st-maintained { color: var(--yellow); }
+.tl-option .st-prototype, .tlp-status .st-prototype { color: var(--cyan); }
+.tl-option .st-archived, .tlp-status .st-archived { color: var(--muted); }
 .tl-empty { padding: 7px 10px; color: var(--muted); font-size: 13px; }
 .tl-preview {
   border: 1px solid var(--border);
@@ -718,6 +718,72 @@ body.tour-prompt form[data-prompt] {
 .tlp-n { color: var(--cyan); margin-right: 8px; }
 .tlp-open { margin: 14px 0 0; text-align: right; font-size: 12px; }
 .tlp-open a { color: var(--link); }
+/* ---- projects preview: screenshot viewport + btop-style status block */
+.tlp-shotbox {
+  position: relative;
+  margin: 0 0 12px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--bg) 70%, transparent);
+  overflow: hidden;
+}
+.tlp-shotbox img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: contain;
+}
+.tlp-nav {
+  position: absolute;
+  top: calc(50% - 14px);
+  transform: translateY(-50%);
+  width: 24px;
+  height: 34px;
+  font: inherit;
+  font-size: 16px;
+  line-height: 1;
+  color: var(--text-bright);
+  background: color-mix(in srgb, var(--bg) 65%, transparent);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  cursor: pointer;
+}
+.tlp-prev { left: 8px; }
+.tlp-next { right: 8px; }
+.tlp-nav:hover { border-color: var(--accent); color: var(--accent-bright); }
+.tlp-nav:focus-visible { outline: none; border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent-glow); }
+.tlp-shotmeta {
+  margin: 0;
+  padding: 5px 10px;
+  font-size: 11px;
+  color: var(--muted);
+  border-top: 1px solid var(--border-subtle);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.tlp-shotn { color: var(--cyan); margin-right: 8px; }
+.tlp-status {
+  display: grid;
+  grid-template-columns: 84px minmax(0, 1fr);
+  gap: 2px 12px;
+  margin: 10px 0 0;
+  font-size: 12.5px;
+}
+.tlp-k { color: var(--muted); }
+.tlp-v { color: var(--text); }
+.tlp-stack-label { margin-top: 14px; }
+.tlp-stack { display: flex; flex-wrap: wrap; gap: 5px 6px; }
+.tlp-stack span {
+  font-size: 12px;
+  padding: 1px 8px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 4px;
+  color: var(--secondary);
+}
+.tlp-links { display: flex; flex-wrap: wrap; gap: 16px; margin: 16px 0 0; font-size: 12px; }
+.tlp-links a { color: var(--link); text-decoration: none; }
+.tlp-links a:hover { text-decoration: underline; }
 .tl-sort {
   font: inherit;
   font-size: 12px;
@@ -772,9 +838,10 @@ body.tour-prompt form[data-prompt] {
   .tl-body { grid-template-columns: minmax(0, 1fr); }
   .tl-results { max-height: 34vh; }
   .tl-preview { max-height: 38vh; }
-  /* narrow list: title only, the preview carries the metadata */
+  /* narrow list: title only, the preview carries the metadata (scoped to
+     list rows - the projects preview status block reuses these classes) */
   .tl-posts, .tl-projects { --tl-grid: 12px minmax(0, 1fr); }
-  .tl-cols, .tlo-date, .tlo-cat, .tlo-read { display: none; }
+  .tl-cols, .tl-option .tlo-date, .tl-option .tlo-cat, .tl-option .tlo-read { display: none; }
   /* filter bar wraps: query keeps the first row, controls drop below */
   .tl-input { flex-wrap: wrap; }
   .tl-query { flex: 1 1 12ch; }
