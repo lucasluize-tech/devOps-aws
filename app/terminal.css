@@ -937,7 +937,8 @@ form[data-prompt] { position: relative; }
   color: var(--muted);
   pointer-events: none;
   user-select: none;
-  transition: opacity 0.15s ease;
+  /* no fade: a mid-transition blend of --muted over --bg fails axe's AA
+     contrast check (CI caught it at 1.03:1); instant hide has no such frame */
 }
 form[data-prompt]:focus-within .prompt-hint { opacity: 0; }
 @media (max-width: 767px) { .prompt-hint { display: none; } }
