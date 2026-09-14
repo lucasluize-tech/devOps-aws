@@ -66,7 +66,11 @@ else
   aws lambda wait function-active --function-name "$FUNC" --region "$REGION"
 fi
 say "reserved concurrency = 1 (hard abuse/cost cap)"
-aws lambda put-function-concurrency --function-name "$FUNC" --reserved-concurrent-executions 1 --region "$REGION" >/dev/null
+# Small accounts have a low total-concurrency quota; reserving 1 would push
+# the unreserved pool under AWS's minimum of 10 and the call is refused.
+# Tolerate that: the account cap itself + Cloudflare rate rule still bound abuse.
+aws lambda put-function-concurrency --function-name "$FUNC" --reserved-concurrent-executions 1 --region "$REGION" >/dev/null 2>&1 \
+  || echo "  skipped: account concurrency quota too low to reserve (account cap + Cloudflare rate rule still bound abuse)"
 
 # --- 3. Function URL (AWS_IAM) + CloudFront invoke permission ----------------
 say "ensuring function URL (auth AWS_IAM)"
