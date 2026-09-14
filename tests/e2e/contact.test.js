@@ -15,6 +15,24 @@ test('composer fields persist across pjax navigation (module draft state)', asyn
   await expect(page.getByLabel('Subject')).toHaveValue('SRE opportunity');
 });
 
+test('send with unconfigured endpoint keeps the draft and offers mailto', async ({ page }) => {
+  await page.goto('/contact.html');
+  await page.getByLabel('Name').fill('Jane');
+  await page.getByLabel('From').fill('j@co.com');
+  await page.getByLabel('Subject').fill('SRE');
+  // exact: true - "Message" would otherwise substring-match the compose
+  // form's own aria-label ("compose message") and violate strict mode.
+  await page.getByLabel('Message', { exact: true }).fill('hello');
+  await page.getByRole('button', { name: /send/ }).click();
+  // draft untouched after the failed relay
+  await expect(page.getByLabel('Message', { exact: true })).toHaveValue('hello');
+  // scoped to the compose form's status bar - the same copy also lands in
+  // the prompt scrollback (draft:sent summary), which would make an
+  // unscoped getByText match strict-mode ambiguous.
+  const composeForm = page.getByRole('form', { name: 'compose message' });
+  await expect(composeForm.getByText(/draft is still here|relay unavailable/)).toBeVisible();
+});
+
 test('shell and composer share one draft: set updates the form, form feeds draft', async ({ page }) => {
   await page.goto('/contact.html');
   // form -> shell

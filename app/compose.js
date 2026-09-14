@@ -1,15 +1,14 @@
 // app/compose.js - binds the contact page's compose form to the shared
-// draft (app/draft.js). The shell (prompt.js) writes the same draft, so
-// `set subject x` updates these inputs live and typing here is visible
-// to the `draft` command. One send path: form submit and the `send`
-// command both dispatch 'draft:send'.
-import { getDraft, updateDraft, resetDraft, subscribeDraft } from './draft.js';
+// draft (app/draft.js); `set subject x` in the shell updates these inputs
+// live. Form submit and the `send` command both dispatch 'draft:send'.
+import { getDraft, updateDraft, resetDraft, subscribeDraft, submitDraft } from './draft.js';
 
 const FIELD_IDS = { name: 'cf-name', email: 'cf-email', subject: 'cf-subject', message: 'cf-message' };
 
 export function initCompose(form) {
   if (!form || form.dataset.composeWired) return;
   form.dataset.composeWired = '1';
+  const wiredAt = Date.now();
 
   const els = {};
   for (const [k, id] of Object.entries(FIELD_IDS)) els[k] = form.querySelector('#' + id);
@@ -44,6 +43,37 @@ export function initCompose(form) {
       setStatus(form, '● draft discarded - via AWS SES', '');
     }
   });
+
+  const snapshotForSent = () => getDraft(); // captured before reset
+  document.addEventListener('draft:send', async () => {
+    if (!document.contains(form)) return;
+    const sent = snapshotForSent();
+    const hp = form.querySelector('[data-cf-hp]');
+    setStatus(form, 'sending...', '');
+    const r = await submitDraft({ website: hp ? hp.value : '', t: Date.now() - wiredAt }, (n, label, ok) => {
+      setStatus(form, `[${n}/3] ${label} ${ok ? 'ok' : 'failed'}`, '');
+    });
+    if (r.ok) { renderSent(form, sent, r.messageId); }
+    else if (r.reason === 'validation') setStatus(form, r.errors[0], 'cf-err');
+    else if (r.reason === 'rate') setStatus(form, '429 too many requests - please wait before sending another message', 'cf-err');
+    else setStatus(form, 'relay unavailable - nothing lost, your draft is still here', 'cf-err');
+    document.dispatchEvent(new CustomEvent('draft:sent', { detail: r }));
+  });
+}
+
+function renderSent(form, d, messageId) {
+  const sent = document.createElement('div');
+  sent.className = 'cf-sent';
+  sent.innerHTML = `<p class="cf-sent-head">✓ Message accepted</p>
+<dl><dt>From</dt><dd></dd><dt>Subject</dt><dd></dd>
+<dt>Queue</dt><dd>accepted</dd><dt>Relay</dt><dd>AWS SES</dd><dt>id</dt><dd class="cf-mid"></dd></dl>
+<p>Thanks for reaching out - I'll get back to you.</p>
+<button type="button" class="cf-send" data-cf-new>new message</button>`;
+  sent.querySelectorAll('dd')[0].textContent = `${d.name} <${d.email}>`;
+  sent.querySelectorAll('dd')[1].textContent = d.subject;
+  sent.querySelector('.cf-mid').textContent = messageId;
+  form.replaceChildren(sent);
+  sent.querySelector('[data-cf-new]').addEventListener('click', () => location.reload());
 }
 
 export function setStatus(form, text, cls) {

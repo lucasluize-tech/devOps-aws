@@ -4,8 +4,7 @@
 // side effect (navigation, rendering, fetch) lives in the DOM wiring below.
 import { navigate } from './router.js';
 import { initStatus } from './buffers.js';
-import { CONTACT_ENDPOINT } from './config.js';
-import { getDraft, updateDraft, resetDraft, draftLines, EMAIL_RE } from './draft.js';
+import { getDraft, updateDraft, resetDraft, draftLines, EMAIL_RE, submitDraft } from './draft.js';
 
 const CONTACT_EMAIL = 'me@lucasluize.com';
 const MAX_MESSAGE_LEN = 2000;
@@ -67,6 +66,9 @@ const TRAIN_LINES = [
   '  |/ |   |-----------I_____I [][] []  D   |=====',
   'choo choo. (sl: you meant ls, but enjoy the ride)',
 ];
+
+// submitDraft's fill-time (t); reset on wizard start and `mail`/`compose`.
+let composeStart = Date.now();
 
 const IN_CONTACT = (path) => /contact/.test(path || '');
 const DRAFT_FIELDS = ['name', 'email', 'subject', 'message'];
@@ -303,13 +305,12 @@ function clearScrollback() {
 }
 
 // appendMailtoFallback: honest failure message + a real mailto: link, built
-// via DOM APIs (never innerHTML) so user-entered name/email/message can never
-// break out as markup.
+// via DOM APIs (never innerHTML) - draft shape (name, email, subject, message).
 function appendMailtoFallback(payload) {
   appendLine('could not reach the contact service right now - email me directly:');
   const sb = scrollbackEl();
   if (!sb) return;
-  const subject = encodeURIComponent(`Contact from ${payload.name}`);
+  const subject = encodeURIComponent(payload.subject || `Contact from ${payload.name}`);
   const body = encodeURIComponent(`${payload.message}\n\n- ${payload.name} (${payload.email})`);
   const a = document.createElement('a');
   a.href = `mailto:${CONTACT_EMAIL}?subject=${subject}&body=${body}`;
@@ -322,21 +323,12 @@ function appendMailtoFallback(payload) {
   sb.scrollTop = sb.scrollHeight;
 }
 
-async function sendContact(payload) {
-  if (!CONTACT_ENDPOINT) { appendMailtoFallback(payload); return; }
-  appendLine('sending...');
-  try {
-    const res = await fetch(CONTACT_ENDPOINT, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-      signal: AbortSignal.timeout(8000),
-    });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    appendLine('message sent - thanks, I will get back to you soon.', 'sb-line sb-ok');
-  } catch (_) {
-    appendMailtoFallback(payload);
-  }
+function renderSendResult(result) {
+  if (result.ok) { appendLine('✓ message sent - thanks, I will get back to you soon.', 'sb-line sb-ok'); return; }
+  if (result.reason === 'validation') { appendLines(['send: validation failed', ...result.errors]); return; }
+  if (result.reason === 'rate') { appendLines(['send: temporarily unavailable', '429 too many requests - please wait before sending another message.']); return; }
+  appendLines(['send: relay unavailable', 'The message was not submitted. Nothing has been lost - your draft is still here.']);
+  appendMailtoFallback(getDraft());
 }
 
 // initPrompt: wires form[data-prompt] on every page (chrome, outside #pane,
@@ -364,7 +356,8 @@ export function initPrompt() {
   sizeInput();
 
   function startWizard() {
-    wizard = { step: 'name', start: Date.now() };
+    wizard = { step: 'name' };
+    composeStart = Date.now();
     appendLines(['starting contact wizard - Esc to cancel', 'name:']);
   }
 
@@ -373,20 +366,26 @@ export function initPrompt() {
     appendLine('wizard cancelled.');
   }
 
-  // Reads from the shared draft (app/draft.js), not local wizard state - the
-  // composer form may have filled some fields too, and this is the single
-  // source of truth both surfaces write through.
+  // runSend reads the shared draft (app/draft.js) - the single source of
+  // truth both the wizard and the composer form write through.
   async function finishWizard() {
-    const { name, email, message } = getDraft();
-    const t = Date.now() - wizard.start;
-    const spam = !!(honeypot && honeypot.value);
     wizard = null;
-    if (spam) {
-      // Silently pretend success - never let a bot learn the honeypot worked.
-      appendLine('message sent - thanks, I will get back to you soon.', 'sb-line sb-ok');
-      return;
+    await runSend();
+  }
+
+  // single-flight: compose owns it when its form is on the page (dispatches
+  // 'draft:sent' when done, rendered below); otherwise call submitDraft direct.
+  async function runSend() {
+    appendLine('sending message...');
+    if (document.querySelector('form[data-compose]')) {
+      document.dispatchEvent(new CustomEvent('draft:send'));
+      return; // compose runs the flight; 'draft:sent' listener renders here
     }
-    await sendContact({ name, email, message, website: '', t });
+    const hp = honeypot ? honeypot.value : '';
+    const result = await submitDraft({ website: hp, t: Date.now() - composeStart }, (n, label, ok) => {
+      appendLine(`[${n}/3] ${label.padEnd(22)} ${ok ? 'ok' : 'failed'}`);
+    });
+    renderSendResult(result);
   }
 
   function stepWizard(raw) {
@@ -449,6 +448,7 @@ export function initPrompt() {
       case 'status': appendStatus(); break;
       case 'wizard': startWizard(); break;
       case 'mail': {
+        composeStart = Date.now();
         if (result.subject !== undefined) updateDraft({ subject: result.subject }, 'shell');
         const onContact = /contact/.test(location.pathname);
         if (!onContact) { navigate('/contact.html'); }
@@ -468,7 +468,7 @@ export function initPrompt() {
         appendLine(`${result.field} set.`);
         break;
       case 'draft-send':
-        document.dispatchEvent(new CustomEvent('draft:send'));
+        runSend();
         break;
       case 'draft-cancel':
         resetDraft('shell');
@@ -499,6 +499,12 @@ export function initPrompt() {
       event.preventDefault();
       input.focus({ preventScroll: true });
     }
+  });
+
+  // compose.js dispatches this after its own submitDraft result - scrollback
+  // summary for a form-initiated send (no staging lines duplicated here).
+  document.addEventListener('draft:sent', (event) => {
+    renderSendResult(event.detail);
   });
 
   // Tour handoff (buffers.js): print the tip + hand focus to the prompt.
