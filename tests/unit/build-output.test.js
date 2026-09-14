@@ -80,3 +80,15 @@ test('noscript block lists every post', () => {
   const noscript = html.match(/<noscript>[\s\S]*?<\/noscript>/)[0];
   for (const p of m.posts) expect(noscript).toContain(`/posts/${p.slug}.md`);
 });
+
+test('contact page ships the finger pane and an accessible compose form', () => {
+  const html = fs.readFileSync('dist/contact.html', 'utf8');
+  expect(html).toContain('data-compose');
+  for (const id of ['cf-name', 'cf-email', 'cf-subject', 'cf-message']) {
+    expect(html).toContain(`for="${id}"`);
+    expect(html).toContain(`id="${id}"`);
+  }
+  expect(html).toContain('finger lucas');
+  expect(html).toContain('data-cf-hp');   // honeypot present
+  expect(html).toContain('via AWS SES');  // status bar transport line
+});

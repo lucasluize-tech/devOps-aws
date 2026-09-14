@@ -13,6 +13,7 @@ const {
   ORIGIN, pageHtml, postPane, projectPane, postsListPane, projectsListPane, galleryHtml,
   aboutPane, roadmapPane, pickerPane,
   introPane, featuredProjectsPane, latestPostsPane,
+  contactPane,
 } = require('./lib/pages');
 
 // Branch for the statusline segment: CI provides GITHUB_REF_NAME; local
@@ -178,7 +179,7 @@ async function main() {
   corePage('contact.html', {
     title: 'Contact - Lucas Luize', bodyClass: 'page-contact', active: 'contact.html',
     description: 'Get in touch with Lucas Luize.',
-    pane: `<h1>Contact</h1><p><a href="mailto:me@lucasluize.com">me@lucasluize.com</a></p>`,
+    pane: contactPane(),
   });
   corePage('404.html', {
     title: 'Not found - Lucas Luize', bodyClass: 'page-404', active: 'index.html',

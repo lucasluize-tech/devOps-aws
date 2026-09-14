@@ -718,6 +718,90 @@ body.tour-prompt form[data-prompt] {
 .tlp-n { color: var(--cyan); margin-right: 8px; }
 .tlp-open { margin: 14px 0 0; text-align: right; font-size: 12px; }
 .tlp-open a { color: var(--link); }
+
+/* ---- Contact workspace: finger(1) + mutt compose ------------------- */
+.contact-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 34%) minmax(0, 1fr);
+  gap: 14px;
+  align-items: start;
+}
+.finger, form[data-compose] {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px 18px;
+  background: color-mix(in srgb, var(--surface) 35%, transparent);
+}
+.finger-cmd { margin: 0 0 12px; color: var(--success); font-size: 12px; }
+.finger-name { margin: 0; color: var(--text-bright); font-weight: 700; }
+.finger-role { margin: 0 0 8px; color: var(--secondary); font-size: 13px; }
+.finger-loc { margin: 0 0 12px; color: var(--muted); font-size: 12.5px; }
+.finger-links { list-style: none; margin: 0 0 14px; padding: 0; font-size: 13px; }
+.finger-links li { padding: 2px 0; }
+.finger-links a { color: var(--link); }
+.finger-status { margin: 0; font-size: 12.5px; color: var(--text); }
+.finger-status .snap-dot { color: var(--success); }
+.cf-title {
+  margin: 0 0 12px;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.cf-row { display: grid; grid-template-columns: 84px minmax(0, 1fr); gap: 10px; margin: 0 0 8px; align-items: baseline; }
+.cf-row label { color: var(--muted); font-size: 12.5px; }
+.cf-row input, .cf-row textarea {
+  font: inherit;
+  font-size: 13px;
+  color: var(--text);
+  background: color-mix(in srgb, var(--bg) 60%, transparent);
+  border: 1px solid var(--border-subtle);
+  border-radius: 5px;
+  padding: 5px 9px;
+  min-width: 0;
+  caret-color: var(--accent);
+}
+.cf-row input:focus-visible, .cf-row textarea:focus-visible {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent-glow);
+}
+.cf-row-msg { border-top: 1px solid var(--border-subtle); padding-top: 10px; }
+.cf-row textarea { resize: vertical; }
+form[data-compose] [data-cf-hp] { position: absolute; left: -9999px; width: 1px; height: 1px; }
+.cf-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border-subtle);
+}
+.cf-status { margin: 0; font-size: 12px; color: var(--secondary); }
+.cf-status.cf-ok { color: var(--success); }
+.cf-status.cf-err { color: var(--red); }
+.cf-send {
+  font: inherit;
+  font-size: 12.5px;
+  padding: 4px 12px;
+  color: var(--accent-bright);
+  background: color-mix(in srgb, var(--surface) 60%, transparent);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  cursor: pointer;
+}
+.cf-send:hover { border-color: var(--accent); }
+.cf-send:focus-visible { outline: none; border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent-glow); }
+.cf-sent { font-size: 13px; }
+.cf-sent .cf-sent-head { color: var(--success); font-weight: 700; margin: 0 0 10px; }
+.cf-sent dl { display: grid; grid-template-columns: 84px minmax(0, 1fr); gap: 2px 10px; margin: 0 0 12px; }
+.cf-sent dt { color: var(--muted); }
+.cf-sent dd { margin: 0; color: var(--text); overflow-wrap: anywhere; }
+@media (max-width: 640px) {
+  .contact-grid { grid-template-columns: minmax(0, 1fr); }
+}
+
 /* ---- projects preview: screenshot viewport + btop-style status block */
 .tlp-shotbox {
   position: relative;
