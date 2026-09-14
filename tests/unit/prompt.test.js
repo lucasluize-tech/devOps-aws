@@ -26,7 +26,7 @@ describe('completeCommand (tab)', () => {
     expect(completeCommand('op', m)).toEqual({ value: 'open ' });
   });
   test('extends ambiguous input to the longest common prefix', () => {
-    expect(completeCommand('c', m).candidates).toEqual(['cat', 'cd', 'clear', 'contact']);
+    expect(completeCommand('c', m).candidates).toEqual(['cancel', 'cat', 'cd', 'clear', 'compose', 'contact']);
   });
   test('completes slugs and workspaces after open/cd/cat', () => {
     expect(completeCommand('open prox', m)).toEqual({ value: 'open proxmox-lab' });
@@ -155,5 +155,48 @@ describe('parseCommand extras', () => {
 
   test('parseCommand is pure - no globals touched, safe under Node', () => {
     expect(() => parseCommand('help', m)).not.toThrow();
+  });
+});
+
+describe('contact vocabulary', () => {
+  const m = { posts: [], projects: [] };
+
+  test('mail lucas navigates and mail -s prefills subject', () => {
+    expect(parseCommand('mail lucas', m, '~')).toEqual({ kind: 'mail' });
+    expect(parseCommand('mail -s "SRE role" lucas', m, '~'))
+      .toEqual({ kind: 'mail', subject: 'SRE role' });
+  });
+
+  test('set parses field + rest-of-line value, quotes optional', () => {
+    expect(parseCommand('set subject Platform Engineer role', m, '~/contact'))
+      .toEqual({ kind: 'draft-set', field: 'subject', value: 'Platform Engineer role' });
+    expect(parseCommand('set email j@co.com', m, '~/contact'))
+      .toEqual({ kind: 'draft-set', field: 'email', value: 'j@co.com' });
+    expect(parseCommand('set bogus x', m, '~/contact').kind).toBe('print');
+  });
+
+  test('draft/set/send/cancel are cwd-gated to ~/contact', () => {
+    for (const c of ['draft', 'set subject x', 'send', 'cancel']) {
+      const r = parseCommand(c, m, '~/posts');
+      expect(r.kind).toBe('print');
+      expect(r.lines[0]).toContain('cd contact');
+    }
+    expect(parseCommand('draft', m, '~/contact')).toEqual({ kind: 'draft-show' });
+    expect(parseCommand('send', m, '~/contact')).toEqual({ kind: 'draft-send' });
+    expect(parseCommand('cancel', m, '~/contact')).toEqual({ kind: 'draft-cancel' });
+  });
+
+  test('easter eggs: ssh and ping', () => {
+    expect(parseCommand('ssh lucas@devops', m, '~').lines[0])
+      .toBe("Permission denied (publickey). Try 'mail lucas' instead.");
+    expect(parseCommand('ping lucas', m, '~').lines.join(' ')).toContain('0% packet loss');
+  });
+
+  test('completion covers mail, set fields, draft verbs', () => {
+    // completeCommand returns { value } or { candidates }, not an array/string,
+    // so check .value directly rather than toContain on the whole object.
+    expect(completeCommand('mail lu', m).value).toBe('mail lucas');
+    expect(completeCommand('set sub', m).value).toBe('set subject');
+    expect(completeCommand('dra', m).value).toBe('draft ');
   });
 });

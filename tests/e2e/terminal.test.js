@@ -130,6 +130,8 @@ test('contact wizard rejects a bad email then prints the mailto fallback', async
   await expect(page.getByText(/valid email/)).toBeVisible();
   await cmd.fill('test@example.com');
   await cmd.press('Enter');
+  await cmd.fill('SRE role inquiry');
+  await cmd.press('Enter');
   await cmd.fill('Hello there, this is a test message.');
   await cmd.press('Enter');
   await expect(page.getByText(/send\? \[Y\/n\]/)).toBeVisible();

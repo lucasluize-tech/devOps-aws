@@ -5,9 +5,9 @@
 import { navigate } from './router.js';
 import { initStatus } from './buffers.js';
 import { CONTACT_ENDPOINT } from './config.js';
+import { getDraft, updateDraft, resetDraft, draftLines, EMAIL_RE } from './draft.js';
 
 const CONTACT_EMAIL = 'me@lucasluize.com';
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const MAX_MESSAGE_LEN = 2000;
 
 // Workspace names resolvable by `open <x>` / `cd <x>`, on top of post/project slugs.
@@ -42,6 +42,7 @@ const HELP_LINES = [
   '  whoami               about page',
   '  status               session telemetry',
   '  contact              start the contact wizard',
+  '  mail lucas            compose a message (or: contact)',
   '  eggs                 fun things to try',
   '  clear                clear this scrollback',
   '  tab                  autocomplete commands and slugs',
@@ -66,6 +67,10 @@ const TRAIN_LINES = [
   '  |/ |   |-----------I_____I [][] []  D   |=====',
   'choo choo. (sl: you meant ls, but enjoy the ride)',
 ];
+
+const IN_CONTACT = (path) => /contact/.test(path || '');
+const DRAFT_FIELDS = ['name', 'email', 'subject', 'message'];
+const NO_DRAFT_HERE = { kind: 'print', lines: ["no draft here - try 'cd contact' first"] };
 
 function findSlug(list, slug) {
   return (list || []).find((it) => it.slug === slug) || null;
@@ -98,6 +103,7 @@ export function parseCommand(input, manifest, path) {
   const cmd = (parts[0] || '').toLowerCase();
   if (!cmd) return { kind: 'print', lines: [] };
   const arg = parts[1];
+  const rest = parts.slice(1).join(' ');
 
   switch (cmd) {
     case 'help':
@@ -175,6 +181,33 @@ export function parseCommand(input, manifest, path) {
     case 'contact':
       return { kind: 'wizard' };
 
+    case 'mail': {
+      // mail lucas | mail -s "subject" lucas | compose
+      const sMatch = rest.match(/^-s\s+("([^"]*)"|\S+)\s+lucas$/);
+      if (sMatch) return { kind: 'mail', subject: sMatch[2] !== undefined ? sMatch[2] : sMatch[1] };
+      if (!rest || rest === 'lucas') return { kind: 'mail' };
+      return { kind: 'print', lines: ["usage: mail lucas | mail -s \"subject\" lucas"] };
+    }
+    case 'compose':
+      return { kind: 'mail' };
+    case 'draft':
+      return IN_CONTACT(path) ? { kind: 'draft-show' } : NO_DRAFT_HERE;
+    case 'set': {
+      if (!IN_CONTACT(path)) return NO_DRAFT_HERE;
+      const m2 = rest.match(/^(\S+)\s+([\s\S]+)$/);
+      if (!m2 || !DRAFT_FIELDS.includes(m2[1]))
+        return { kind: 'print', lines: [`set: usage: set <${DRAFT_FIELDS.join('|')}> <value>`] };
+      return { kind: 'draft-set', field: m2[1], value: m2[2].replace(/^"|"$/g, '') };
+    }
+    case 'send':
+      return IN_CONTACT(path) ? { kind: 'draft-send' } : NO_DRAFT_HERE;
+    case 'cancel':
+      return IN_CONTACT(path) ? { kind: 'draft-cancel' } : NO_DRAFT_HERE;
+    case 'ssh':
+      return { kind: 'print', lines: ["Permission denied (publickey). Try 'mail lucas' instead."] };
+    case 'ping':
+      return { kind: 'print', lines: ['PING lucas (devops.lucasluize.com): 56 data bytes', 'lucas is reachable.', '0% packet loss'] };
+
     case 'clear':
       return { kind: 'clear' };
 
@@ -186,7 +219,7 @@ export function parseCommand(input, manifest, path) {
 // ---- tab completion (pure, unit-testable) --------------------------------
 
 // Commands worth completing: the advertised set (eggs stay discoverable).
-const COMPLETABLE = ['cat', 'cd', 'clear', 'contact', 'eggs', 'help', 'ls', 'man', 'open', 'status', 'whoami'];
+const COMPLETABLE = ['cancel', 'cat', 'cd', 'clear', 'compose', 'contact', 'draft', 'eggs', 'help', 'ls', 'mail', 'man', 'open', 'send', 'set', 'status', 'whoami'];
 
 function argPool(cmd, manifest) {
   const m = manifest || {};
@@ -197,6 +230,8 @@ function argPool(cmd, manifest) {
     case 'cat': return slugs;
     case 'ls': return ['posts', 'projects'];
     case 'man': return ['lucas'];
+    case 'mail': return ['lucas'];
+    case 'set': return DRAFT_FIELDS;
     default: return [];
   }
 }
@@ -329,7 +364,7 @@ export function initPrompt() {
   sizeInput();
 
   function startWizard() {
-    wizard = { step: 'name', data: {}, start: Date.now() };
+    wizard = { step: 'name', start: Date.now() };
     appendLines(['starting contact wizard - Esc to cancel', 'name:']);
   }
 
@@ -338,8 +373,11 @@ export function initPrompt() {
     appendLine('wizard cancelled.');
   }
 
+  // Reads from the shared draft (app/draft.js), not local wizard state - the
+  // composer form may have filled some fields too, and this is the single
+  // source of truth both surfaces write through.
   async function finishWizard() {
-    const { name, email, message } = wizard.data;
+    const { name, email, message } = getDraft();
     const t = Date.now() - wizard.start;
     const spam = !!(honeypot && honeypot.value);
     wizard = null;
@@ -357,31 +395,40 @@ export function initPrompt() {
     switch (wizard.step) {
       case 'name':
         if (!text) { appendLine('name cannot be empty. name:'); return; }
-        wizard.data.name = text;
+        updateDraft({ name: text }, 'shell');
         wizard.step = 'email';
         appendLine('email:');
         return;
       case 'email':
         if (!EMAIL_RE.test(text)) { appendLine("that doesn't look like a valid email. email:"); return; }
-        wizard.data.email = text;
+        updateDraft({ email: text }, 'shell');
+        wizard.step = 'subject';
+        appendLine('subject:');
+        return;
+      case 'subject':
+        if (!text) { appendLine('subject cannot be empty. subject:'); return; }
+        updateDraft({ subject: text }, 'shell');
         wizard.step = 'message';
         appendLine('message:');
         return;
-      case 'message':
+      case 'message': {
         if (!text) { appendLine('message cannot be empty. message:'); return; }
         if (text.length > MAX_MESSAGE_LEN) {
           appendLine(`message too long (max ${MAX_MESSAGE_LEN} chars, got ${text.length}). message:`);
           return;
         }
-        wizard.data.message = text;
+        updateDraft({ message: text }, 'shell');
         wizard.step = 'confirm';
+        const d = getDraft();
         appendLines([
-          `name:    ${wizard.data.name}`,
-          `email:   ${wizard.data.email}`,
-          `message: ${wizard.data.message}`,
+          `name:    ${d.name}`,
+          `email:   ${d.email}`,
+          `subject: ${d.subject}`,
+          `message: ${d.message}`,
           'send? [Y/n]',
         ]);
         return;
+      }
       case 'confirm': {
         const yes = text === '' || /^y(es)?$/i.test(text);
         if (!yes) { cancelWizard(); return; }
@@ -401,6 +448,32 @@ export function initPrompt() {
       case 'clear': clearScrollback(); break;
       case 'status': appendStatus(); break;
       case 'wizard': startWizard(); break;
+      case 'mail': {
+        if (result.subject !== undefined) updateDraft({ subject: result.subject }, 'shell');
+        const onContact = /contact/.test(location.pathname);
+        if (!onContact) { navigate('/contact.html'); }
+        // focus the first empty field once the pane exists
+        requestAnimationFrame(() => {
+          const f = document.querySelector('#cf-name');
+          if (f) f.focus({ preventScroll: true });
+        });
+        appendLine('composing - fill the form or use: set <field> <value>, draft, send');
+        break;
+      }
+      case 'draft-show':
+        appendLines(draftLines(getDraft()));
+        break;
+      case 'draft-set':
+        updateDraft({ [result.field]: result.value }, 'shell');
+        appendLine(`${result.field} set.`);
+        break;
+      case 'draft-send':
+        document.dispatchEvent(new CustomEvent('draft:send'));
+        break;
+      case 'draft-cancel':
+        resetDraft('shell');
+        appendLine('draft discarded.');
+        break;
       default: break;
     }
   }

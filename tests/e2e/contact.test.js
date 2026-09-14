@@ -14,3 +14,17 @@ test('composer fields persist across pjax navigation (module draft state)', asyn
   await expect(page.getByLabel('Name')).toHaveValue('Jane Smith');
   await expect(page.getByLabel('Subject')).toHaveValue('SRE opportunity');
 });
+
+test('shell and composer share one draft: set updates the form, form feeds draft', async ({ page }) => {
+  await page.goto('/contact.html');
+  // form -> shell
+  await page.getByLabel('Subject').fill('typed in the form');
+  const cmd = page.getByRole('textbox', { name: 'command', exact: true });
+  await cmd.fill('draft');
+  await cmd.press('Enter');
+  await expect(page.getByText('Subject: typed in the form')).toBeVisible();
+  // shell -> form
+  await cmd.fill('set subject changed from the shell');
+  await cmd.press('Enter');
+  await expect(page.getByLabel('Subject')).toHaveValue('changed from the shell');
+});
