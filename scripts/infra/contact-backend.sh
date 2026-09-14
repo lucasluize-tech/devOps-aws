@@ -5,6 +5,7 @@
 # Safe to re-run: every step diffs current state before writing.
 # Style: matches the CloudFront error-page scripts (aws cli + jq, no state).
 set -euo pipefail
+trap 'rm -f "${ZIP:-}"; rm -rf "${TMP:-}"; rm -f /tmp/contact-smoke.json' EXIT
 
 REGION="us-east-1"
 FUNC="portfolio-contact"
@@ -45,7 +46,8 @@ ROLE_ARN="arn:aws:iam::${ACCOUNT_ID}:role/${ROLE}"
 
 # --- 2. Lambda function ------------------------------------------------------
 say "packaging lambda"
-ZIP="$(mktemp -t contact-lambda-XXXX).zip"
+ZIP="$(mktemp -t contact-lambda-XXXX.zip)"
+rm -f "$ZIP"
 (cd "$LAMBDA_DIR" && zip -q -j "$ZIP" index.js handler.js)
 
 if aws lambda get-function --function-name "$FUNC" --region "$REGION" >/dev/null 2>&1; then
@@ -63,7 +65,6 @@ else
   done
   aws lambda wait function-active --function-name "$FUNC" --region "$REGION"
 fi
-rm -f "$ZIP"
 say "reserved concurrency = 1 (hard abuse/cost cap)"
 aws lambda put-function-concurrency --function-name "$FUNC" --reserved-concurrent-executions 1 --region "$REGION" >/dev/null
 
@@ -143,7 +144,6 @@ else
   echo "  update submitted, waiting for deploy (a few minutes)..."
   aws cloudfront wait distribution-deployed --id "$DIST_ID"
 fi
-rm -rf "$TMP"
 
 # --- 6. smoke test -----------------------------------------------------------
 say "smoke test"
