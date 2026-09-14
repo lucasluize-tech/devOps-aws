@@ -1,9 +1,14 @@
 // app/compose.js - binds the contact page's compose form to the shared
 // draft (app/draft.js); `set subject x` in the shell updates these inputs
 // live. Form submit and the `send` command both dispatch 'draft:send'.
-import { getDraft, updateDraft, resetDraft, subscribeDraft, submitDraft } from './draft.js';
+import { getDraft, updateDraft, resetDraft, subscribeDraft, submitDraft, draftAgeMs } from './draft.js';
 
 const FIELD_IDS = { name: 'cf-name', email: 'cf-email', subject: 'cf-subject', message: 'cf-message' };
+
+// Module-scope, not per-instance: guards every compose form across pjax
+// visits so a stacked stale listener (fix below) can never double-fire a
+// flight alongside the live one.
+let inFlight = false;
 
 export function initCompose(form) {
   if (!form || form.dataset.composeWired) return;
@@ -45,20 +50,28 @@ export function initCompose(form) {
   });
 
   const snapshotForSent = () => getDraft(); // captured before reset
-  document.addEventListener('draft:send', async () => {
-    if (!document.contains(form)) return;
-    const sent = snapshotForSent();
-    const hp = form.querySelector('[data-cf-hp]');
-    setStatus(form, 'sending...', '');
-    const r = await submitDraft({ website: hp ? hp.value : '', t: Date.now() - wiredAt }, (n, label, ok) => {
-      setStatus(form, `[${n}/3] ${label} ${ok ? 'ok' : 'failed'}`, '');
-    });
-    if (r.ok) { renderSent(form, sent, r.messageId); }
-    else if (r.reason === 'validation') setStatus(form, r.errors[0], 'cf-err');
-    else if (r.reason === 'rate') setStatus(form, '429 too many requests - please wait before sending another message', 'cf-err');
-    else setStatus(form, 'relay unavailable - nothing lost, your draft is still here', 'cf-err');
-    document.dispatchEvent(new CustomEvent('draft:sent', { detail: r }));
-  });
+  const onSend = async () => {
+    if (!document.contains(form)) { document.removeEventListener('draft:send', onSend); return; }
+    if (inFlight) return; // re-entry guard: a double-click/ctrl+enter can't start a second flight
+    inFlight = true;
+    try {
+      const sent = snapshotForSent();
+      const hp = form.querySelector('[data-cf-hp]');
+      const age = draftAgeMs();
+      setStatus(form, 'sending...', '');
+      const r = await submitDraft({ website: hp ? hp.value : '', t: age === null ? Date.now() - wiredAt : age }, (n, label, ok) => {
+        setStatus(form, `[${n}/3] ${label} ${ok ? 'ok' : 'failed'}`, '');
+      });
+      if (r.ok) { renderSent(form, sent, r.messageId); }
+      else if (r.reason === 'validation') setStatus(form, r.errors[0], 'cf-err');
+      else if (r.reason === 'rate') setStatus(form, '429 too many requests - please wait before sending another message', 'cf-err');
+      else setStatus(form, 'relay unavailable - nothing lost, your draft is still here', 'cf-err');
+      document.dispatchEvent(new CustomEvent('draft:sent', { detail: r }));
+    } finally {
+      inFlight = false;
+    }
+  };
+  document.addEventListener('draft:send', onSend);
 }
 
 function renderSent(form, d, messageId) {

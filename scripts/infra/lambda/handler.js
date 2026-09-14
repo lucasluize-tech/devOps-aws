@@ -34,8 +34,11 @@ function createHandler(sendEmail) {
     } catch (_) {
       return resp(400, { error: 'invalid JSON' });
     }
-    // Honeypot filled or superhuman fill time: fake success, never teach the bot.
-    if ((payload && payload.website) || (payload && typeof payload.t === 'number' && payload.t < MIN_FILL_MS)) {
+    // Honeypot filled, superhuman fill time, or a missing/non-number `t`
+    // (a bot skipping the timing field entirely): fake success, never teach the bot.
+    const isObj = payload && typeof payload === 'object';
+    const tooFast = isObj && (typeof payload.t !== 'number' || payload.t < MIN_FILL_MS);
+    if ((isObj && payload.website) || tooFast) {
       return resp(200, { messageId: 'queued' });
     }
     const err = validate(payload);

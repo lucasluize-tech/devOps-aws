@@ -2,7 +2,7 @@ jest.mock('../../app/config.js', () => ({ CONTACT_ENDPOINT: '/api/contact' }));
 
 import {
   getDraft, updateDraft, resetDraft, subscribeDraft,
-  validateDraft, draftLines, DRAFT_LIMITS, submitDraft,
+  validateDraft, draftLines, DRAFT_LIMITS, submitDraft, draftAgeMs,
 } from '../../app/draft.js';
 
 beforeEach(() => resetDraft('system'));
@@ -23,6 +23,28 @@ test('resetDraft clears all fields', () => {
   updateDraft({ name: 'Jane', message: 'hi' }, 'form');
   resetDraft('shell');
   expect(getDraft()).toEqual({ name: '', email: '', subject: '', message: '' });
+});
+
+test('draftAgeMs anchors to the first edit, not the caller, and resetDraft clears it', async () => {
+  expect(draftAgeMs()).toBeNull(); // no edit yet (fresh draft from beforeEach's resetDraft)
+  updateDraft({ name: 'Jane' }, 'form');
+  await new Promise((r) => setTimeout(r, 5));
+  updateDraft({ subject: 'later edit' }, 'shell'); // second edit must not move the anchor
+  expect(draftAgeMs()).toBeGreaterThanOrEqual(5);
+  resetDraft('system');
+  expect(draftAgeMs()).toBeNull();
+});
+
+test("submitDraft's fetch body carries t reflecting time since the first edit", async () => {
+  const { webcrypto } = require('node:crypto');
+  if (!globalThis.crypto?.subtle) globalThis.crypto = webcrypto;
+  updateDraft({ name: 'J', email: 'j@co.com', subject: 's', message: 'hi' }, 'form');
+  await new Promise((r) => setTimeout(r, 5));
+  global.fetch = jest.fn().mockResolvedValue({ ok: true, status: 200, json: async () => ({ messageId: 'abc' }) });
+  await submitDraft({ website: '', t: draftAgeMs() }, () => {});
+  const [, init] = global.fetch.mock.calls[0];
+  expect(JSON.parse(init.body).t).toBeGreaterThanOrEqual(5);
+  delete global.fetch;
 });
 
 test('validateDraft names the missing field and the set fix', () => {

@@ -33,6 +33,16 @@ test('honeypot or too-fast fill -> 200 fake success, nothing sent', async () => 
   expect(sendEmail).not.toHaveBeenCalled();
 });
 
+test('missing t -> 200 fake success (a bot cannot skip the timing gate), nothing sent', async () => {
+  const sendEmail = jest.fn();
+  const h = createHandler(sendEmail);
+  const { t, ...noT } = valid;
+  const res = await h(ev(noT));
+  expect(res.statusCode).toBe(200);
+  expect(JSON.parse(res.body)).toEqual({ messageId: 'queued' });
+  expect(sendEmail).not.toHaveBeenCalled();
+});
+
 test('malformed JSON and base64 body both handled', async () => {
   const h = createHandler(async () => ({ messageId: 'x' }));
   expect((await h({ body: '{nope' })).statusCode).toBe(400);

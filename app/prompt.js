@@ -4,7 +4,7 @@
 // side effect (navigation, rendering, fetch) lives in the DOM wiring below.
 import { navigate } from './router.js';
 import { initStatus } from './buffers.js';
-import { getDraft, updateDraft, resetDraft, draftLines, EMAIL_RE, submitDraft } from './draft.js';
+import { getDraft, updateDraft, resetDraft, draftLines, EMAIL_RE, submitDraft, draftAgeMs } from './draft.js';
 
 const CONTACT_EMAIL = 'me@lucasluize.com';
 const MAX_MESSAGE_LEN = 2000;
@@ -41,7 +41,7 @@ const HELP_LINES = [
   '  whoami               about page',
   '  status               session telemetry',
   '  contact              start the contact wizard',
-  '  mail lucas            compose a message (or: contact)',
+  '  mail lucas           compose a message (or: contact)',
   '  eggs                 fun things to try',
   '  clear                clear this scrollback',
   '  tab                  autocomplete commands and slugs',
@@ -344,6 +344,7 @@ export function initPrompt() {
   const history = [];
   let histIdx = -1;
   let wizard = null;
+  let sendInFlight = false; // guards the direct-call fallback (no compose form on the page)
 
   // Keep the input exactly as wide as its content so the blinking block
   // cursor (label::after) sits right after the typed text. Programmatic
@@ -376,16 +377,24 @@ export function initPrompt() {
   // single-flight: compose owns it when its form is on the page (dispatches
   // 'draft:sent' when done, rendered below); otherwise call submitDraft direct.
   async function runSend() {
-    appendLine('sending message...');
     if (document.querySelector('form[data-compose]')) {
+      appendLine('sending message...');
       document.dispatchEvent(new CustomEvent('draft:send'));
-      return; // compose runs the flight; 'draft:sent' listener renders here
+      return; // compose runs the flight (its own re-entry guard applies); 'draft:sent' listener renders here
     }
-    const hp = honeypot ? honeypot.value : '';
-    const result = await submitDraft({ website: hp, t: Date.now() - composeStart }, (n, label, ok) => {
-      appendLine(`[${n}/3] ${label.padEnd(22)} ${ok ? 'ok' : 'failed'}`);
-    });
-    renderSendResult(result);
+    if (sendInFlight) return; // re-entry guard: wizard confirm / `send` can't double-fire
+    sendInFlight = true;
+    appendLine('sending message...');
+    try {
+      const hp = honeypot ? honeypot.value : '';
+      const age = draftAgeMs();
+      const result = await submitDraft({ website: hp, t: age === null ? Date.now() - composeStart : age }, (n, label, ok) => {
+        appendLine(`[${n}/3] ${label.padEnd(22)} ${ok ? 'ok' : 'failed'}`);
+      });
+      renderSendResult(result);
+    } finally {
+      sendInFlight = false;
+    }
   }
 
   function stepWizard(raw) {

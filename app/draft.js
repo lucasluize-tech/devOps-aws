@@ -10,9 +10,18 @@ const FIELDS = ['name', 'email', 'subject', 'message'];
 let draft = { name: '', email: '', subject: '', message: '' };
 const subs = new Set();
 
+// Anchors the min-fill-time check to the draft's life, not any one form
+// instance: pjax swaps compose.js's wiredAt on every visit, but a bot check
+// needs a clock that survives navigation. Set on the first edit after an
+// empty draft or a reset; cleared by resetDraft.
+let firstEditAt = null;
+
 export function getDraft() { return { ...draft }; }
 
+export function draftAgeMs() { return firstEditAt === null ? null : Date.now() - firstEditAt; }
+
 export function updateDraft(patch, source) {
+  if (firstEditAt === null) firstEditAt = Date.now();
   for (const k of FIELDS) if (typeof patch[k] === 'string') draft[k] = patch[k];
   const snap = getDraft();
   for (const fn of subs) fn(snap, source);
@@ -20,6 +29,7 @@ export function updateDraft(patch, source) {
 
 export function resetDraft(source) {
   draft = { name: '', email: '', subject: '', message: '' };
+  firstEditAt = null;
   const snap = getDraft();
   for (const fn of subs) fn(snap, source);
 }
