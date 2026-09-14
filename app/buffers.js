@@ -4,6 +4,7 @@
 // progress) are guarded so requiring this under Node never touches document.
 import { navigate } from './router.js';
 import { GISCUS } from './config.js';
+import { initCompose } from './compose.js';
 
 // ---- Pure helpers (FLAT manifest shape) ---------------------------------
 
@@ -624,6 +625,9 @@ export function bootBuffers() {
 
   const statusEl = pane.querySelector('[data-status]');
   if (statusEl) initStatus(statusEl);
+
+  const compose = pane.querySelector('form[data-compose]');
+  if (compose) initCompose(compose);
 
   if (pane.querySelector('.post-content, .project-content')) {
     initReadingProgress();
