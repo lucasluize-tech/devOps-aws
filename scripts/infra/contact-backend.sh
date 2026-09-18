@@ -90,6 +90,13 @@ aws lambda add-permission --function-name "$FUNC" --region "$REGION" \
   --principal cloudfront.amazonaws.com \
   --source-arn "arn:aws:cloudfront::${ACCOUNT_ID}:distribution/${DIST_ID}" \
   >/dev/null 2>&1 || echo "  permission already present"
+# The OAC docs grant BOTH actions; InvokeFunctionUrl alone yields 403 from CloudFront.
+aws lambda add-permission --function-name "$FUNC" --region "$REGION" \
+  --statement-id cloudfront-oac-invoke-function \
+  --action lambda:InvokeFunction \
+  --principal cloudfront.amazonaws.com \
+  --source-arn "arn:aws:cloudfront::${ACCOUNT_ID}:distribution/${DIST_ID}" \
+  >/dev/null 2>&1 || echo "  invoke-function permission already present"
 
 # --- 4. CloudFront OAC -------------------------------------------------------
 say "ensuring lambda OAC"
