@@ -6,9 +6,11 @@ const { test, expect } = require('@playwright/test');
 // wave (resize.js dividers, tour, giscus loader, expanded terminal/reader CSS)
 // to ~88KB raw / ~28KB gzipped - prod serves compressed via CloudFront. Raised
 // to 115KB for the 2026-09 contact workspace (draft.js + compose.js +
-// prompt.js's staged submitDraft flow - required feature, not bloat). Still
-// zero frameworks. Raise consciously, never casually.
-test('same-origin JS+CSS weight <= 115KB raw', async ({ page }) => {
+// prompt.js's staged submitDraft flow - required feature, not bloat), then to
+// 118KB for the composer's TUI redesign (footer state machine, structured
+// error/success output, finger(1)/mail(1) pane styling). Still zero
+// frameworks. Raise consciously, never casually.
+test('same-origin JS+CSS weight <= 118KB raw', async ({ page }) => {
   await page.goto('/index.html');
   await page.waitForLoadState('networkidle');
   const bytes = await page.evaluate(() => {
@@ -22,7 +24,7 @@ test('same-origin JS+CSS weight <= 115KB raw', async ({ page }) => {
       .reduce((sum, r) => sum + (r.encodedBodySize || 0), 0);
   });
   expect(bytes).toBeGreaterThan(0);
-  expect(bytes).toBeLessThanOrEqual(115 * 1024);
+  expect(bytes).toBeLessThanOrEqual(118 * 1024);
 });
 
 test('LCP < 2500ms with 4x CPU throttling', async ({ page }) => {

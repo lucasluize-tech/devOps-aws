@@ -89,6 +89,7 @@ test('contact page ships the finger pane and an accessible compose form', () => 
     expect(html).toContain(`id="${id}"`);
   }
   expect(html).toContain('finger lucas');
-  expect(html).toContain('data-cf-hp');   // honeypot present
-  expect(html).toContain('via AWS SES');  // status bar transport line
+  expect(html).toContain('data-cf-hp');           // honeypot present
+  expect(html).toContain('transport: AWS SES');   // footer transport line
+  expect(html).toContain('lucas@devops');         // fixed To: header
 });

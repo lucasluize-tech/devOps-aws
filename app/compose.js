@@ -5,6 +5,16 @@ import { getDraft, updateDraft, resetDraft, subscribeDraft, submitDraft, draftAg
 
 const FIELD_IDS = { name: 'cf-name', email: 'cf-email', subject: 'cf-subject', message: 'cf-message' };
 
+// Composer footer state machine: reflects real application state only
+// (draft empty / edited / request in flight / relay verdict).
+const STATES = {
+  draft: ['● draft', 'cf-st-draft'],
+  modified: ['● modified', 'cf-st-modified'],
+  sending: ['◐ sending', 'cf-st-sending'],
+  sent: ['● sent', 'cf-st-sent'],
+  failed: ['× failed', 'cf-st-failed'],
+};
+
 // Module-scope, not per-instance: guards every compose form across pjax
 // visits so a stacked stale listener (fix below) can never double-fire a
 // flight alongside the live one.
@@ -18,13 +28,21 @@ export function initCompose(form) {
   const els = {};
   for (const [k, id] of Object.entries(FIELD_IDS)) els[k] = form.querySelector('#' + id);
 
+  const isEmpty = (d) => !d.name && !d.email && !d.subject && !d.message;
+  const deriveState = () => {
+    if (inFlight) return;
+    setState(form, isEmpty(getDraft()) ? 'draft' : 'modified');
+    clearAlert(form);
+  };
+
   // hydrate from the singleton (draft survives pjax away/back)
   const d = getDraft();
   for (const k of Object.keys(els)) if (els[k]) els[k].value = d[k];
+  if (!isEmpty(d)) setState(form, 'modified');
 
   // form -> draft
   for (const [k, el] of Object.entries(els)) {
-    if (el) el.addEventListener('input', () => updateDraft({ [k]: el.value }, 'form'));
+    if (el) el.addEventListener('input', () => { updateDraft({ [k]: el.value }, 'form'); deriveState(); });
   }
 
   // draft -> form (shell edits appear instantly; skip 'form' echoes so the
@@ -32,6 +50,7 @@ export function initCompose(form) {
   const off = subscribeDraft((snap, source) => {
     if (source === 'form' || !document.contains(form)) { if (!document.contains(form)) off(); return; }
     for (const k of Object.keys(els)) if (els[k] && els[k].value !== snap[k]) els[k].value = snap[k];
+    deriveState();
   });
 
   form.addEventListener('submit', (e) => {
@@ -45,7 +64,7 @@ export function initCompose(form) {
     } else if (e.key === 'Escape') {
       e.preventDefault();
       resetDraft('form');
-      setStatus(form, '● draft discarded - via AWS SES', '');
+      deriveState();
     }
   });
 
@@ -58,14 +77,17 @@ export function initCompose(form) {
       const sent = snapshotForSent();
       const hp = form.querySelector('[data-cf-hp]');
       const age = draftAgeMs();
-      setStatus(form, 'sending...', '');
-      const r = await submitDraft({ website: hp ? hp.value : '', t: age === null ? Date.now() - wiredAt : age }, (n, label, ok) => {
-        setStatus(form, `[${n}/3] ${label} ${ok ? 'ok' : 'failed'}`, '');
-      });
-      if (r.ok) { renderSent(form, sent, r.messageId); }
-      else if (r.reason === 'validation') setStatus(form, r.errors[0], 'cf-err');
-      else if (r.reason === 'rate') setStatus(form, '429 too many requests - please wait before sending another message', 'cf-err');
-      else setStatus(form, 'relay unavailable - nothing lost, your draft is still here', 'cf-err');
+      clearAlert(form);
+      setState(form, 'sending');
+      const r = await submitDraft({ website: hp ? hp.value : '', t: age === null ? Date.now() - wiredAt : age }, () => {});
+      if (r.ok) {
+        renderSent(form, sent, r.messageId);
+      } else {
+        setState(form, 'failed');
+        if (r.reason === 'validation') showAlert(form, [['× send failed', 'cf-al-err'], ...r.errors.map((e) => [e, ''])]);
+        else if (r.reason === 'rate') showAlert(form, [['× send failed', 'cf-al-err'], ['rate limited - wait before sending again', ''], ['draft preserved', 'cf-al-ok']]);
+        else showAlert(form, [['× send failed', 'cf-al-err'], ['relay unavailable', ''], ['draft preserved', 'cf-al-ok']]);
+      }
       document.dispatchEvent(new CustomEvent('draft:sent', { detail: r }));
     } finally {
       inFlight = false;
@@ -75,23 +97,48 @@ export function initCompose(form) {
 }
 
 function renderSent(form, d, messageId) {
+  // only surface an id the relay actually returned - 'accepted'/'queued'
+  // are local fallbacks, never fabricated ids
+  const realId = messageId && messageId !== 'accepted' && messageId !== 'queued' ? messageId : '';
   const sent = document.createElement('div');
   sent.className = 'cf-sent';
-  sent.innerHTML = `<p class="cf-sent-head">✓ Message accepted</p>
-<dl><dt>From</dt><dd></dd><dt>Subject</dt><dd></dd>
-<dt>Queue</dt><dd>accepted</dd><dt>Relay</dt><dd>AWS SES</dd><dt>id</dt><dd class="cf-mid"></dd></dl>
-<p>Thanks for reaching out - I'll get back to you.</p>
-<button type="button" class="cf-send" data-cf-new>new message</button>`;
-  sent.querySelectorAll('dd')[0].textContent = `${d.name} <${d.email}>`;
-  sent.querySelectorAll('dd')[1].textContent = d.subject;
-  sent.querySelector('.cf-mid').textContent = messageId;
+  sent.setAttribute('role', 'status'); // announce the accepted state, not just recolor it
+  sent.innerHTML = `<p class="cf-sent-head">✓ message accepted</p>
+<dl><dt>From:</dt><dd data-sent-from></dd><dt>To:</dt><dd>lucas@devops</dd><dt>Subject:</dt><dd data-sent-subj></dd></dl>
+<dl class="cf-sent-meta"><dt>transport</dt><dd>AWS SES</dd><dt>status</dt><dd class="cf-al-ok">accepted</dd>${realId ? '<dt>message-id</dt><dd class="cf-mid"></dd>' : ''}</dl>
+<p>Thanks for reaching out.</p>
+<button type="button" class="cf-send" data-cf-new>[ new message ]</button>`;
+  sent.querySelector('[data-sent-from]').textContent = `${d.name} <${d.email}>`;
+  sent.querySelector('[data-sent-subj]').textContent = d.subject;
+  if (realId) sent.querySelector('.cf-mid').textContent = realId;
   form.replaceChildren(sent);
   sent.querySelector('[data-cf-new]').addEventListener('click', () => location.reload());
 }
 
-export function setStatus(form, text, cls) {
+function setState(form, key) {
   const bar = form.querySelector('[data-cf-status]');
   if (!bar) return;
+  const [text, cls] = STATES[key];
   bar.textContent = text;
-  bar.className = 'cf-status' + (cls ? ' ' + cls : '');
+  bar.className = 'cf-status ' + cls;
+}
+
+// Structured terminal-style failure output; lines are [text, class] pairs.
+function showAlert(form, lines) {
+  const el = form.querySelector('[data-cf-alert]');
+  if (!el) return;
+  el.replaceChildren(...lines.map(([text, cls]) => {
+    const div = document.createElement('div');
+    div.className = 'cf-al-line' + (cls ? ' ' + cls : '');
+    div.textContent = text;
+    return div;
+  }));
+  el.hidden = false;
+}
+
+function clearAlert(form) {
+  const el = form.querySelector('[data-cf-alert]');
+  if (!el || el.hidden) return;
+  el.hidden = true;
+  el.replaceChildren();
 }

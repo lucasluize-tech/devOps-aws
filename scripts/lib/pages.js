@@ -443,41 +443,51 @@ function roadmapPane() {
 // The form is real and accessible; app/compose.js binds it to the shared
 // draft so shell commands (set/draft/send) manipulate the same state.
 function fingerPane() {
-  return `<aside class="finger" aria-label="finger lucas">
+  return `<aside class="finger tui-pane" aria-label="finger lucas">
+<p class="tui-pane-title" aria-hidden="true">finger(1)</p>
 <p class="finger-cmd">$ finger lucas</p>
-<p class="finger-name">Lucas Luize</p>
-<p class="finger-role">Cloud DevOps Engineer</p>
-<p class="finger-loc">Tampa, FL - remote friendly</p>
+<dl class="fg-facts">
+<dt>Login:</dt><dd>lucas</dd>
+<dt>Name:</dt><dd class="fg-name">Lucas Luize</dd>
+<dt>Role:</dt><dd class="fg-role">Cloud DevOps Engineer</dd>
+<dt>Location:</dt><dd>Tampa, FL</dd>
+<dt>Work mode:</dt><dd>Remote-friendly</dd>
+</dl>
+<p class="fg-sec">Links:</p>
 <ul class="finger-links">
 <li><a href="https://github.com/lucasluize-tech" rel="noopener">github</a></li>
 <li><a href="https://linkedin.com/in/lucasluize" rel="noopener">linkedin</a></li>
-<li><a href="mailto:me@lucasluize.com">me@lucasluize.com</a></li>
+<li><a href="mailto:me@lucasluize.com">email</a></li>
 </ul>
+<p class="fg-sec">Status:</p>
 <p class="finger-status"><span class="snap-dot" aria-hidden="true">●</span> accepting mail</p>
 </aside>`;
 }
 
 function contactPane() {
   const field = (id, label, type) => `<div class="cf-row">
-<label for="cf-${id}">${label}</label>
+<label for="cf-${id}">${label}:</label>
 <input id="cf-${id}" name="${id}" type="${type}" autocomplete="off" spellcheck="false" maxlength="200">
 </div>`;
   return `<h1 class="tl-h1"><span class="tl-h1-tilde">~/</span>contact</h1>
 <section class="contact-grid">
 ${fingerPane()}
-<form data-compose aria-label="compose message" novalidate>
-<p class="cf-title" aria-hidden="true">compose</p>
+<form data-compose class="tui-pane" aria-label="compose message" novalidate>
+<p class="tui-pane-title" aria-hidden="true">mail(1) · compose</p>
 ${field('name', 'Name', 'text')}
 ${field('email', 'From', 'email')}
+<div class="cf-row cf-row-static"><span>To:</span><span class="cf-to">lucas@devops</span></div>
 ${field('subject', 'Subject', 'text')}
-<div class="cf-row cf-row-msg">
-<label for="cf-message">Message</label>
-<textarea id="cf-message" name="message" rows="8" maxlength="2000"></textarea>
+<div class="cf-msg">
+<label class="sr-only" for="cf-message">Message</label>
+<textarea id="cf-message" name="message" rows="9" maxlength="2000"></textarea>
 </div>
 <input name="website" data-cf-hp tabindex="-1" autocomplete="off" aria-hidden="true">
+<div class="cf-alert" data-cf-alert role="alert" hidden></div>
 <div class="cf-bar">
-<p class="cf-status" data-cf-status aria-live="polite">● draft - via AWS SES</p>
-<button type="submit" class="cf-send">send ⏎</button>
+<p class="cf-status cf-st-draft" data-cf-status aria-live="polite">● draft</p>
+<span class="cf-transport" aria-hidden="true">transport: AWS SES</span>
+<button type="submit" class="cf-send">send <kbd>^enter</kbd></button>
 </div>
 </form>
 </section>`;
