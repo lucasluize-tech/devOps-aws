@@ -83,6 +83,7 @@ jobs:
     - name: Invalidate CloudFront
       run: aws cloudfront create-invalidation --distribution-id ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }} --paths "/*"
     - name: Smoke check
+      # Hits CloudFront directly: Cloudflare in front of devops.lucasluize.com returns 403 to GitHub runner IPs.
       run: |
-        DEPLOYED=$(curl -fsS https://devops.lucasluize.com/build-info.json | python3 -c 'import json,sys;print(json.load(sys.stdin)["sha"])')
+        DEPLOYED=$(curl -fsS https://d34j689f8nhvd7.cloudfront.net/build-info.json | python3 -c 'import json,sys;print(json.load(sys.stdin)["sha"])')
         test "$DEPLOYED" = "$GITHUB_SHA"
