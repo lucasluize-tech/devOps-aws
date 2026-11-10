@@ -65,3 +65,13 @@ After every change, run in this order:
 - Don't commit secrets — AWS credentials, API tokens, and auth cookies belong in `~/.secrets` (sourced by `.zshrc`, blocked from Claude)
 - Don't use Inter, Space Grotesk, Roboto, or system-ui fonts — the design intentionally avoids generic/overused developer portfolio typography
 - Don't use Canva MCP for social cards — use the HTML/CSS engine at `social-cards/engine.js` instead (brand consistency)
+
+# AWS Guidance
+
+- Where these AWS rules conflict with the project's own instructions, the project's instructions take precedence.
+- Use the AWS CLI directly (profiles: `default`, `vault-backup`). There is no AWS MCP server.
+- Before starting a task, check whether a relevant local AWS skill (`.claude/skills/aws-*`) applies and prefer its guidance over general knowledge.
+- When uncertain about AWS details (API parameters, permissions, limits, error codes), verify against documentation rather than guessing. State uncertainty explicitly if you cannot confirm.
+- When creating infrastructure, prefer infrastructure-as-code (AWS CDK or CloudFormation) over direct CLI commands, and follow Well-Architected principles.
+- Do not use em dashes in AWS resource names or descriptions. Use hyphens instead.
+- Secrets: never call `secretsmanager get-secret-value` or `batch-get-secret-value`, and never print credentials. Resolve secrets at runtime so they never enter the conversation.
